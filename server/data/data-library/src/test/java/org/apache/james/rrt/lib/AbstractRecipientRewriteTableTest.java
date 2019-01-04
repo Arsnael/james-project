@@ -367,6 +367,14 @@ public abstract class AbstractRecipientRewriteTableTest {
     }
 
     @Test
+    public void getUserDomainMappingShouldBeEmptyByDefault() throws Exception {
+        Domain domain = Domain.LOCALHOST;
+        MappingSource source = MappingSource.fromUser(USER, domain);
+
+        assertThat(virtualUserTable.getUserDomainMappings(source)).isEmpty();
+    }
+
+    @Test
     public void listSourcesShouldReturnWhenHasMapping() throws Exception {
         MappingSource source = MappingSource.fromUser(USER, Domain.LOCALHOST);
         Mapping mapping = Mapping.group(ADDRESS);

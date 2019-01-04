@@ -96,7 +96,7 @@ public class MemoryRecipientRewriteTable extends AbstractRecipientRewriteTable {
     @Override
     public Mappings getUserDomainMappings(MappingSource mappingSource) {
         return retrieveMappings(mappingSource)
-            .orElse(null);
+            .orElse(MappingsImpl.empty());
     }
 
     @Override
