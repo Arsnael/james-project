@@ -21,6 +21,7 @@
 package org.apache.james.rrt.lib;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -60,6 +61,7 @@ public interface Mapping {
                 return new UserRewritter.ThrowingRewriter();
             case Forward:
             case Group:
+            case Alias:
             case Address:
                 return new UserRewritter.ReplaceRewriter();
         }
@@ -73,6 +75,7 @@ public interface Mapping {
             case Error:
             case Group:
             case Address:
+            case Alias:
                 return IdentityMappingPolicy.Throw;
             case Forward:
                 return IdentityMappingPolicy.ReturnIdentity;
@@ -109,6 +112,7 @@ public interface Mapping {
                 return MailAddressConversionPolicy.ToEmpty;
             case Forward:
             case Group:
+            case Alias:
             case Address:
                 return MailAddressConversionPolicy.ToMailAddress;
             }
@@ -139,23 +143,16 @@ public interface Mapping {
         return of(Type.Group, mapping);
     }
 
+    static Mapping alias(String mapping) {
+        return of(Type.Alias, mapping);
+    }
+
     static Type detectType(String input) {
-        if (input.startsWith(Type.Regex.asPrefix())) {
-            return Type.Regex;
-        }
-        if (input.startsWith(Type.Domain.asPrefix())) {
-            return Type.Domain;
-        }
-        if (input.startsWith(Type.Error.asPrefix())) {
-            return Type.Error;
-        }
-        if (input.startsWith(Type.Forward.asPrefix())) {
-            return Type.Forward;
-        }
-        if (input.startsWith(Type.Group.asPrefix())) {
-            return Type.Group;
-        }
-        return Type.Address;
+        return Arrays.stream(Type.values())
+            .filter(Type::hasPrefix)
+            .filter(type -> input.startsWith(type.asPrefix()))
+            .findAny()
+            .orElse(Type.Address);
     }
 
     enum Type {
@@ -164,6 +161,7 @@ public interface Mapping {
         Error("error:"),
         Forward("forward:"),
         Group("group:"),
+        Alias("alias:"),
         Address("");
 
         private final String asPrefix;
@@ -181,12 +179,14 @@ public interface Mapping {
             return input.substring(asPrefix.length());
         }
 
+        public boolean hasPrefix() {
+            return !asPrefix.isEmpty();
+        }
+
         public static boolean hasPrefix(String mapping) {
-            return mapping.startsWith(Regex.asPrefix())
-                || mapping.startsWith(Domain.asPrefix())
-                || mapping.startsWith(Error.asPrefix())
-                || mapping.startsWith(Forward.asPrefix())
-                || mapping.startsWith(Group.asPrefix());
+            return Arrays.stream(Type.values())
+                .filter(Type::hasPrefix)
+                .anyMatch(type -> mapping.startsWith(type.asPrefix()));
         }
 
     }

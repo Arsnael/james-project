@@ -206,7 +206,7 @@ public abstract class AbstractJamesUsersRepository extends AbstractUsersReposito
     }
 
     @Override
-    public Mappings getStoredMappings(MappingSource source) throws RecipientRewriteTableException {
+    public Mappings getStoredMappings(MappingSource source) {
         return MappingsImpl.empty();
     }
 
@@ -286,6 +286,16 @@ public abstract class AbstractJamesUsersRepository extends AbstractUsersReposito
 
     @Override
     public void removeGroupMapping(MappingSource source, String address) throws RecipientRewriteTableException {
+        throw new RecipientRewriteTableException("Read-Only RecipientRewriteTable");
+    }
+
+    @Override
+    public void addAliasMapping(MappingSource source, String address) throws RecipientRewriteTableException {
+        throw new RecipientRewriteTableException("Read-Only RecipientRewriteTable");
+    }
+
+    @Override
+    public void removeAliasMapping(MappingSource source, String address) throws RecipientRewriteTableException {
         throw new RecipientRewriteTableException("Read-Only RecipientRewriteTable");
     }
 }
