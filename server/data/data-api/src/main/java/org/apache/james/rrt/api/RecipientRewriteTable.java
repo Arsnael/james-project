@@ -124,7 +124,8 @@ public interface RecipientRewriteTable {
     EnumSet<Mapping.Type> listSourcesSupportedType = EnumSet.of(
         Mapping.Type.Group,
         Mapping.Type.Forward,
-        Mapping.Type.Address);
+        Mapping.Type.Address,
+        Mapping.Type.Alias);
 
     default boolean supportsSourceListing(Mapping mapping) {
         return listSourcesSupportedType.contains(
