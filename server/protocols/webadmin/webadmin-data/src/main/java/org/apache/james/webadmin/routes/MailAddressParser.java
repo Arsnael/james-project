@@ -19,16 +19,16 @@
 
 package org.apache.james.webadmin.routes;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import javax.mail.internet.AddressException;
+
 import org.apache.james.core.MailAddress;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.mail.internet.AddressException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 
 class MailAddressParser {
 
