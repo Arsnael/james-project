@@ -23,8 +23,6 @@ import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static spark.Spark.halt;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -124,15 +122,7 @@ public class GroupsRoutes implements Routes {
             message = "Internal server error - Something went bad on the server side.")
     })
     public Set<String> listGroups(Request request, Response response) throws RecipientRewriteTableException {
-        return Optional.ofNullable(recipientRewriteTable.getAllMappings())
-            .map(mappings ->
-                mappings.entrySet().stream()
-                    .filter(e -> e.getValue().contains(Mapping.Type.Group))
-                    .map(Map.Entry::getKey)
-                    .flatMap(source -> OptionalUtils.toStream(source.asMailAddress()))
-                    .map(MailAddress::asString)
-                    .collect(Guavate.toImmutableSortedSet()))
-            .orElse(ImmutableSortedSet.of());
+        return TypeListFetcher.getTypeList(recipientRewriteTable, Mapping.Type.Group);
     }
 
     @PUT
