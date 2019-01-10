@@ -45,8 +45,7 @@ public interface Mapping {
     }
 
     static Mapping of(Type type, String mapping) {
-        return new Impl(type, mapping, type.getRewriter().generateUserRewriter(mapping), type.getIdentityMappingPolicy(),
-            type.getMailAddressConversionPolicy());
+        return new Impl(type, mapping);
     }
 
     enum MailAddressConversionPolicy {
@@ -148,18 +147,6 @@ public interface Mapping {
             return asPrefix;
         }
 
-        public UserRewritter.MappingUserRewriter getRewriter() {
-            return rewriter;
-        }
-
-        public IdentityMappingPolicy getIdentityMappingPolicy() {
-            return identityMappingPolicy;
-        }
-
-        public MailAddressConversionPolicy getMailAddressConversionPolicy() {
-            return mailAddressConversionPolicy;
-        }
-
         public int getTypeOrder() {
             return typeOrder.ordinal();
         }
@@ -207,21 +194,13 @@ public interface Mapping {
         private final Type type;
         private final String mapping;
         private final UserRewritter rewriter;
-        private final IdentityMappingPolicy identityMappingPolicy;
-        private final MailAddressConversionPolicy mailAddressConversionPolicy;
 
-        private Impl(Type type,
-                     String mapping,
-                     UserRewritter rewriter,
-                     IdentityMappingPolicy identityMappingBehaviour,
-                     MailAddressConversionPolicy mailAddressConversionPolicy) {
+        private Impl(Type type, String mapping) {
             Preconditions.checkNotNull(type);
             Preconditions.checkNotNull(mapping);
             this.type = type;
             this.mapping = mapping;
-            this.rewriter = rewriter;
-            this.identityMappingPolicy = identityMappingBehaviour;
-            this.mailAddressConversionPolicy = mailAddressConversionPolicy;
+            this.rewriter = type.rewriter.generateUserRewriter(mapping);
         }
 
         @Override
@@ -274,12 +253,12 @@ public interface Mapping {
 
         @Override
         public Stream<Mapping> handleIdentity(Stream<Mapping> nonRecursiveResult) {
-            return identityMappingPolicy.handleIdentity(nonRecursiveResult);
+            return type.identityMappingPolicy.handleIdentity(nonRecursiveResult);
         }
 
         @Override
         public Optional<MailAddress> asMailAddress() {
-            return mailAddressConversionPolicy.convert(mapping);
+            return type.mailAddressConversionPolicy.convert(mapping);
         }
 
         @Override
