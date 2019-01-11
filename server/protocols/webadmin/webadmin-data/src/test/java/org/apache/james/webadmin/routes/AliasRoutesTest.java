@@ -180,6 +180,24 @@ class AliasRoutesTest {
         }
 
         @Test
+        void putSameSourceAndDestinationShouldReturnBadRequest() {
+            Map<String, Object> errors = when()
+                .put(BOB_ALIAS + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS)
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST_400)
+                .contentType(ContentType.JSON)
+                .extract()
+                .body()
+                .jsonPath()
+                .getMap(".");
+
+            assertThat(errors)
+                .containsEntry("statusCode", HttpStatus.BAD_REQUEST_400)
+                .containsEntry("type", "InvalidArgument")
+                .containsEntry("message", "Source and destination can't be the same!");
+        }
+
+        @Test
         void putAliasForUserShouldCreateAlias() {
             with()
                 .put(BOB + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS);

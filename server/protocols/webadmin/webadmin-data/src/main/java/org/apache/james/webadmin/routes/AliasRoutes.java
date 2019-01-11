@@ -108,7 +108,7 @@ public class AliasRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })
-    public HaltException addToAliasSources(Request request, Response response) throws UsersRepositoryException, RecipientRewriteTableException {
+    public HaltException addToAliasSources(Request request, Response response) throws UsersRepositoryException {
         MailAddress aliasSourceAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_SOURCE_ADDRESS), ADDRESS_TYPE);
         ensureUserDoesNotExist(aliasSourceAddress);
         MailAddress destinationAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_DESTINATION_ADDRESS), ADDRESS_TYPE);
@@ -117,11 +117,17 @@ public class AliasRoutes implements Routes {
         return halt(HttpStatus.NO_CONTENT_204);
     }
 
-    private void addAlias(MappingSource source, MailAddress aliasSourceAddress) throws RecipientRewriteTableException {
+    private void addAlias(MappingSource source, MailAddress aliasSourceAddress) {
         try {
             recipientRewriteTable.addAliasMapping(source, aliasSourceAddress.asString());
         } catch (MappingAlreadyExistsException e) {
             // ignore
+        } catch (RecipientRewriteTableException e) {
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.BAD_REQUEST_400)
+                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+                .message(e.getMessage())
+                .haltError();
         }
     }
 
