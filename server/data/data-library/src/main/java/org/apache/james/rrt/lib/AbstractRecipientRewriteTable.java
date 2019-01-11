@@ -306,7 +306,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         checkHasValidAddress(mapping);
         checkDuplicateMapping(source, mapping);
 
-        LOGGER.info("Add alias mapping => {} for source: {}", mapping.toString(), source.asString());
+        LOGGER.info("Add alias source => {} for destination mapping: {}", source.asString(), mapping.toString());
         addMapping(source, mapping);
     }
 
@@ -315,7 +315,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
         Mapping mapping = Mapping.alias(address)
             .appendDomainFromThrowingSupplierIfNone(this::defaultDomain);
 
-        LOGGER.info("Remove alias mapping => {} for source: {}", mapping.toString(), source.asString());
+        LOGGER.info("Remove alias source => {} for destination mapping: {}", source.asString(), mapping.toString());
         removeMapping(source, mapping);
     }
 

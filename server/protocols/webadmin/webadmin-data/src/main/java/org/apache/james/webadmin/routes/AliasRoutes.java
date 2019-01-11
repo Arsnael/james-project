@@ -112,8 +112,8 @@ public class AliasRoutes implements Routes {
         MailAddress aliasSourceAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_SOURCE_ADDRESS), ADDRESS_TYPE);
         ensureUserDoesNotExist(aliasSourceAddress);
         MailAddress destinationAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_DESTINATION_ADDRESS), ADDRESS_TYPE);
-        MappingSource source = MappingSource.fromUser(User.fromMailAddress(destinationAddress));
-        addAlias(source, aliasSourceAddress);
+        MappingSource source = MappingSource.fromUser(User.fromMailAddress(aliasSourceAddress));
+        addAlias(source, destinationAddress);
         return halt(HttpStatus.NO_CONTENT_204);
     }
 
