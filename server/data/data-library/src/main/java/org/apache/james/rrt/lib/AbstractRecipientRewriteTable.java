@@ -344,7 +344,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     }
 
     private void checkNotSameSourceAndDestination(MappingSource source, String address) throws RecipientRewriteTableException {
-        if (address.equals(source.asMailAddress().orElse(MailAddress.nullSender()).asString())) {
+        if (source.asMailAddress().map(mailAddress -> mailAddress.asString().equals(address)).orElse(false)) {
             throw new SameSourceAndDestinationException("Source and destination can't be the same!");
         }
     }
