@@ -183,7 +183,7 @@ class AliasRoutesTest {
         void putSameSourceAndDestinationShouldReturnBadRequest() {
             Map<String, Object> errors = when()
                 .put(BOB_ALIAS + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS)
-                .then()
+            .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
                 .extract()

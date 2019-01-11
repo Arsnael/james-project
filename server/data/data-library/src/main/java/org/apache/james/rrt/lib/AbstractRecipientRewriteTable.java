@@ -30,6 +30,7 @@ import javax.mail.internet.AddressException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.core.Domain;
+import org.apache.james.core.MailAddress;
 import org.apache.james.core.User;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
@@ -37,6 +38,7 @@ import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.rrt.api.MappingAlreadyExistsException;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
+import org.apache.james.rrt.api.SameSourceAndDestinationException;
 import org.apache.james.rrt.lib.Mapping.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -342,8 +344,8 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     }
 
     private void checkNotSameSourceAndDestination(MappingSource source, String address) throws RecipientRewriteTableException {
-        if (address.equals(source.asMailAddress().get().asString())) {
-            throw new RecipientRewriteTableException("Source and destination can't be the same!");
+        if (address.equals(source.asMailAddress().orElse(MailAddress.nullSender()).asString())) {
+            throw new SameSourceAndDestinationException("Source and destination can't be the same!");
         }
     }
 

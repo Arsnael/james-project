@@ -32,6 +32,7 @@ import org.apache.james.core.User;
 import org.apache.james.rrt.api.MappingAlreadyExistsException;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
+import org.apache.james.rrt.api.SameSourceAndDestinationException;
 import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -108,7 +109,7 @@ public class AliasRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })
-    public HaltException addToAliasSources(Request request, Response response) throws UsersRepositoryException {
+    public HaltException addToAliasSources(Request request, Response response) throws UsersRepositoryException, RecipientRewriteTableException {
         MailAddress aliasSourceAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_SOURCE_ADDRESS), ADDRESS_TYPE);
         ensureUserDoesNotExist(aliasSourceAddress);
         MailAddress destinationAddress = MailAddressParser.parseMailAddress(request.params(ALIAS_DESTINATION_ADDRESS), ADDRESS_TYPE);
@@ -117,12 +118,12 @@ public class AliasRoutes implements Routes {
         return halt(HttpStatus.NO_CONTENT_204);
     }
 
-    private void addAlias(MappingSource source, MailAddress aliasSourceAddress) {
+    private void addAlias(MappingSource source, MailAddress aliasSourceAddress) throws RecipientRewriteTableException {
         try {
             recipientRewriteTable.addAliasMapping(source, aliasSourceAddress.asString());
         } catch (MappingAlreadyExistsException e) {
             // ignore
-        } catch (RecipientRewriteTableException e) {
+        } catch (SameSourceAndDestinationException e) {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
