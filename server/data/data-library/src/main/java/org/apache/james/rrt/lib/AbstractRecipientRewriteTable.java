@@ -30,7 +30,6 @@ import javax.mail.internet.AddressException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.core.Domain;
-import org.apache.james.core.MailAddress;
 import org.apache.james.core.User;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
