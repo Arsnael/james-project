@@ -23,12 +23,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.james.core.Domain;
+import org.apache.james.core.MailAddress;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.lib.Mappings;
+import org.apache.james.util.OptionalUtils;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Interface which should be implemented of classes which map recipients.
@@ -119,5 +122,14 @@ public interface RecipientRewriteTable {
             .filter(entry -> entry.getValue().contains(mapping))
             .map(Map.Entry::getKey)
             .collect(Guavate.toImmutableList());
+    }
+
+    default ImmutableSet<String> getSourcesOfType(Mapping.Type type) throws RecipientRewriteTableException {
+        return getAllMappings().entrySet().stream()
+            .filter(e -> e.getValue().contains(type))
+            .map(Map.Entry::getKey)
+            .flatMap(source -> OptionalUtils.toStream(source.asMailAddress()))
+            .map(MailAddress::asString)
+            .collect(Guavate.toImmutableSortedSet());
     }
 }

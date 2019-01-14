@@ -122,7 +122,7 @@ public class GroupsRoutes implements Routes {
             message = "Internal server error - Something went bad on the server side.")
     })
     public Set<String> listGroups(Request request, Response response) throws RecipientRewriteTableException {
-        return TypeListFetcher.getTypeList(recipientRewriteTable, Mapping.Type.Group);
+        return recipientRewriteTable.getSourcesOfType(Mapping.Type.Group);
     }
 
     @PUT

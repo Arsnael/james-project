@@ -125,7 +125,7 @@ public class ForwardRoutes implements Routes {
             message = "Internal server error - Something went bad on the server side.")
     })
     public Set<String> listForwards(Request request, Response response) throws RecipientRewriteTableException {
-        return TypeListFetcher.getTypeList(recipientRewriteTable, Mapping.Type.Forward);
+        return recipientRewriteTable.getSourcesOfType(Mapping.Type.Forward);
     }
 
     @PUT

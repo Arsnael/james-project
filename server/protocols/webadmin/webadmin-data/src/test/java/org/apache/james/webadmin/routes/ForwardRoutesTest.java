@@ -617,7 +617,7 @@ class ForwardRoutesTest {
         void getAllShouldReturnErrorWhenRecipientRewriteTableExceptionIsThrown() throws Exception {
             doThrow(RecipientRewriteTableException.class)
                 .when(memoryRecipientRewriteTable)
-                .getAllMappings();
+                .getSourcesOfType(any());
 
             when()
                 .get()
@@ -629,7 +629,7 @@ class ForwardRoutesTest {
         void getAllShouldReturnErrorWhenRuntimeExceptionIsThrown() throws Exception {
             doThrow(RuntimeException.class)
                 .when(memoryRecipientRewriteTable)
-                .getAllMappings();
+                .getSourcesOfType(any());
 
             when()
                 .get()
