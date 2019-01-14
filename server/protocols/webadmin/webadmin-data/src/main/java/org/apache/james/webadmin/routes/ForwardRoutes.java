@@ -125,11 +125,8 @@ public class ForwardRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })
-    public Set<String> listForwards(Request request, Response response) throws RecipientRewriteTableException {
-        return recipientRewriteTable.getSourcesForType(Mapping.Type.Forward).stream()
-            .flatMap(source -> OptionalUtils.toStream(source.asMailAddress()))
-            .map(MailAddress::asString)
-            .collect(Guavate.toImmutableSortedSet());
+    public List<MappingSource> listForwards(Request request, Response response) throws RecipientRewriteTableException {
+        return recipientRewriteTable.getSourcesForType(Mapping.Type.Forward);
     }
 
     @PUT

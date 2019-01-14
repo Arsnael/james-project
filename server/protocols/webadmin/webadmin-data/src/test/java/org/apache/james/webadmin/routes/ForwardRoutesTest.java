@@ -52,6 +52,7 @@ import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.memory.MemoryUsersRepository;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
+import org.apache.james.webadmin.dto.MappingSourceModule;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
@@ -113,6 +114,7 @@ class ForwardRoutesTest {
                 .autoDetect(false)
                 .autoDetectIp(false));
             domainList.addDomain(DOMAIN);
+            MappingSourceModule mappingSourceModule = new MappingSourceModule();
 
             usersRepository = MemoryUsersRepository.withVirtualHosting();
             usersRepository.setDomainList(domainList);
@@ -123,7 +125,7 @@ class ForwardRoutesTest {
             usersRepository.addUser(ALICE_WITH_SLASH, ALICE_SLASH_PASSWORD);
             usersRepository.addUser(CEDRIC, CEDRIC_PASSWORD);
 
-            createServer(new ForwardRoutes(memoryRecipientRewriteTable, usersRepository, new JsonTransformer()));
+            createServer(new ForwardRoutes(memoryRecipientRewriteTable, usersRepository, new JsonTransformer(mappingSourceModule)));
         }
 
         @Test

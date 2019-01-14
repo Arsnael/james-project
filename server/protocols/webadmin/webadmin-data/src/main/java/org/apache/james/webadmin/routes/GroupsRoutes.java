@@ -23,7 +23,6 @@ import static org.apache.james.webadmin.Constants.SEPARATOR;
 import static spark.Spark.halt;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
@@ -121,11 +120,8 @@ public class GroupsRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })
-    public Set<String> listGroups(Request request, Response response) throws RecipientRewriteTableException {
-        return recipientRewriteTable.getSourcesForType(Mapping.Type.Group).stream()
-            .flatMap(source -> OptionalUtils.toStream(source.asMailAddress()))
-            .map(MailAddress::asString)
-            .collect(Guavate.toImmutableSortedSet());
+    public List<MappingSource> listGroups(Request request, Response response) throws RecipientRewriteTableException {
+        return recipientRewriteTable.getSourcesForType(Mapping.Type.Group);
     }
 
     @PUT

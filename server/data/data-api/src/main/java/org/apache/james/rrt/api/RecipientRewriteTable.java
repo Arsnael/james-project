@@ -127,6 +127,7 @@ public interface RecipientRewriteTable {
             .entrySet().stream()
             .filter(e -> e.getValue().contains(type))
             .map(Map.Entry::getKey)
+            .sorted()
             .collect(Guavate.toImmutableList());
     }
 }
