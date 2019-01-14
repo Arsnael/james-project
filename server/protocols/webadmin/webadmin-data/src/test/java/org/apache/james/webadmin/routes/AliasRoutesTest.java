@@ -31,7 +31,6 @@ import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
-import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.apache.james.user.api.UsersRepository;
@@ -254,11 +253,11 @@ class AliasRoutesTest {
                 .put(BOB + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS);
 
             when()
-                .get(BOB_ALIAS)
+                .get(BOB)
             .then()
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(BOB));
+                .body("source", hasItems(BOB_ALIAS));
         }
 
         @Test
@@ -267,11 +266,11 @@ class AliasRoutesTest {
                 .put(BOB + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS_WITH_ENCODED_SLASH);
 
             when()
-                .get(BOB_ALIAS_WITH_ENCODED_SLASH)
+                .get(BOB)
             .then()
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(BOB));
+                .body("source", hasItems(BOB_ALIAS_WITH_SLASH));
         }
 
         @Test
@@ -280,11 +279,11 @@ class AliasRoutesTest {
                 .put(BOB_WITH_ENCODED_SLASH + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS);
 
             when()
-                .get(BOB_ALIAS)
+                .get(BOB_WITH_ENCODED_SLASH)
             .then()
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(BOB_WITH_SLASH));
+                .body("source", hasItems(BOB_ALIAS));
         }
 
         @Test
@@ -296,11 +295,11 @@ class AliasRoutesTest {
                 .put(BOB + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS);
 
             when()
-                .get(BOB_ALIAS)
+                .get(BOB)
             .then()
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(BOB));
+                .body("source", hasItems(BOB_ALIAS));
         }
 
         @Test
@@ -312,24 +311,15 @@ class AliasRoutesTest {
                 .put(BOB + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS_2);
 
             when()
-                .get(BOB_ALIAS)
+                .get(BOB)
             .then()
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(BOB));
-
-            when()
-                .get(BOB_ALIAS_2)
-            .then()
-                .contentType(ContentType.JSON)
-                .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(BOB));
+                .body("source", hasItems(BOB_ALIAS, BOB_ALIAS_2));
         }
 
         @Test
         void putAliasForUserShouldAllowSeveralDestinations() {
-            Mapping aliceMapping = Mapping.alias(ALICE);
-
             with()
                 .put(BOB + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS);
 
@@ -337,11 +327,18 @@ class AliasRoutesTest {
                 .put(ALICE + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS);
 
             when()
-                .get(BOB_ALIAS)
+                .get(BOB)
             .then()
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(BOB, ALICE));
+                .body("source", hasItems(BOB_ALIAS));
+
+            when()
+                .get(ALICE)
+            .then()
+                .contentType(ContentType.JSON)
+                .statusCode(HttpStatus.OK_200)
+                .body("source", hasItems(BOB_ALIAS));
         }
 
         @Test
@@ -352,11 +349,11 @@ class AliasRoutesTest {
                 .put(notExistingAddress + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS);
 
             when()
-                .get(BOB_ALIAS)
+                .get(notExistingAddress)
             .then()
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.OK_200)
-                .body("source", hasItems(notExistingAddress));
+                .body("source", hasItems(BOB_ALIAS));
         }
 
         @Test
@@ -493,7 +490,7 @@ class AliasRoutesTest {
         void deleteMalformedUserDestinationShouldReturnBadRequest() {
             Map<String, Object> errors = when()
                 .delete("not-an-address" + SEPARATOR + "sources" + SEPARATOR + BOB_ALIAS)
-                .then()
+            .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
                 .extract()
@@ -512,7 +509,7 @@ class AliasRoutesTest {
         void deleteMalformedAliasShouldReturnBadRequest() {
             Map<String, Object> errors = when()
                 .delete(BOB + SEPARATOR + "sources" + SEPARATOR + "not-an-address")
-                .then()
+            .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
                 .extract()
@@ -531,7 +528,7 @@ class AliasRoutesTest {
         void deleteRequiresTwoPathParams() {
             when()
                 .delete(BOB)
-                .then()
+            .then()
                 .statusCode(HttpStatus.NOT_FOUND_404);
         }
 
@@ -611,7 +608,7 @@ class AliasRoutesTest {
         void getShouldReturnErrorWhenRecipientRewriteTableExceptionIsThrown() throws Exception {
             doThrow(RecipientRewriteTableException.class)
                 .when(memoryRecipientRewriteTable)
-                .getStoredMappings(any());
+                .getAllMappings();
 
             when()
                 .get(BOB)
@@ -623,7 +620,7 @@ class AliasRoutesTest {
         void getShouldReturnErrorWhenRuntimeExceptionIsThrown() throws Exception {
             doThrow(RuntimeException.class)
                 .when(memoryRecipientRewriteTable)
-                .getStoredMappings(any());
+                .getAllMappings();
 
             when()
                 .get(BOB)
