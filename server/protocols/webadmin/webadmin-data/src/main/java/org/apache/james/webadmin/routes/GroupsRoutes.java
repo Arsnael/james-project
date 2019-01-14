@@ -122,7 +122,10 @@ public class GroupsRoutes implements Routes {
             message = "Internal server error - Something went bad on the server side.")
     })
     public Set<String> listGroups(Request request, Response response) throws RecipientRewriteTableException {
-        return recipientRewriteTable.getSourcesOfType(Mapping.Type.Group);
+        return recipientRewriteTable.getSourcesForType(Mapping.Type.Group).stream()
+            .flatMap(source -> OptionalUtils.toStream(source.asMailAddress()))
+            .map(MailAddress::asString)
+            .collect(Guavate.toImmutableSortedSet());
     }
 
     @PUT

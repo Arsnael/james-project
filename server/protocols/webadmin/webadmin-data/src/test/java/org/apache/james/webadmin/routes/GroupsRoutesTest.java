@@ -622,7 +622,7 @@ class GroupsRoutesTest {
         void getAllShouldReturnErrorWhenRecipientRewriteTableExceptionIsThrown() throws Exception {
             doThrow(RecipientRewriteTableException.class)
                 .when(memoryRecipientRewriteTable)
-                .getSourcesOfType(any());
+                .getSourcesForType(any());
 
             when()
                 .get()
@@ -634,7 +634,7 @@ class GroupsRoutesTest {
         void getAllShouldReturnErrorWhenRuntimeExceptionIsThrown() throws Exception {
             doThrow(RuntimeException.class)
                 .when(memoryRecipientRewriteTable)
-                .getSourcesOfType(any());
+                .getSourcesForType(any());
 
             when()
                 .get()
