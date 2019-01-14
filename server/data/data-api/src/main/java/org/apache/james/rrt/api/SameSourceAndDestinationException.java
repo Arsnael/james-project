@@ -24,8 +24,4 @@ public class SameSourceAndDestinationException extends RecipientRewriteTableExce
     public SameSourceAndDestinationException(String msg) {
         super(msg);
     }
-
-    public SameSourceAndDestinationException(String msg, Throwable t) {
-        super(msg, t);
-    }
 }
