@@ -142,6 +142,7 @@ public class AliasRoutes implements Routes {
         @ApiResponse(code = HttpStatus.NO_CONTENT_204, message = "OK"),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = ALIAS_DESTINATION_ADDRESS + " or alias structure format is not valid"),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "The alias source exists as an user already"),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Source and destination can't be the same!"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })

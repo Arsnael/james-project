@@ -1368,6 +1368,7 @@ Response codes:
  - 204: OK
  - 400: Alias structure or member is not valid
  - 400: The alias source exists as an user already
+ - 400: Source and destination can't be the same!
 
 ### Removing an alias of an user
 
@@ -1380,7 +1381,7 @@ Will remove alias@domain.com from user@domain.com, removing the alias if needed
 Response codes:
 
  - 204: OK
- - 400: Forward structure or member is not valid
+ - 400: Alias structure or member is not valid
 
 ## Administrating mail repositories
 
