@@ -40,7 +40,10 @@ import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
+import org.apache.james.webadmin.routes.AliasRoutes;
 import org.apache.james.webadmin.routes.DomainsRoutes;
+import org.apache.james.webadmin.routes.ForwardRoutes;
+import org.apache.james.webadmin.routes.GroupsRoutes;
 import org.apache.james.webadmin.routes.HealthCheckRoutes;
 import org.apache.james.webadmin.routes.MailQueueRoutes;
 import org.apache.james.webadmin.routes.MailRepositoriesRoutes;
@@ -60,6 +63,8 @@ public class WebAdminServerIntegrationTest {
 
     private static final String DOMAIN = "domain";
     private static final String USERNAME = "username@" + DOMAIN;
+    private static final String USERNAME_2 = "username2@" + DOMAIN;
+    private static final String GROUP = "group@" + DOMAIN;
     private static final String SPECIFIC_DOMAIN = DomainsRoutes.DOMAINS + SEPARATOR + DOMAIN;
     private static final String SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
     private static final String MAILBOX = "mailbox";
@@ -275,6 +280,66 @@ public class WebAdminServerIntegrationTest {
             .statusCode(HttpStatus.OK_200)
             .contentType(JSON_CONTENT_TYPE)
             .body(is("{\"version\":" + CassandraSchemaVersionManager.MAX_VERSION.getValue() + "}"));
+    }
+
+    @Test
+    public void addressGroupsEndpointShouldHandleRequests() throws Exception {
+        dataProbe.addDomain(DOMAIN);
+
+        with()
+            .put(GroupsRoutes.ROOT_PATH + SEPARATOR + GROUP + SEPARATOR + USERNAME);
+        with()
+            .put(GroupsRoutes.ROOT_PATH + SEPARATOR + GROUP + SEPARATOR + USERNAME_2);
+
+        List<String> members = when()
+            .get(GroupsRoutes.ROOT_PATH + SEPARATOR + GROUP)
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .contentType(JSON_CONTENT_TYPE)
+            .extract()
+            .jsonPath()
+            .getList(".");
+        assertThat(members).containsOnly(USERNAME, USERNAME_2);
+    }
+
+    @Test
+    public void addressForwardsEndpointShouldListForwardAddresses() throws Exception {
+        dataProbe.addDomain(DOMAIN);
+        dataProbe.addUser(USERNAME, "anyPassword");
+        dataProbe.addUser(USERNAME_2, "anyPassword");
+
+        with()
+            .put(ForwardRoutes.ROOT_PATH + SEPARATOR + USERNAME + "/targets/to1@domain.com");
+        with()
+            .put(ForwardRoutes.ROOT_PATH + SEPARATOR + USERNAME_2 + "/targets/to2@domain.com");
+
+        List<String> members = when()
+            .get(ForwardRoutes.ROOT_PATH)
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .contentType(JSON_CONTENT_TYPE)
+            .extract()
+            .jsonPath()
+            .getList(".");
+        assertThat(members).containsOnly(USERNAME, USERNAME_2);
+    }
+
+    @Test
+    public void addressAliasesEndpointShouldListAliasesAddresses() {
+        with()
+            .put(AliasRoutes.ROOT_PATH + SEPARATOR + USERNAME + "/sources/alias1@domain.com");
+        with()
+            .put(AliasRoutes.ROOT_PATH + SEPARATOR + USERNAME_2 + "/sources/alias2@domain.com");
+
+        List<String> members = when()
+            .get(AliasRoutes.ROOT_PATH)
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .contentType(JSON_CONTENT_TYPE)
+            .extract()
+            .jsonPath()
+            .getList(".");
+        assertThat(members).containsOnly(USERNAME, USERNAME_2);
     }
 
     @Test

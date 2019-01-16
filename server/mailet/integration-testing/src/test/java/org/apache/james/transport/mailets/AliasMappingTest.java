@@ -29,16 +29,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.james.jmap.mailet.VacationMailet;
+import org.apache.james.jmap.mailet.filter.JMAPFiltering;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailets.TemporaryJamesServer;
+import org.apache.james.mailets.configuration.CommonProcessors;
+import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
+import org.apache.james.mailets.configuration.ProcessorConfiguration;
+import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.probe.DataProbe;
+import org.apache.james.transport.matchers.All;
+import org.apache.james.transport.matchers.IsSenderInRRTLoop;
+import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
+import org.apache.james.utils.MailRepositoryProbeImpl;
 import org.apache.james.utils.SMTPMessageSender;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
@@ -73,6 +83,8 @@ public class AliasMappingTest {
     private static final String GROUP_ALIAS = GROUP + "-alias@" + DOMAIN;
 
     private static final String MESSAGE_CONTENT = "any text";
+    private static final String RRT_ERROR = "rrt-error";
+    private static final MailRepositoryUrl RRT_ERROR_REPOSITORY = MailRepositoryUrl.from("file://var/mail/rrt-error/");
 
     private TemporaryJamesServer jamesServer;
     private MimeMessage message;
@@ -88,7 +100,29 @@ public class AliasMappingTest {
 
     @Before
     public void setup() throws Exception {
-        MailetContainer.Builder mailetContainer = TemporaryJamesServer.SIMPLE_MAILET_CONTAINER_CONFIGURATION;
+        MailetContainer.Builder mailetContainer = TemporaryJamesServer.SIMPLE_MAILET_CONTAINER_CONFIGURATION
+            .putProcessor(ProcessorConfiguration.transport()
+                .addMailet(MailetConfiguration.builder()
+                    .matcher(All.class)
+                    .mailet(RecipientRewriteTable.class)
+                    .addProperty("errorProcessor", RRT_ERROR))
+                .addMailet(MailetConfiguration.builder()
+                    .matcher(RecipientIsLocal.class)
+                    .mailet(VacationMailet.class))
+                .addMailet(MailetConfiguration.builder()
+                    .matcher(RecipientIsLocal.class)
+                    .mailet(JMAPFiltering.class))
+                .addMailetsFrom(CommonProcessors.deliverOnlyTransport()))
+            .putProcessor(ProcessorConfiguration.builder()
+                .state(RRT_ERROR)
+                .addMailet(MailetConfiguration.builder()
+                    .matcher(All.class)
+                    .mailet(ToRepository.class)
+                    .addProperty("passThrough", "true")
+                    .addProperty("repositoryPath", RRT_ERROR_REPOSITORY.asString()))
+                .addMailet(MailetConfiguration.builder()
+                    .matcher(IsSenderInRRTLoop.class)
+                    .mailet(Null.class)));
 
         jamesServer = TemporaryJamesServer.builder()
             .withMailetContainer(mailetContainer)
@@ -211,7 +245,7 @@ public class AliasMappingTest {
     }
 
     @Test
-    public void messageShouldRedirectToUserWhithAliasesCascading() throws Exception {
+    public void messageShouldRedirectToUserWithAliasesCascading() throws Exception {
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ALIAS + "/sources/" + BOB_ALIAS_2);
 
@@ -306,6 +340,27 @@ public class AliasMappingTest {
             .login(BOB_ADDRESS, PASSWORD)
             .select(IMAPMessageReader.INBOX)
             .awaitMessage(awaitAtMostOneMinute);
+    }
+
+    @Test
+    public void messageShouldBeStoredInRepositoryWhenAliasLoopMapping() throws Exception {
+        String bobAlias3 = BOB_USER + "-alias3@" + DOMAIN;
+
+        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ALIAS_2 + "/sources/" + BOB_ALIAS);
+
+        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + bobAlias3 + "/sources/" + BOB_ALIAS_2);
+
+        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ALIAS + "/sources/" + bobAlias3);
+
+        messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+            .sendMessage(FakeMail.builder()
+                .mimeMessage(message)
+                .sender(ALICE_ADDRESS)
+                .recipient(BOB_ALIAS));
+
+        awaitAtMostOneMinute.until(
+            () -> jamesServer.getProbe(MailRepositoryProbeImpl.class)
+                .getRepositoryMailCount(RRT_ERROR_REPOSITORY) == 1);
     }
 
 }
