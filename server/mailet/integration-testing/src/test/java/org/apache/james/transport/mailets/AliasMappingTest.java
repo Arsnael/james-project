@@ -29,28 +29,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.builder.MimeMessageBuilder;
-import org.apache.james.jmap.mailet.VacationMailet;
-import org.apache.james.jmap.mailet.filter.JMAPFiltering;
 import org.apache.james.mailbox.model.MailboxConstants;
+import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailets.TemporaryJamesServer;
-import org.apache.james.mailets.configuration.CommonProcessors;
-import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
-import org.apache.james.mailets.configuration.ProcessorConfiguration;
-import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.probe.DataProbe;
-import org.apache.james.transport.matchers.All;
-import org.apache.james.transport.matchers.IsSenderInRRTLoop;
-import org.apache.james.transport.matchers.RecipientIsLocal;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
 import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.routes.AliasRoutes;
+import org.apache.james.webadmin.routes.ForwardRoutes;
+import org.apache.james.webadmin.routes.GroupsRoutes;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.After;
 import org.junit.Before;
@@ -79,8 +73,6 @@ public class AliasMappingTest {
     private static final String GROUP_ALIAS = GROUP + "-alias@" + DOMAIN;
 
     private static final String MESSAGE_CONTENT = "any text";
-    private static final String RRT_ERROR = "rrt-error";
-    private static final MailRepositoryUrl RRT_ERROR_REPOSITORY = MailRepositoryUrl.from("file://var/mail/rrt-error/");
 
     private TemporaryJamesServer jamesServer;
     private MimeMessage message;
@@ -96,32 +88,7 @@ public class AliasMappingTest {
 
     @Before
     public void setup() throws Exception {
-        MailetContainer.Builder mailetContainer = TemporaryJamesServer.SIMPLE_MAILET_CONTAINER_CONFIGURATION
-            .putProcessor(ProcessorConfiguration.transport()
-                .addMailet(MailetConfiguration.builder()
-                    .matcher(All.class)
-                    .mailet(RecipientRewriteTable.class)
-                    .addProperty("errorProcessor", RRT_ERROR))
-                .addMailet(MailetConfiguration.builder()
-                    .matcher(RecipientIsLocal.class)
-                    .mailet(VacationMailet.class))
-                .addMailet(MailetConfiguration.builder()
-                    .matcher(RecipientIsLocal.class)
-                    .mailet(JMAPFiltering.class))
-                .addMailetsFrom(CommonProcessors.deliverOnlyTransport()))
-            .putProcessor(ProcessorConfiguration.builder()
-                .state(RRT_ERROR)
-                .addMailet(MailetConfiguration.builder()
-                    .matcher(All.class)
-                    .mailet(ToRepository.class)
-                    .addProperty("passThrough", "true")
-                    .addProperty("repositoryPath", RRT_ERROR_REPOSITORY.asString()))
-                .addMailet(MailetConfiguration.builder()
-                    .matcher(IsSenderInRRTLoop.class)
-                    .mailet(Null.class))
-                .addMailet(MailetConfiguration.builder()
-                    .matcher(All.class)
-                    .mailet(Bounce.class)));
+        MailetContainer.Builder mailetContainer = TemporaryJamesServer.SIMPLE_MAILET_CONTAINER_CONFIGURATION;
 
         jamesServer = TemporaryJamesServer.builder()
             .withMailetContainer(mailetContainer)
@@ -134,9 +101,9 @@ public class AliasMappingTest {
         dataProbe.addUser(ALICE_ADDRESS, PASSWORD);
         dataProbe.addUser(CEDRIC_ADDRESS, PASSWORD);
 
-        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, BOB_ADDRESS, "INBOX");
-        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, ALICE_ADDRESS, "INBOX");
-        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxConstants.USER_NAMESPACE, CEDRIC_ADDRESS, "INBOX");
+        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.forUser(BOB_ADDRESS, MailboxConstants.INBOX));
+        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.forUser(ALICE_ADDRESS, MailboxConstants.INBOX));
+        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.forUser(CEDRIC_ADDRESS, MailboxConstants.INBOX));
 
         WebAdminGuiceProbe webAdminGuiceProbe = jamesServer.getProbe(WebAdminGuiceProbe.class);
         webAdminGuiceProbe.await();
@@ -174,7 +141,7 @@ public class AliasMappingTest {
     @Test
     public void messageShouldRedirectToForwardOfUserWhenSentToHisAlias() throws Exception {
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
-        dataProbe.addForwardMapping(BOB_USER, DOMAIN, CEDRIC_ADDRESS);
+        webAdminApi.put(ForwardRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/targets/" + CEDRIC_ADDRESS);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(FakeMail.builder()
@@ -192,7 +159,7 @@ public class AliasMappingTest {
     @Test
     public void messageShouldRedirectToUserWhenForwardedToHisAlias() throws Exception {
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
-        dataProbe.addForwardMapping(ALICE_USER, DOMAIN, BOB_ALIAS);
+        webAdminApi.put(ForwardRoutes.ROOT_PATH + "/" + ALICE_ADDRESS + "/targets/" + BOB_ALIAS);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(FakeMail.builder()
@@ -210,7 +177,7 @@ public class AliasMappingTest {
     @Test
     public void messageShouldRedirectToUserWhenHisAliasIsPartOfGroup() throws Exception {
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
-        dataProbe.addGroupMapping(GROUP, DOMAIN, BOB_ALIAS);
+        webAdminApi.put(GroupsRoutes.ROOT_PATH + "/" + GROUP_ADDRESS + "/" + BOB_ALIAS);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(FakeMail.builder()
@@ -228,7 +195,7 @@ public class AliasMappingTest {
     @Test
     public void messageShouldRedirectToMembersWhenSentToGroupAlias() throws Exception {
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + GROUP_ADDRESS + "/sources/" + GROUP_ALIAS);
-        dataProbe.addGroupMapping(GROUP, DOMAIN, BOB_ADDRESS);
+        webAdminApi.put(GroupsRoutes.ROOT_PATH + "/" + GROUP_ADDRESS + "/" + BOB_ADDRESS);
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(FakeMail.builder()
