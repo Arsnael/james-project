@@ -63,7 +63,7 @@ class CassandraRecipientRewriteTableDAOTest {
 
     @Test
     void retrieveMappingsShouldReturnStoredMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
 
         assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).join())
             .contains(MappingsImpl.fromMappings(MAPPING));
@@ -71,7 +71,7 @@ class CassandraRecipientRewriteTableDAOTest {
 
     @Test
     void getAllMappingsShouldReturnStoredMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
 
         assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().join())
             .contains(Pair.of(SOURCE, MappingsImpl.fromMappings(MAPPING)));
@@ -79,9 +79,9 @@ class CassandraRecipientRewriteTableDAOTest {
 
     @Test
     void retrieveMappingsShouldNotReturnRemovedMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
 
-        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING).join();
 
         assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).join())
             .isEmpty();
@@ -89,9 +89,9 @@ class CassandraRecipientRewriteTableDAOTest {
 
     @Test
     void getAllMappingsShouldNotReturnRemovedMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
 
-        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING).join();
 
         assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().join())
             .isEmpty();
