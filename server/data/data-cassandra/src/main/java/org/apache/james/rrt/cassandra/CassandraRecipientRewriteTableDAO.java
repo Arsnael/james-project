@@ -31,7 +31,6 @@ import static org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTab
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
@@ -45,6 +44,8 @@ import org.apache.james.rrt.lib.MappingsImpl;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.github.steveash.guavate.Guavate;
+
+import reactor.core.publisher.Mono;
 
 class CassandraRecipientRewriteTableDAO {
     private final CassandraAsyncExecutor executor;
@@ -91,33 +92,33 @@ class CassandraRecipientRewriteTableDAO {
             .value(MAPPING, bindMarker(MAPPING)));
     }
 
-    CompletableFuture<Void> addMapping(MappingSource source, Mapping mapping) {
-        return executor.executeVoid(insertStatement.bind()
+    Mono<Void> addMapping(MappingSource source, Mapping mapping) {
+        return executor.executeVoidReactor(insertStatement.bind()
             .setString(USER, source.getFixedUser())
             .setString(DOMAIN, source.getFixedDomain())
             .setString(MAPPING, mapping.asString()));
     }
 
-    CompletableFuture<Void> removeMapping(MappingSource source, Mapping mapping) {
-        return executor.executeVoid(deleteStatement.bind()
+    Mono<Void> removeMapping(MappingSource source, Mapping mapping) {
+        return executor.executeVoidReactor(deleteStatement.bind()
             .setString(USER, source.getFixedUser())
             .setString(DOMAIN, source.getFixedDomain())
             .setString(MAPPING, mapping.asString()));
     }
 
-    CompletableFuture<Optional<Mappings>> retrieveMappings(MappingSource source) {
-        return executor.execute(retrieveMappingStatement.bind()
+    Mono<Optional<Mappings>> retrieveMappings(MappingSource source) {
+        return executor.executeReactor(retrieveMappingStatement.bind()
             .setString(USER, source.getFixedUser())
             .setString(DOMAIN, source.getFixedDomain()))
-            .thenApply(resultSet -> cassandraUtils.convertToStream(resultSet)
+            .map(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(row -> row.getString(MAPPING))
                 .collect(Guavate.toImmutableList()))
-            .thenApply(mappings -> MappingsImpl.fromCollection(mappings).toOptional());
+            .map(mappings -> MappingsImpl.fromCollection(mappings).toOptional());
     }
 
-    CompletableFuture<Map<MappingSource, Mappings>> getAllMappings() {
-        return executor.execute(retrieveAllMappingsStatement.bind())
-            .thenApply(resultSet -> cassandraUtils.convertToStream(resultSet)
+    Mono<Map<MappingSource, Mappings>> getAllMappings() {
+        return executor.executeReactor(retrieveAllMappingsStatement.bind())
+            .map(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(row -> new UserMapping(MappingSource.fromUser(row.getString(USER), row.getString(DOMAIN)), row.getString(MAPPING)))
                 .collect(Guavate.toImmutableMap(
                     UserMapping::getSource,

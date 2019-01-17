@@ -40,31 +40,31 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
 
     @Override
     public void addMapping(MappingSource source, Mapping mapping) {
-        dao.addMapping(source, mapping).join();
+        dao.addMapping(source, mapping).block();
     }
 
     @Override
     public void removeMapping(MappingSource source, Mapping mapping) {
-        dao.removeMapping(source, mapping).join();
+        dao.removeMapping(source, mapping).block();
     }
 
     @Override
     public Mappings getStoredMappings(MappingSource source) {
         return dao.retrieveMappings(source)
-            .join()
+            .block()
             .orElse(MappingsImpl.empty());
     }
 
     @Override
     public Map<MappingSource, Mappings> getAllMappings() {
-        return dao.getAllMappings().join();
+        return dao.getAllMappings().block();
     }
 
     @Override
     protected Mappings mapAddress(String user, Domain domain) {
         return OptionalUtils.orSuppliers(
-            () -> dao.retrieveMappings(MappingSource.fromUser(user, domain)).join(),
-            () -> dao.retrieveMappings(MappingSource.fromDomain(domain)).join())
+            () -> dao.retrieveMappings(MappingSource.fromUser(user, domain)).block(),
+            () -> dao.retrieveMappings(MappingSource.fromDomain(domain)).block())
                 .orElse(MappingsImpl.empty());
     }
 }

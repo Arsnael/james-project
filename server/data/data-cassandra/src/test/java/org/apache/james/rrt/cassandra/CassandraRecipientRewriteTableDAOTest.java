@@ -51,49 +51,49 @@ class CassandraRecipientRewriteTableDAOTest {
 
     @Test
     void retrieveMappingsShouldReturnEmptyByDefault() {
-        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).join())
+        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).block())
             .isEmpty();
     }
 
     @Test
     void getAllMappingsShouldReturnEmptyByDefault() {
-        assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().join())
+        assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().block())
             .isEmpty();
     }
 
     @Test
     void retrieveMappingsShouldReturnStoredMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
 
-        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).join())
+        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).block())
             .contains(MappingsImpl.fromMappings(MAPPING));
     }
 
     @Test
     void getAllMappingsShouldReturnStoredMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
 
-        assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().join())
+        assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().block())
             .contains(Pair.of(SOURCE, MappingsImpl.fromMappings(MAPPING)));
     }
 
     @Test
     void retrieveMappingsShouldNotReturnRemovedMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
 
-        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING).join();
+        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING).block();
 
-        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).join())
+        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).block())
             .isEmpty();
     }
 
     @Test
     void getAllMappingsShouldNotReturnRemovedMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).join();
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
 
-        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING).join();
+        cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING).block();
 
-        assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().join())
+        assertThat(cassandraRecipientRewriteTableDAO.getAllMappings().block())
             .isEmpty();
     }
 
