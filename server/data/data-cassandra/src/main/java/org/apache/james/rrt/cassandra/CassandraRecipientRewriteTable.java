@@ -31,40 +31,40 @@ import org.apache.james.rrt.lib.MappingsImpl;
 import org.apache.james.util.OptionalUtils;
 
 public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTable {
-    private final CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO;
+    private final CassandraRecipientRewriteTableDAO dao;
 
     @Inject
-    public CassandraRecipientRewriteTable(CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO) {
-        this.cassandraRecipientRewriteTableDAO = cassandraRecipientRewriteTableDAO;
+    public CassandraRecipientRewriteTable(CassandraRecipientRewriteTableDAO dao) {
+        this.dao = dao;
     }
 
     @Override
     public void addMapping(MappingSource source, Mapping mapping) {
-        cassandraRecipientRewriteTableDAO.addMapping(source, mapping).join();
+        dao.addMapping(source, mapping).join();
     }
 
     @Override
     public void removeMapping(MappingSource source, Mapping mapping) {
-        cassandraRecipientRewriteTableDAO.removeMapping(source, mapping).join();
+        dao.removeMapping(source, mapping).join();
     }
 
     @Override
     public Mappings getStoredMappings(MappingSource source) {
-        return cassandraRecipientRewriteTableDAO.retrieveMappings(source)
+        return dao.retrieveMappings(source)
             .join()
             .orElse(MappingsImpl.empty());
     }
 
     @Override
     public Map<MappingSource, Mappings> getAllMappings() {
-        return cassandraRecipientRewriteTableDAO.getAllMappings().join();
+        return dao.getAllMappings().join();
     }
 
     @Override
     protected Mappings mapAddress(String user, Domain domain) {
         return OptionalUtils.orSuppliers(
-            () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromUser(user, domain)).join(),
-            () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromDomain(domain)).join())
+            () -> dao.retrieveMappings(MappingSource.fromUser(user, domain)).join(),
+            () -> dao.retrieveMappings(MappingSource.fromDomain(domain)).join())
                 .orElse(MappingsImpl.empty());
     }
 }

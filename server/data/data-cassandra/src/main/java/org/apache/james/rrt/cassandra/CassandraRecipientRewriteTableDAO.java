@@ -46,7 +46,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.github.steveash.guavate.Guavate;
 
-public class CassandraRecipientRewriteTableDAO {
+class CassandraRecipientRewriteTableDAO {
     private final CassandraAsyncExecutor executor;
     private final CassandraUtils cassandraUtils;
     private final PreparedStatement insertStatement;
@@ -55,7 +55,7 @@ public class CassandraRecipientRewriteTableDAO {
     private final PreparedStatement retrieveAllMappingsStatement;
 
     @Inject
-    public CassandraRecipientRewriteTableDAO(Session session, CassandraUtils cassandraUtils) {
+    CassandraRecipientRewriteTableDAO(Session session, CassandraUtils cassandraUtils) {
         this.executor = new CassandraAsyncExecutor(session);
         this.cassandraUtils = cassandraUtils;
         this.insertStatement = prepareInsertStatement(session);
@@ -129,20 +129,20 @@ public class CassandraRecipientRewriteTableDAO {
         private final MappingSource source;
         private final String mapping;
 
-        public UserMapping(MappingSource source, String mapping) {
+        UserMapping(MappingSource source, String mapping) {
             this.source = source;
             this.mapping = mapping;
         }
 
-        public MappingSource getSource() {
+        MappingSource getSource() {
             return source;
         }
 
-        public String getMapping() {
+        String getMapping() {
             return mapping;
         }
 
-        public Mappings toMapping() {
+        Mappings toMapping() {
             return MappingsImpl.fromRawString(getMapping());
         }
     }
