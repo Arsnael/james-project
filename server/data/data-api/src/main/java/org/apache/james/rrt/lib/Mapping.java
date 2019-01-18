@@ -241,6 +241,11 @@ public interface Mapping {
         }
 
         @Override
+        public String getMapping() {
+            return mapping;
+        }
+
+        @Override
         public String getErrorMessage() {
             Preconditions.checkState(getType() == Type.Error);
             return mapping;
@@ -284,6 +289,8 @@ public interface Mapping {
     }
 
     Type getType();
+
+    String getMapping();
     
     String asString();
 

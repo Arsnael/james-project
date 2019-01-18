@@ -18,6 +18,7 @@
  ****************************************************************/
 package org.apache.james.rrt.cassandra;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -30,41 +31,55 @@ import org.apache.james.rrt.lib.Mappings;
 import org.apache.james.rrt.lib.MappingsImpl;
 import org.apache.james.util.OptionalUtils;
 
+import com.google.common.base.Preconditions;
+
 public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTable {
-    private final CassandraRecipientRewriteTableDAO dao;
+    private final CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO;
+    private final CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO;
 
     @Inject
-    public CassandraRecipientRewriteTable(CassandraRecipientRewriteTableDAO dao) {
-        this.dao = dao;
+    public CassandraRecipientRewriteTable(CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO, CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO) {
+        this.cassandraRecipientRewriteTableDAO = cassandraRecipientRewriteTableDAO;
+        this.cassandraMappingsSourcesDAO = cassandraMappingsSourcesDAO;
     }
 
     @Override
     public void addMapping(MappingSource source, Mapping mapping) {
-        dao.addMapping(source, mapping).block();
+        cassandraRecipientRewriteTableDAO.addMapping(source, mapping).block();
+        cassandraMappingsSourcesDAO.addMapping(mapping, source).block();
     }
 
     @Override
     public void removeMapping(MappingSource source, Mapping mapping) {
-        dao.removeMapping(source, mapping).block();
+        cassandraRecipientRewriteTableDAO.removeMapping(source, mapping).block();
+        cassandraMappingsSourcesDAO.removeMapping(mapping, source).block();
     }
 
     @Override
     public Mappings getStoredMappings(MappingSource source) {
-        return dao.retrieveMappings(source)
+        return cassandraRecipientRewriteTableDAO.retrieveMappings(source)
             .blockOptional()
             .orElse(MappingsImpl.empty());
     }
 
     @Override
     public Map<MappingSource, Mappings> getAllMappings() {
-        return dao.getAllMappings().block();
+        return cassandraRecipientRewriteTableDAO.getAllMappings().block();
     }
 
     @Override
     protected Mappings mapAddress(String user, Domain domain) {
         return OptionalUtils.orSuppliers(
-            () -> dao.retrieveMappings(MappingSource.fromUser(user, domain)).blockOptional(),
-            () -> dao.retrieveMappings(MappingSource.fromDomain(domain)).blockOptional())
+            () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromUser(user, domain)).blockOptional(),
+            () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromDomain(domain)).blockOptional())
                 .orElse(MappingsImpl.empty());
+    }
+
+    @Override
+    public List<MappingSource> listSources(Mapping mapping) {
+        Preconditions.checkArgument(listSourcesSupportedType.contains(mapping.getType()),
+            String.format("Not supported mapping of type %s", mapping.getType()));
+
+        return cassandraMappingsSourcesDAO.retrieveSources(mapping).block();
     }
 }
