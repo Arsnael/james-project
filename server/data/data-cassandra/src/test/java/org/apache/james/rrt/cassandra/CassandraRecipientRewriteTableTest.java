@@ -63,7 +63,7 @@ public class CassandraRecipientRewriteTableTest extends AbstractRecipientRewrite
     protected AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception {
         CassandraRecipientRewriteTable rrt = new CassandraRecipientRewriteTable(
             new CassandraRecipientRewriteTableDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION),
-            new CassandraMappingsSourcesDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION));
+            new CassandraMappingsSourcesDAO(cassandra.getConf()));
         rrt.configure(new DefaultConfigurationBuilder());
         return rrt;
     }

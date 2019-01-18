@@ -40,7 +40,7 @@ public interface CassandraRRTModule {
             .addClusteringColumn(CassandraRecipientRewriteTableTable.DOMAIN, text())
             .addClusteringColumn(CassandraRecipientRewriteTableTable.MAPPING, text()))
         .table(CassandraMappingsSourcesTable.TABLE_NAME)
-        .comment("Projection table for retrieving sources associated mappings.")
+        .comment("Projection table for retrieving sources associated with given mappings.")
         .options(options -> options
             .caching(SchemaBuilder.KeyCaching.ALL,
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))

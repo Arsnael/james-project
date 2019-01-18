@@ -32,7 +32,6 @@ import static org.apache.james.rrt.cassandra.tables.CassandraMappingsSourcesTabl
 import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
-import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
 
@@ -44,15 +43,13 @@ import reactor.core.publisher.Mono;
 
 class CassandraMappingsSourcesDAO {
     private final CassandraAsyncExecutor executor;
-    private final CassandraUtils cassandraUtils;
     private final PreparedStatement insertStatement;
     private final PreparedStatement deleteStatement;
     private final PreparedStatement retrieveSourcesStatement;
 
     @Inject
-    CassandraMappingsSourcesDAO(Session session, CassandraUtils cassandraUtils) {
+    CassandraMappingsSourcesDAO(Session session) {
         this.executor = new CassandraAsyncExecutor(session);
-        this.cassandraUtils = cassandraUtils;
         this.insertStatement = prepareInsertStatement(session);
         this.deleteStatement = prepareDelete(session);
         this.retrieveSourcesStatement = prepareRetrieveSourcesStatement(session);

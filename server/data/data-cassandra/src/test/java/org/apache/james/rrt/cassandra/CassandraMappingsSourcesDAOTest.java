@@ -44,7 +44,7 @@ class CassandraMappingsSourcesDAOTest {
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
-        dao = new CassandraMappingsSourcesDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+        dao = new CassandraMappingsSourcesDAO(cassandra.getConf());
     }
 
     @Test
