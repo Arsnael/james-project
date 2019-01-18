@@ -49,14 +49,14 @@ class CassandraMappingsSourcesDAOTest {
 
     @Test
     void retrieveSourcesShouldReturnEmptyByDefault() {
-        assertThat(dao.retrieveSources(MAPPING).block()).isEmpty();
+        assertThat(dao.retrieveSources(MAPPING).collectList().block()).isEmpty();
     }
 
     @Test
     void retrieveSourcesShouldReturnStoredMappingSource() {
         dao.addMapping(MAPPING, SOURCE).block();
 
-        assertThat(dao.retrieveSources(MAPPING).block()).containsOnly(SOURCE);
+        assertThat(dao.retrieveSources(MAPPING).collectList().block()).containsOnly(SOURCE);
     }
 
     @Test
@@ -65,7 +65,7 @@ class CassandraMappingsSourcesDAOTest {
 
         dao.removeMapping(MAPPING, SOURCE).block();
 
-        assertThat(dao.retrieveSources(MAPPING).block()).isEmpty();
+        assertThat(dao.retrieveSources(MAPPING).collectList().block()).isEmpty();
     }
 
     @Test
@@ -75,6 +75,6 @@ class CassandraMappingsSourcesDAOTest {
         dao.addMapping(MAPPING, SOURCE).block();
         dao.addMapping(MAPPING, source2).block();
 
-        assertThat(dao.retrieveSources(MAPPING).block()).containsOnly(SOURCE, source2);
+        assertThat(dao.retrieveSources(MAPPING).collectList().block()).containsOnly(SOURCE, source2);
     }
 }

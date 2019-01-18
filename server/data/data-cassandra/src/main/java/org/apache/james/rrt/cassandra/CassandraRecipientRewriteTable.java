@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.rrt.cassandra;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -30,8 +29,6 @@ import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.lib.Mappings;
 import org.apache.james.rrt.lib.MappingsImpl;
 import org.apache.james.util.OptionalUtils;
-
-import com.google.common.base.Preconditions;
 
 public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTable {
     private final CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO;
@@ -45,14 +42,16 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
 
     @Override
     public void addMapping(MappingSource source, Mapping mapping) {
-        cassandraRecipientRewriteTableDAO.addMapping(source, mapping).block();
-        cassandraMappingsSourcesDAO.addMapping(mapping, source).block();
+        cassandraRecipientRewriteTableDAO.addMapping(source, mapping)
+            .then(cassandraMappingsSourcesDAO.addMapping(mapping, source))
+            .block();
     }
 
     @Override
     public void removeMapping(MappingSource source, Mapping mapping) {
-        cassandraRecipientRewriteTableDAO.removeMapping(source, mapping).block();
-        cassandraMappingsSourcesDAO.removeMapping(mapping, source).block();
+        cassandraRecipientRewriteTableDAO.removeMapping(source, mapping)
+            .then(cassandraMappingsSourcesDAO.removeMapping(mapping, source))
+            .block();
     }
 
     @Override
@@ -73,13 +72,5 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
             () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromUser(user, domain)).blockOptional(),
             () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromDomain(domain)).blockOptional())
                 .orElse(MappingsImpl.empty());
-    }
-
-    @Override
-    public List<MappingSource> listSources(Mapping mapping) {
-        Preconditions.checkArgument(listSourcesSupportedType.contains(mapping.getType()),
-            String.format("Not supported mapping of type %s", mapping.getType()));
-
-        return cassandraMappingsSourcesDAO.retrieveSources(mapping).block();
     }
 }

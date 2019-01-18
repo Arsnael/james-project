@@ -241,7 +241,7 @@ public interface Mapping {
         }
 
         @Override
-        public String getMapping() {
+        public String getMappingValue() {
             return mapping;
         }
 
@@ -290,7 +290,7 @@ public interface Mapping {
 
     Type getType();
 
-    String getMapping();
+    String getMappingValue();
     
     String asString();
 

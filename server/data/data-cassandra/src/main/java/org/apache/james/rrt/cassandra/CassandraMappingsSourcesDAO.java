@@ -29,8 +29,6 @@ import static org.apache.james.rrt.cassandra.tables.CassandraMappingsSourcesTabl
 import static org.apache.james.rrt.cassandra.tables.CassandraMappingsSourcesTable.SOURCE;
 import static org.apache.james.rrt.cassandra.tables.CassandraMappingsSourcesTable.TABLE_NAME;
 
-import java.util.List;
-
 import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
@@ -40,8 +38,8 @@ import org.apache.james.rrt.lib.MappingSource;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
-import com.github.steveash.guavate.Guavate;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 class CassandraMappingsSourcesDAO {
@@ -85,24 +83,22 @@ class CassandraMappingsSourcesDAO {
     Mono<Void> addMapping(Mapping mapping, MappingSource source) {
         return executor.executeVoidReactor(insertStatement.bind()
             .setString(MAPPING_TYPE, mapping.getType().asPrefix())
-            .setString(MAPPING_VALUE, mapping.getMapping())
+            .setString(MAPPING_VALUE, mapping.getMappingValue())
             .setString(SOURCE, source.asMailAddressString()));
     }
 
     Mono<Void> removeMapping(Mapping mapping, MappingSource source) {
         return executor.executeVoidReactor(deleteStatement.bind()
             .setString(MAPPING_TYPE, mapping.getType().asPrefix())
-            .setString(MAPPING_VALUE, mapping.getMapping())
+            .setString(MAPPING_VALUE, mapping.getMappingValue())
             .setString(SOURCE, source.asMailAddressString()));
     }
 
-    Mono<List<MappingSource>> retrieveSources(Mapping mapping) {
+    Flux<MappingSource> retrieveSources(Mapping mapping) {
         return executor.executeReactor(retrieveSourcesStatement.bind()
             .setString(MAPPING_TYPE, mapping.getType().asPrefix())
-            .setString(MAPPING_VALUE, mapping.getMapping()))
-            .map(resultSet -> cassandraUtils.convertToStream(resultSet)
-                .map(row -> row.getString(SOURCE))
-                .map(MappingSource::parse)
-                .collect(Guavate.toImmutableList()));
+            .setString(MAPPING_VALUE, mapping.getMappingValue()))
+            .flatMapMany(Flux::fromIterable)
+            .map(row -> MappingSource.parse(row.getString(SOURCE)));
     }
 }
