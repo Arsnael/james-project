@@ -30,7 +30,6 @@ import static org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTab
 import static org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTableTable.USER;
 
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -106,14 +105,15 @@ class CassandraRecipientRewriteTableDAO {
             .setString(MAPPING, mapping.asString()));
     }
 
-    Mono<Optional<Mappings>> retrieveMappings(MappingSource source) {
+    Mono<MappingsImpl> retrieveMappings(MappingSource source) {
         return executor.executeReactor(retrieveMappingStatement.bind()
             .setString(USER, source.getFixedUser())
             .setString(DOMAIN, source.getFixedDomain()))
             .map(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(row -> row.getString(MAPPING))
                 .collect(Guavate.toImmutableList()))
-            .map(mappings -> MappingsImpl.fromCollection(mappings).toOptional());
+            .map(MappingsImpl::fromCollection)
+            .filter(mappings -> !mappings.isEmpty());
     }
 
     Mono<Map<MappingSource, Mappings>> getAllMappings() {

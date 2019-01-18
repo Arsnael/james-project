@@ -51,7 +51,7 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     @Override
     public Mappings getStoredMappings(MappingSource source) {
         return dao.retrieveMappings(source)
-            .block()
+            .blockOptional()
             .orElse(MappingsImpl.empty());
     }
 
@@ -63,8 +63,8 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     @Override
     protected Mappings mapAddress(String user, Domain domain) {
         return OptionalUtils.orSuppliers(
-            () -> dao.retrieveMappings(MappingSource.fromUser(user, domain)).block(),
-            () -> dao.retrieveMappings(MappingSource.fromDomain(domain)).block())
+            () -> dao.retrieveMappings(MappingSource.fromUser(user, domain)).blockOptional(),
+            () -> dao.retrieveMappings(MappingSource.fromDomain(domain)).blockOptional())
                 .orElse(MappingsImpl.empty());
     }
 }

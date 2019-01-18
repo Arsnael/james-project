@@ -51,7 +51,7 @@ class CassandraRecipientRewriteTableDAOTest {
 
     @Test
     void retrieveMappingsShouldReturnEmptyByDefault() {
-        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).block())
+        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).blockOptional())
             .isEmpty();
     }
 
@@ -65,7 +65,7 @@ class CassandraRecipientRewriteTableDAOTest {
     void retrieveMappingsShouldReturnStoredMapping() {
         cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
 
-        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).block())
+        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).blockOptional())
             .contains(MappingsImpl.fromMappings(MAPPING));
     }
 
@@ -83,7 +83,7 @@ class CassandraRecipientRewriteTableDAOTest {
 
         cassandraRecipientRewriteTableDAO.removeMapping(SOURCE, MAPPING).block();
 
-        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).block())
+        assertThat(cassandraRecipientRewriteTableDAO.retrieveMappings(SOURCE).blockOptional())
             .isEmpty();
     }
 
