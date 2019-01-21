@@ -46,7 +46,7 @@ import com.github.steveash.guavate.Guavate;
 
 import reactor.core.publisher.Mono;
 
-class CassandraRecipientRewriteTableDAO {
+public class CassandraRecipientRewriteTableDAO {
     private final CassandraAsyncExecutor executor;
     private final CassandraUtils cassandraUtils;
     private final PreparedStatement insertStatement;
@@ -55,7 +55,7 @@ class CassandraRecipientRewriteTableDAO {
     private final PreparedStatement retrieveAllMappingsStatement;
 
     @Inject
-    CassandraRecipientRewriteTableDAO(Session session, CassandraUtils cassandraUtils) {
+    public CassandraRecipientRewriteTableDAO(Session session, CassandraUtils cassandraUtils) {
         this.executor = new CassandraAsyncExecutor(session);
         this.cassandraUtils = cassandraUtils;
         this.insertStatement = prepareInsertStatement(session);
@@ -91,7 +91,7 @@ class CassandraRecipientRewriteTableDAO {
             .value(MAPPING, bindMarker(MAPPING)));
     }
 
-    Mono<Void> addMapping(MappingSource source, Mapping mapping) {
+    public Mono<Void> addMapping(MappingSource source, Mapping mapping) {
         return executor.executeVoidReactor(insertStatement.bind()
             .setString(USER, source.getFixedUser())
             .setString(DOMAIN, source.getFixedDomain())
@@ -116,7 +116,7 @@ class CassandraRecipientRewriteTableDAO {
             .filter(mappings -> !mappings.isEmpty());
     }
 
-    Mono<Map<MappingSource, Mappings>> getAllMappings() {
+    public Mono<Map<MappingSource, Mappings>> getAllMappings() {
         return executor.executeReactor(retrieveAllMappingsStatement.bind())
             .map(resultSet -> cassandraUtils.convertToStream(resultSet)
                 .map(row -> new UserMapping(MappingSource.fromUser(row.getString(USER), row.getString(DOMAIN)), row.getString(MAPPING)))
