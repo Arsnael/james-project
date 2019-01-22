@@ -66,10 +66,9 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
     @Override
     public Map<MappingSource, Mappings> getAllMappings() {
         return cassandraRecipientRewriteTableDAO.getAllMappings()
-            .map(pair -> new UserMapping(pair.getLeft(), pair.getRight()))
             .collect(Guavate.toImmutableMap(
-                UserMapping::getSource,
-                UserMapping::toMapping,
+                pair -> pair.getLeft(),
+                pair -> MappingsImpl.fromMappings(pair.getRight()),
                 Mappings::union))
             .block();
     }
@@ -80,23 +79,5 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
             () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromUser(user, domain)).blockOptional(),
             () -> cassandraRecipientRewriteTableDAO.retrieveMappings(MappingSource.fromDomain(domain)).blockOptional())
                 .orElse(MappingsImpl.empty());
-    }
-
-    private static class UserMapping {
-        private final MappingSource source;
-        private final Mapping mapping;
-
-        UserMapping(MappingSource source, Mapping mapping) {
-            this.source = source;
-            this.mapping = mapping;
-        }
-
-        MappingSource getSource() {
-            return source;
-        }
-
-        Mappings toMapping() {
-            return MappingsImpl.fromMappings(mapping);
-        }
     }
 }

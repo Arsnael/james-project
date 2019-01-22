@@ -80,14 +80,14 @@ class MappingsSourcesMigrationTest {
 
     @Test
     void migrationShouldSucceedWithData() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
 
         assertThat(migration.run()).isEqualTo(Task.Result.COMPLETED);
     }
 
     @Test
     void migrationShouldCreateMappingSourceFromMapping() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
 
         migration.run();
 
@@ -99,8 +99,8 @@ class MappingsSourcesMigrationTest {
     void migrationShouldCreateMultipleMappingSourcesFromMappings() {
         MappingSource source2 = MappingSource.fromUser("bob", Domain.LOCALHOST);
 
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING);
-        cassandraRecipientRewriteTableDAO.addMapping(source2, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE, MAPPING).block();
+        cassandraRecipientRewriteTableDAO.addMapping(source2, MAPPING).block();
 
         migration.run();
 
@@ -137,7 +137,7 @@ class MappingsSourcesMigrationTest {
     void migrationShouldBeIdempotentWhenRunMultipleTimes() throws ExecutionException, InterruptedException {
         IntStream.range(0, MAPPING_COUNT)
             .forEach(i -> cassandraRecipientRewriteTableDAO
-                .addMapping(MappingSource.parse("source" + i + "@domain"), MAPPING));
+                .addMapping(MappingSource.parse("source" + i + "@domain"), MAPPING).block());
 
         ConcurrentTestRunner.builder()
             .operation((threadNumber, step) -> migration.run())
