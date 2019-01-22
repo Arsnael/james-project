@@ -24,6 +24,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.IntStream;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.migration.Migration;
@@ -34,17 +39,19 @@ import org.apache.james.rrt.cassandra.CassandraRRTModule;
 import org.apache.james.rrt.cassandra.CassandraRecipientRewriteTableDAO;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.rrt.lib.MappingsImpl;
 import org.apache.james.task.Task;
+import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import com.google.common.collect.ImmutableMap;
-
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 class MappingsSourcesMigrationTest {
+    private static final int THREAD_COUNT = 10;
+    private static final int OPERATION_COUNT = 10;
+    private static final int MAPPING_COUNT = 100;
+
     private static final String USER = "test";
     private static final String ADDRESS = "test@domain";
     private static final MappingSource SOURCE = MappingSource.fromUser(USER, Domain.LOCALHOST);
@@ -107,7 +114,7 @@ class MappingsSourcesMigrationTest {
         CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO = mock(CassandraMappingsSourcesDAO.class);
         migration = new MappingsSourcesMigration(cassandraRecipientRewriteTableDAO, cassandraMappingsSourcesDAO);
 
-        when(cassandraRecipientRewriteTableDAO.getAllMappings()).thenThrow(new RuntimeException());
+        when(cassandraRecipientRewriteTableDAO.getAllMappings()).thenReturn(Flux.error(new RuntimeException()));
 
         assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
@@ -119,12 +126,26 @@ class MappingsSourcesMigrationTest {
         migration = new MappingsSourcesMigration(cassandraRecipientRewriteTableDAO, cassandraMappingsSourcesDAO);
 
         when(cassandraRecipientRewriteTableDAO.getAllMappings())
-            .thenReturn(Mono.just(ImmutableMap.of(SOURCE, MappingsImpl.fromMappings(MAPPING))));
+            .thenReturn(Flux.just(Pair.of(SOURCE, MAPPING)));
         when(cassandraMappingsSourcesDAO.addMapping(any(Mapping.class), any(MappingSource.class)))
             .thenThrow(new RuntimeException());
 
         assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
 
+    @Test
+    void migrationShouldBeIdempotentWhenRunMultipleTimes() throws ExecutionException, InterruptedException {
+        IntStream.range(0, MAPPING_COUNT)
+            .forEach(i -> cassandraRecipientRewriteTableDAO
+                .addMapping(MappingSource.parse("source" + i + "@domain"), MAPPING));
 
+        ConcurrentTestRunner.builder()
+            .operation((threadNumber, step) -> migration.run())
+            .threadCount(THREAD_COUNT)
+            .operationCount(OPERATION_COUNT)
+            .runSuccessfullyWithin(Duration.ofMinutes(1));
+
+        assertThat(cassandraMappingsSourcesDAO.retrieveSources(MAPPING).collectList().block())
+            .hasSize(MAPPING_COUNT);
+    }
 }

@@ -21,14 +21,17 @@ package org.apache.james.rrt.cassandra.migration;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.migration.Migration;
 import org.apache.james.rrt.cassandra.CassandraMappingsSourcesDAO;
 import org.apache.james.rrt.cassandra.CassandraRecipientRewriteTableDAO;
+import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.rrt.lib.Mappings;
 import org.apache.james.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import reactor.core.publisher.Mono;
 
 public class MappingsSourcesMigration implements Migration {
     private static final Logger LOGGER = LoggerFactory.getLogger(MappingsSourcesMigration.class);
@@ -45,28 +48,18 @@ public class MappingsSourcesMigration implements Migration {
 
     @Override
     public Result run() {
-        try {
-            return cassandraRecipientRewriteTableDAO.getAllMappings()
-                .block()
-                .entrySet().stream()
-                .map(entry -> this.migrate(entry.getKey(), entry.getValue()))
-                .reduce(Result.COMPLETED, Task::combine);
-        } catch (Exception e) {
-            LOGGER.error("Error while migrating mappings sources", e);
-            return Result.PARTIAL;
-        }
+        return cassandraRecipientRewriteTableDAO.getAllMappings()
+            .flatMap(this::migrate)
+            .reduce(Result.COMPLETED, Task::combine)
+            .doOnError(e -> LOGGER.error("Error while migrating mappings sources", e))
+            .onErrorResume(e -> Mono.just(Result.PARTIAL))
+            .block();
     }
 
-    private Result migrate(MappingSource mappingSource, Mappings mappings) {
-        try {
-            mappings.asStream()
-                .forEach(mapping -> cassandraMappingsSourcesDAO
-                    .addMapping(mapping, mappingSource)
-                    .block());
-            return Result.COMPLETED;
-        } catch (Exception e) {
-            LOGGER.error("Error while performing migration of mappings sources", e);
-            return Result.PARTIAL;
-        }
+    private Mono<Result> migrate(Pair<MappingSource, Mapping> mappingEntry) {
+        return cassandraMappingsSourcesDAO.addMapping(mappingEntry.getRight(), mappingEntry.getLeft())
+            .map(any -> Result.COMPLETED)
+            .doOnError(e -> LOGGER.error("Error while performing migration of mappings sources", e))
+            .onErrorResume(e -> Mono.just(Result.PARTIAL));
     }
 }

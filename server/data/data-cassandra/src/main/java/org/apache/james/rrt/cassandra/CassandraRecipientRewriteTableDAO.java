@@ -29,21 +29,20 @@ import static org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTab
 import static org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTableTable.TABLE_NAME;
 import static org.apache.james.rrt.cassandra.tables.CassandraRecipientRewriteTableTable.USER;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.rrt.lib.Mapping;
 import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.rrt.lib.Mappings;
 import org.apache.james.rrt.lib.MappingsImpl;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.github.steveash.guavate.Guavate;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CassandraRecipientRewriteTableDAO {
@@ -116,35 +115,11 @@ public class CassandraRecipientRewriteTableDAO {
             .filter(mappings -> !mappings.isEmpty());
     }
 
-    public Mono<Map<MappingSource, Mappings>> getAllMappings() {
+    public Flux<Pair<MappingSource, Mapping>> getAllMappings() {
         return executor.executeReactor(retrieveAllMappingsStatement.bind())
-            .map(resultSet -> cassandraUtils.convertToStream(resultSet)
-                .map(row -> new UserMapping(MappingSource.fromUser(row.getString(USER), row.getString(DOMAIN)), row.getString(MAPPING)))
-                .collect(Guavate.toImmutableMap(
-                    UserMapping::getSource,
-                    UserMapping::toMapping,
-                    Mappings::union)));
-    }
-
-    private static class UserMapping {
-        private final MappingSource source;
-        private final String mapping;
-
-        UserMapping(MappingSource source, String mapping) {
-            this.source = source;
-            this.mapping = mapping;
-        }
-
-        MappingSource getSource() {
-            return source;
-        }
-
-        String getMapping() {
-            return mapping;
-        }
-
-        Mappings toMapping() {
-            return MappingsImpl.fromRawString(getMapping());
-        }
+            .flatMapMany(Flux::fromIterable)
+            .map(row -> Pair.of(
+                MappingSource.fromUser(row.getString(USER), row.getString(DOMAIN)),
+                Mapping.of(row.getString(MAPPING))));
     }
 }
