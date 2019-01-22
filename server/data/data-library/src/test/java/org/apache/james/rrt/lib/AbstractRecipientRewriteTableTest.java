@@ -42,9 +42,9 @@ import com.github.fge.lambdas.Throwing;
 public abstract class AbstractRecipientRewriteTableTest {
 
     private static final String USER = "test";
-    private static final String ADDRESS = "test@localhost2";
+    protected static final String ADDRESS = "test@localhost2";
     private static final String ADDRESS_2 = "test@james";
-    private static final MappingSource SOURCE = MappingSource.fromUser(USER, Domain.LOCALHOST);
+    protected static final MappingSource SOURCE = MappingSource.fromUser(USER, Domain.LOCALHOST);
 
     protected abstract AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception;
 
