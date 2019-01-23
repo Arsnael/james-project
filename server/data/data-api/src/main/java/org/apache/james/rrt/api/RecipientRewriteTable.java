@@ -120,8 +120,7 @@ public interface RecipientRewriteTable {
         return getAllMappings()
             .entrySet().stream()
             .filter(entry -> entry.getValue().contains(mapping))
-            .map(Map.Entry::getKey)
-            .sorted(Comparator.comparing(MappingSource::asMailAddressString));
+            .map(Map.Entry::getKey);
     }
 
     default Stream<MappingSource> getSourcesForType(Mapping.Type type) throws RecipientRewriteTableException {

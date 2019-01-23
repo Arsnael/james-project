@@ -98,7 +98,7 @@ public class CassandraRecipientRewriteTable extends AbstractRecipientRewriteTabl
         Preconditions.checkArgument(listSourcesSupportedType.contains(mapping.getType()),
             String.format("Not supported mapping of type %s", mapping.getType()));
 
-        final SchemaVersion schemaVersion = cassandraSchemaVersionDAO.getCurrentSchemaVersion()
+        SchemaVersion schemaVersion = cassandraSchemaVersionDAO.getCurrentSchemaVersion()
             .join()
             .orElse(CassandraSchemaVersionManager.MIN_VERSION);
 
