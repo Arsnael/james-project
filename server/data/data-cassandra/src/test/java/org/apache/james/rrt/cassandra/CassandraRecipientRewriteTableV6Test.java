@@ -19,32 +19,70 @@
 
 package org.apache.james.rrt.cassandra;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
+import org.apache.james.backends.cassandra.CassandraCluster;
+import org.apache.james.backends.cassandra.DockerCassandraRule;
+import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
+import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.backends.cassandra.versions.SchemaVersion;
 import org.apache.james.rrt.lib.AbstractRecipientRewriteTable;
+import org.apache.james.rrt.lib.AbstractRecipientRewriteTableTest;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 
-public class CassandraRecipientRewriteTableV6Test extends AbstractCassandraRecipientRewriteTableTest {
+public class CassandraRecipientRewriteTableV6Test extends AbstractRecipientRewriteTableTest {
     private static final SchemaVersion SCHEMA_VERSION_V6 = new SchemaVersion(6);
+
+    private static final CassandraModule MODULE = CassandraModule.aggregateModules(
+        CassandraRRTModule.MODULE,
+        CassandraSchemaVersionModule.MODULE);
+
+    @ClassRule
+    public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
+
+    protected static CassandraCluster cassandra;
+
+    @BeforeClass
+    public static void setUpClass() {
+        cassandra = CassandraCluster.create(MODULE, cassandraServer.getHost());
+    }
+
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        cassandra.clearTables();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        cassandra.closeCluster();
+    }
 
     @Override
     protected AbstractRecipientRewriteTable getRecipientRewriteTable() throws Exception {
-        CassandraSchemaVersionDAO mockCassandraSchemaVersionDAO = mock(CassandraSchemaVersionDAO.class);
+        CassandraSchemaVersionDAO cassandraSchemaVersionDAO = new CassandraSchemaVersionDAO(
+            cassandra.getConf(),
+            CassandraUtils.WITH_DEFAULT_CONFIGURATION);
 
         CassandraRecipientRewriteTable rrt = new CassandraRecipientRewriteTable(
             new CassandraRecipientRewriteTableDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION),
             new CassandraMappingsSourcesDAO(cassandra.getConf()),
-            mockCassandraSchemaVersionDAO);
+            cassandraSchemaVersionDAO);
         rrt.configure(new DefaultConfigurationBuilder());
 
-        when(mockCassandraSchemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(SCHEMA_VERSION_V6)));
+        cassandraSchemaVersionDAO.updateVersion(SCHEMA_VERSION_V6);
 
         return rrt;
     }
