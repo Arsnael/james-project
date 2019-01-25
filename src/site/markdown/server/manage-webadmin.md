@@ -44,6 +44,7 @@ as exposed above). To avoid information duplication, this is ommited on endpoint
  - [Administrating Sieve quotas](#Administrating_Sieve_quotas)
  - [ReIndexing](#ReIndexing)
  - [Task management](#Task_management)
+ - [Cassandra extra operations](#Cassandra_extra_operations)
 
 ## HealthCheck
 
@@ -2515,3 +2516,34 @@ Response codes:
 
  - 200: A list of corresponding tasks is returned
  - 400: Invalid status value
+
+## Cassandra extra operations
+
+Some webadmin features to manage some extra operations on Cassandra tables, like solving inconsistencies on projection tables.
+
+ - [Operations on mappings sources](#Operations_on_mappings_sources)
+
+### Operations on mappings sources
+
+You can do a series of action on `mappings_sources` projection table :
+
+```
+curl -XPOST /cassandra/mappings?action=[ACTION]
+```
+
+Will return the taskId corresponding to the related task. Actions supported so far are :
+
+ - solveInconsistencies : cleans up `mappings_sources` projection table and repopulate it correctly.
+
+For example :
+
+```
+curl -XPOST /cassandra/mappings?action=solveInconsistencies
+```
+
+Response codes :
+
+ - 201: the taskId of the created task
+ - 400: Invalid action argument for performing operation on mappings data
+ - 409: The action requested for performing operation on mappings data cannot be performed
+

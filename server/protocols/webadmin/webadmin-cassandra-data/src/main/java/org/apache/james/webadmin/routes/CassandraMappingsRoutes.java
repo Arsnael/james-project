@@ -1,0 +1,128 @@
+/****************************************************************
+ * Licensed to the Apache Software Foundation (ASF) under one   *
+ * or more contributor license agreements.  See the NOTICE file *
+ * distributed with this work for additional information        *
+ * regarding copyright ownership.  The ASF licenses this file   *
+ * to you under the Apache License, Version 2.0 (the            *
+ * "License"); you may not use this file except in compliance   *
+ * with the License.  You may obtain a copy of the License at   *
+ *                                                              *
+ *   http://www.apache.org/licenses/LICENSE-2.0                 *
+ *                                                              *
+ * Unless required by applicable law or agreed to in writing,   *
+ * software distributed under the License is distributed on an  *
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       *
+ * KIND, either express or implied.  See the License for the    *
+ * specific language governing permissions and limitations      *
+ * under the License.                                           *
+ ****************************************************************/
+
+package org.apache.james.webadmin.routes;
+
+import javax.inject.Inject;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+
+import org.apache.james.task.Task;
+import org.apache.james.task.TaskId;
+import org.apache.james.task.TaskManager;
+import org.apache.james.webadmin.Constants;
+import org.apache.james.webadmin.Routes;
+import org.apache.james.webadmin.dto.CassandraActionMappings;
+import org.apache.james.webadmin.dto.TaskIdDto;
+import org.apache.james.webadmin.service.CassandraMappingsService;
+import org.apache.james.webadmin.utils.ErrorResponder;
+import org.apache.james.webadmin.utils.JsonTransformer;
+import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
+import spark.Request;
+import spark.Response;
+import spark.Service;
+
+@Api(tags = "Cassandra Data")
+@Path(CassandraMappingsRoutes.ROOT_PATH)
+@Produces(Constants.JSON_CONTENT_TYPE)
+public class CassandraMappingsRoutes implements Routes {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMappingsRoutes.class);
+
+    public static final String ROOT_PATH = "cassandra/mappings";
+
+    private final CassandraMappingsService cassandraMappingsService;
+    private final TaskManager taskManager;
+    private final JsonTransformer jsonTransformer;
+
+    static final String INVALID_ACTION_ARGUMENT_REQUEST = "Invalid action argument for performing operation on mappings data";
+    private static final String ACTION_REQUEST_CAN_NOT_BE_DONE = "The action requested for performing operation on mappings data cannot be performed";
+
+    @Inject
+    CassandraMappingsRoutes(CassandraMappingsService cassandraMappingsService, TaskManager taskManager, JsonTransformer jsonTransformer) {
+        this.cassandraMappingsService = cassandraMappingsService;
+        this.taskManager = taskManager;
+        this.jsonTransformer = jsonTransformer;
+    }
+
+    @Override
+    public String getBasePath() {
+        return ROOT_PATH;
+    }
+
+    @Override
+    public void define(Service service) {
+        service.post(ROOT_PATH, this::performActionOnMappings, jsonTransformer);
+    }
+
+    @POST
+    @Path(ROOT_PATH)
+    @ApiOperation(value = "Performing operations on cassandra data mappings")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+            required = true,
+            dataType = "String",
+            name = "action",
+            paramType = "query",
+            example = "?action=solveInconsistencies",
+            value = "Specify the action to perform on mappings"),
+    })
+    @ApiResponses(value = {
+        @ApiResponse(code = HttpStatus.CREATED_201, message = "The taskId of the given scheduled task", response = TaskIdDto.class,
+            responseHeaders = {
+                @ResponseHeader(name = "Location", description = "URL of the resource associated with the scheduled task")
+            }),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = INVALID_ACTION_ARGUMENT_REQUEST),
+        @ApiResponse(code = HttpStatus.CONFLICT_409, message = ACTION_REQUEST_CAN_NOT_BE_DONE)
+    })
+    public Object performActionOnMappings(Request request, Response response) {
+        try {
+            CassandraActionMappings action = CassandraActionMappings.parse(request.queryParams("action"));
+            Task task = cassandraMappingsService.performAction(action.getAction());
+            TaskId taskId = taskManager.submit(task);
+            return TaskIdDto.respond(response, taskId);
+        } catch (NullPointerException | IllegalArgumentException e) {
+            LOGGER.info(INVALID_ACTION_ARGUMENT_REQUEST);
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.BAD_REQUEST_400)
+                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+                .message(INVALID_ACTION_ARGUMENT_REQUEST)
+                .cause(e)
+                .haltError();
+        } catch (Exception e) {
+            LOGGER.info(ACTION_REQUEST_CAN_NOT_BE_DONE, e);
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.CONFLICT_409)
+                .type(ErrorResponder.ErrorType.WRONG_STATE)
+                .message(ACTION_REQUEST_CAN_NOT_BE_DONE)
+                .cause(e)
+                .haltError();
+        }
+    }
+}

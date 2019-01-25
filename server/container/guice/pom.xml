@@ -170,6 +170,11 @@
             </dependency>
             <dependency>
                 <groupId>${james.groupId}</groupId>
+                <artifactId>james-server-guice-webadmin-cassandra-data</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${james.groupId}</groupId>
                 <artifactId>james-server-guice-webadmin-data</artifactId>
                 <version>${project.version}</version>
             </dependency>
