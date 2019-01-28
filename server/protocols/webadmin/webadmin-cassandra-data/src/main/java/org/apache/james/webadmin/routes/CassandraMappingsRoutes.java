@@ -29,14 +29,11 @@ import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
-import org.apache.james.webadmin.dto.CassandraActionMappings;
+import org.apache.james.webadmin.dto.ActionMappings;
 import org.apache.james.webadmin.dto.TaskIdDto;
 import org.apache.james.webadmin.service.CassandraMappingsService;
-import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -49,12 +46,10 @@ import spark.Request;
 import spark.Response;
 import spark.Service;
 
-@Api(tags = "Cassandra Data")
+@Api(tags = "Cassandra Mappings")
 @Path(CassandraMappingsRoutes.ROOT_PATH)
 @Produces(Constants.JSON_CONTENT_TYPE)
 public class CassandraMappingsRoutes implements Routes {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMappingsRoutes.class);
-
     public static final String ROOT_PATH = "cassandra/mappings";
 
     private final CassandraMappingsService cassandraMappingsService;
@@ -90,8 +85,9 @@ public class CassandraMappingsRoutes implements Routes {
             dataType = "String",
             name = "action",
             paramType = "query",
-            example = "?action=solveInconsistencies",
-            value = "Specify the action to perform on mappings"),
+            example = "?action=SolveInconsistencies",
+            value = "Specify the action to perform on mappings. For now only 'SolveInconsistencies' is supported as an action, "
+                + "and its purpose is to clean 'mappings_sources' projection table and repopulate it."),
     })
     @ApiResponses(value = {
         @ApiResponse(code = HttpStatus.CREATED_201, message = "The taskId of the given scheduled task", response = TaskIdDto.class,
@@ -99,30 +95,12 @@ public class CassandraMappingsRoutes implements Routes {
                 @ResponseHeader(name = "Location", description = "URL of the resource associated with the scheduled task")
             }),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = INVALID_ACTION_ARGUMENT_REQUEST),
-        @ApiResponse(code = HttpStatus.CONFLICT_409, message = ACTION_REQUEST_CAN_NOT_BE_DONE)
+        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = ACTION_REQUEST_CAN_NOT_BE_DONE)
     })
-    public Object performActionOnMappings(Request request, Response response) {
-        try {
-            CassandraActionMappings action = CassandraActionMappings.parse(request.queryParams("action"));
-            Task task = cassandraMappingsService.performAction(action.getAction());
-            TaskId taskId = taskManager.submit(task);
-            return TaskIdDto.respond(response, taskId);
-        } catch (NullPointerException | IllegalArgumentException e) {
-            LOGGER.info(INVALID_ACTION_ARGUMENT_REQUEST);
-            throw ErrorResponder.builder()
-                .statusCode(HttpStatus.BAD_REQUEST_400)
-                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
-                .message(INVALID_ACTION_ARGUMENT_REQUEST)
-                .cause(e)
-                .haltError();
-        } catch (Exception e) {
-            LOGGER.info(ACTION_REQUEST_CAN_NOT_BE_DONE, e);
-            throw ErrorResponder.builder()
-                .statusCode(HttpStatus.CONFLICT_409)
-                .type(ErrorResponder.ErrorType.WRONG_STATE)
-                .message(ACTION_REQUEST_CAN_NOT_BE_DONE)
-                .cause(e)
-                .haltError();
-        }
+    public TaskIdDto performActionOnMappings(Request request, Response response) {
+        ActionMappings action = ActionMappings.parse(request.queryParams("action"));
+        Task task = cassandraMappingsService.performAction(action);
+        TaskId taskId = taskManager.submit(task);
+        return TaskIdDto.respond(response, taskId);
     }
 }

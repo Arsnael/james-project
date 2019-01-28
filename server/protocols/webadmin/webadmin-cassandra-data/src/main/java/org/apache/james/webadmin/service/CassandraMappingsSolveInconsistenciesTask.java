@@ -35,7 +35,7 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
 
     @Inject
     CassandraMappingsSolveInconsistenciesTask(MappingsSourcesMigration mappingsSourcesMigration,
-                                                     CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO) {
+                                              CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO) {
         this.mappingsSourcesMigration = mappingsSourcesMigration;
         this.cassandraMappingsSourcesDAO = cassandraMappingsSourcesDAO;
     }
@@ -43,9 +43,8 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
     @Override
     public Result run() {
         return cassandraMappingsSourcesDAO.truncateTable()
-            .then(Mono.just(mappingsSourcesMigration.run()))
-            .map(any -> Result.COMPLETED)
             .doOnError(e -> LOGGER.error("Error while cleaning up data in mappings sources projection table"))
+            .then(Mono.fromCallable(mappingsSourcesMigration::run))
             .onErrorResume(e -> Mono.just(Result.PARTIAL))
             .block();
     }

@@ -2533,17 +2533,16 @@ curl -XPOST /cassandra/mappings?action=[ACTION]
 
 Will return the taskId corresponding to the related task. Actions supported so far are :
 
- - solveInconsistencies : cleans up `mappings_sources` projection table and repopulate it correctly.
+ - SolveInconsistencies : cleans up `mappings_sources` projection table and repopulate it correctly.
 
 For example :
 
 ```
-curl -XPOST /cassandra/mappings?action=solveInconsistencies
+curl -XPOST /cassandra/mappings?action=SolveInconsistencies
 ```
 
 Response codes :
 
  - 201: the taskId of the created task
  - 400: Invalid action argument for performing operation on mappings data
- - 409: The action requested for performing operation on mappings data cannot be performed
 

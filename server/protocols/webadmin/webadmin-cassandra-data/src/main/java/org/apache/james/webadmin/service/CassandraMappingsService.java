@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import org.apache.james.rrt.cassandra.CassandraMappingsSourcesDAO;
 import org.apache.james.rrt.cassandra.migration.MappingsSourcesMigration;
 import org.apache.james.task.Task;
-import org.apache.james.webadmin.dto.CassandraActionMappings;
+import org.apache.james.webadmin.dto.ActionMappings;
 
 public class CassandraMappingsService {
     private final MappingsSourcesMigration mappingsSourcesMigration;
@@ -37,8 +37,8 @@ public class CassandraMappingsService {
         this.cassandraMappingsSourcesDAO = cassandraMappingsSourcesDAO;
     }
 
-    public Task performAction(CassandraActionMappings.Action action) {
-        if (CassandraActionMappings.Action.solveInconsistencies.equals(action)) {
+    public Task performAction(ActionMappings action) {
+        if (ActionMappings.SolveInconsistencies.equals(action)) {
             return solveMappingsSourcesInconsistencies();
         }
         throw new IllegalArgumentException(action + " is not a valid action");

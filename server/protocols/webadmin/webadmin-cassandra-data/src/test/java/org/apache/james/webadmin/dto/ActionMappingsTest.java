@@ -19,25 +19,30 @@
 
 package org.apache.james.webadmin.dto;
 
-import com.google.common.base.Preconditions;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class CassandraActionMappings {
-    public enum Action {
-        solveInconsistencies
+import org.junit.Test;
+
+public class ActionMappingsTest {
+    private static final String ACTION = "SolveInconsistencies";
+
+    @Test
+    public void parseShouldSucceedWithCorrectActionMappingsArgument() {
+        assertThat(ActionMappings.parse(ACTION)).isEqualTo(ActionMappings.SolveInconsistencies);
     }
 
-    public static CassandraActionMappings parse(String action) {
-        Preconditions.checkNotNull(action, "Action is mandatory");
-        return new CassandraActionMappings(Action.valueOf(action));
+    @Test
+    public void parseShouldFailWithIncorrectActionMappingsArgument() {
+        assertThatThrownBy(() -> ActionMappings.parse("incorrect-action"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
-    private final Action action;
-
-    private CassandraActionMappings(Action action) {
-        this.action = action;
+    @Test
+    public void parseShouldFailWithMissingActionMappingsArgument() {
+        assertThatThrownBy(() -> ActionMappings.parse(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("'action' url parameter is mandatory");
     }
 
-    public Action getAction() {
-        return action;
-    }
 }

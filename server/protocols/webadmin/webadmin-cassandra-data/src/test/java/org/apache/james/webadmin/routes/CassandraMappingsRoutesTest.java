@@ -23,16 +23,22 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
 import static org.apache.james.webadmin.WebAdminServer.NO_CONFIGURATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import org.apache.james.backends.cassandra.CassandraCluster;
+import org.apache.james.backends.cassandra.DockerCassandraRule;
+import org.apache.james.backends.cassandra.utils.CassandraUtils;
+import org.apache.james.core.Domain;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.rrt.cassandra.CassandraMappingsSourcesDAO;
+import org.apache.james.rrt.cassandra.CassandraRRTModule;
+import org.apache.james.rrt.cassandra.CassandraRecipientRewriteTableDAO;
 import org.apache.james.rrt.cassandra.migration.MappingsSourcesMigration;
+import org.apache.james.rrt.lib.Mapping;
+import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.task.MemoryTaskManager;
-import org.apache.james.task.Task;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.service.CassandraMappingsService;
@@ -41,30 +47,44 @@ import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import io.restassured.RestAssured;
-import reactor.core.publisher.Mono;
 
 public class CassandraMappingsRoutesTest {
+    @ClassRule
+    public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
 
+    private static CassandraCluster cassandra;
     private WebAdminServer webAdminServer;
+
     private MappingsSourcesMigration mappingsSourcesMigration;
+    private CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO;
     private CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO;
     private MemoryTaskManager taskManager;
 
-    private static final String MAPPINGS_ACTION = "solveInconsistencies";
+    private static final String MAPPINGS_ACTION = "SolveInconsistencies";
+
+    private static final MappingSource SOURCE_1 = MappingSource.fromUser("bob", Domain.LOCALHOST);
+    private static final MappingSource SOURCE_2 = MappingSource.fromUser("alice", Domain.LOCALHOST);
+    private static final Mapping MAPPING = Mapping.alias("bob-alias@domain");
+
+    @BeforeClass
+    public static void setUpClass() {
+        cassandra = CassandraCluster.create(CassandraRRTModule.MODULE, cassandraServer.getHost());
+    }
 
     @Before
     public void setUp() throws Exception {
-        cassandraMappingsSourcesDAO = mock(CassandraMappingsSourcesDAO.class);
-        mappingsSourcesMigration = mock(MappingsSourcesMigration.class);
+        cassandraRecipientRewriteTableDAO = new CassandraRecipientRewriteTableDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+        cassandraMappingsSourcesDAO = new CassandraMappingsSourcesDAO(cassandra.getConf());
+        mappingsSourcesMigration = new MappingsSourcesMigration(cassandraRecipientRewriteTableDAO, cassandraMappingsSourcesDAO);
 
         CassandraMappingsService cassandraMappingsService = new CassandraMappingsService(mappingsSourcesMigration, cassandraMappingsSourcesDAO);
-
-        when(cassandraMappingsSourcesDAO.truncateTable()).thenReturn(Mono.empty());
-        when(mappingsSourcesMigration.run()).thenReturn(Task.Result.COMPLETED);
 
         JsonTransformer jsonTransformer = new JsonTransformer();
         taskManager = new MemoryTaskManager();
@@ -85,6 +105,12 @@ public class CassandraMappingsRoutesTest {
     public void tearDown() {
         webAdminServer.destroy();
         taskManager.stop();
+        cassandra.clearTables();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        cassandra.closeCluster();
     }
 
     @Test
@@ -130,7 +156,8 @@ public class CassandraMappingsRoutesTest {
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
-            .body("message", is(CassandraMappingsRoutes.INVALID_ACTION_ARGUMENT_REQUEST));
+            .body("message", is("Invalid arguments supplied in the user request"))
+            .body("details", is("No enum constant org.apache.james.webadmin.dto.ActionMappings.invalid-action"));
     }
 
     @Test
@@ -141,12 +168,16 @@ public class CassandraMappingsRoutesTest {
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
-            .body("message", is(CassandraMappingsRoutes.INVALID_ACTION_ARGUMENT_REQUEST));
+            .body("message", is("Invalid arguments supplied in the user request"))
+            .body("details", is("'action' url parameter is mandatory"));
     }
 
     @Test
-    public void postMappingsActionTaskShouldFailIfSomethingGoesWrong() {
-        when(cassandraMappingsSourcesDAO.truncateTable()).thenThrow(new RuntimeException());
+    public void postMappingsActionShouldResolveRRTInconsistencies() {
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_1, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_2, MAPPING);
+
+        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_1);
 
         String taskId = with()
             .queryParam("action", MAPPINGS_ACTION)
@@ -159,6 +190,33 @@ public class CassandraMappingsRoutesTest {
         .when()
             .get(taskId + "/await")
         .then()
-            .body("status", is("failed"));
+            .body("status", is("completed"));
+
+        assertThat(cassandraMappingsSourcesDAO.retrieveSources(MAPPING).collectList().block())
+            .containsOnly(SOURCE_1, SOURCE_2);
+    }
+
+    @Test
+    public void postMappingsActionShouldResolveMappingsSourcesInconsistencies() {
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_1, MAPPING);
+
+        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_1);
+        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_2);
+
+        String taskId = with()
+            .queryParam("action", MAPPINGS_ACTION)
+            .post()
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("completed"));
+
+        assertThat(cassandraMappingsSourcesDAO.retrieveSources(MAPPING).collectList().block())
+            .containsOnly(SOURCE_1);
     }
 }
