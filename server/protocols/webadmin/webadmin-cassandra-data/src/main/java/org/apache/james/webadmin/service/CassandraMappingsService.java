@@ -38,10 +38,12 @@ public class CassandraMappingsService {
     }
 
     public Task performAction(ActionMappings action) {
-        if (ActionMappings.SolveInconsistencies.equals(action)) {
-            return solveMappingsSourcesInconsistencies();
+        switch (action) {
+            case SolveInconsistencies:
+                return solveMappingsSourcesInconsistencies();
+            default:
+                throw new IllegalArgumentException(action + " is not a supported action");
         }
-        throw new IllegalArgumentException(action + " is not a valid action");
     }
 
     private Task solveMappingsSourcesInconsistencies() {

@@ -2520,6 +2520,8 @@ Response codes:
 ## Cassandra extra operations
 
 Some webadmin features to manage some extra operations on Cassandra tables, like solving inconsistencies on projection tables.
+Such inconsistencies can be for example created by a fail of the DAO to add a mapping into 'mappings_sources`, while it was successful
+regarding the `rrt` table.
 
  - [Operations on mappings sources](#Operations_on_mappings_sources)
 

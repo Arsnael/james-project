@@ -365,7 +365,7 @@ public class WebAdminServerIntegrationTest {
             .body(containsString("\"tags\":[\"Address Forwards\"]"))
             .body(containsString("\"tags\":[\"Address Aliases\"]"))
             .body(containsString("\"tags\":[\"Address Groups\"]"))
-            .body(containsString("\"tags\":[\"Cassandra Data\"]"))
+            .body(containsString("\"tags\":[\"Cassandra Mappings Operations\"]"))
             .body(containsString("{\"name\":\"ReIndexing (mailboxes)\"}"))
             .body(containsString("{\"name\":\"MessageIdReIndexing\"}"));
     }
@@ -379,7 +379,7 @@ public class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void cassandraMappingsEndpointShouldCleanAndRepopulateMappingsSourcesProjectionTable() {
+    public void cassandraMappingsEndpointShouldKeepDataConsistencyWhenDataValid() {
         String alias1 = "alias1@domain.com";
         String alias2 = "alias2@domain.com";
 
@@ -389,7 +389,7 @@ public class WebAdminServerIntegrationTest {
             .put(AliasRoutes.ROOT_PATH + SEPARATOR + USERNAME + "/sources/" + alias2);
 
         String taskId = with()
-            .queryParam("action", "solveInconsistencies")
+            .queryParam("action", "SolveInconsistencies")
             .post(CassandraMappingsRoutes.ROOT_PATH)
             .jsonPath()
             .get("taskId");

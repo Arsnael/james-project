@@ -64,6 +64,7 @@
         <module>protocols/smtp</module>
         <module>protocols/webadmin</module>
         <module>protocols/webadmin-cassandra</module>
+        <module>protocols/webadmin-cassandra-data</module>
         <module>protocols/webadmin-data</module>
         <module>protocols/webadmin-mailbox</module>
         <module>protocols/webadmin-mailqueue</module>

@@ -46,7 +46,7 @@ import spark.Request;
 import spark.Response;
 import spark.Service;
 
-@Api(tags = "Cassandra Mappings")
+@Api(tags = "Cassandra Mappings Operations")
 @Path(CassandraMappingsRoutes.ROOT_PATH)
 @Produces(Constants.JSON_CONTENT_TYPE)
 public class CassandraMappingsRoutes implements Routes {
