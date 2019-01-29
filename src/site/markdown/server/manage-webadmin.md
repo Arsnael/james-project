@@ -2535,7 +2535,7 @@ curl -XPOST /cassandra/mappings?action=[ACTION]
 
 Will return the taskId corresponding to the related task. Actions supported so far are :
 
- - SolveInconsistencies : cleans up `mappings_sources` projection table and repopulate it correctly.
+ - SolveInconsistencies : cleans up first all the mappings in `mappings_sources` index and then repopulate it correctly. In the meantime, listing sources of a mapping might be leading to inconsistencies.
 
 For example :
 

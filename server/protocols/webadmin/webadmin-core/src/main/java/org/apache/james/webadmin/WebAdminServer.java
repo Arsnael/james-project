@@ -156,6 +156,7 @@ public class WebAdminServer implements Configurable {
         });
 
         service.exception(IllegalArgumentException.class, (ex, req, res) -> {
+            LOGGER.info("Invalid arguments supplied in the user request", ex);
             res.status(BAD_REQUEST_400);
             res.body(ErrorResponder.builder()
                 .statusCode(BAD_REQUEST_400)
