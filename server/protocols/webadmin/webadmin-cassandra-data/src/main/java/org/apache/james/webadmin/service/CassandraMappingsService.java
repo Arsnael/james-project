@@ -37,7 +37,7 @@ public class CassandraMappingsService {
         this.cassandraMappingsSourcesDAO = cassandraMappingsSourcesDAO;
     }
 
-    public Task performAction(ActionMappings action) {
+    public Task createActionTask(ActionMappings action) {
         switch (action) {
             case SolveInconsistencies:
                 return solveMappingsSourcesInconsistencies();

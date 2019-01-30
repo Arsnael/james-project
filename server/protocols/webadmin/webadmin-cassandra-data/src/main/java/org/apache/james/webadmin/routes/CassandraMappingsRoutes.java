@@ -56,7 +56,7 @@ public class CassandraMappingsRoutes implements Routes {
     private final TaskManager taskManager;
     private final JsonTransformer jsonTransformer;
 
-    static final String INVALID_ACTION_ARGUMENT_REQUEST = "Invalid action argument for performing operation on mappings data";
+    private static final String INVALID_ACTION_ARGUMENT_REQUEST = "Invalid action argument for performing operation on mappings data";
     private static final String ACTION_REQUEST_CAN_NOT_BE_DONE = "The action requested for performing operation on mappings data cannot be performed";
 
     @Inject
@@ -99,7 +99,7 @@ public class CassandraMappingsRoutes implements Routes {
     })
     public TaskIdDto performActionOnMappings(Request request, Response response) {
         ActionMappings action = ActionMappings.parse(request.queryParams("action"));
-        Task task = cassandraMappingsService.performAction(action);
+        Task task = cassandraMappingsService.createActionTask(action);
         TaskId taskId = taskManager.submit(task);
         return TaskIdDto.respond(response, taskId);
     }

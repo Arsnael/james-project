@@ -106,12 +106,7 @@ public class CassandraMappingsSourcesDAO {
             .map(row -> MappingSource.parse(row.getString(SOURCE)));
     }
 
-    /*
-     * Removes all data in the `mappings_sources` projection table
-     *
-     * To use with caution...
-     */
-    public Mono<Void> truncateTable() {
+    public Mono<Void> cleanAllData() {
         return executor.executeVoidReactor(truncateStatement.bind());
     }
 }

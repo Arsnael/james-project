@@ -22,24 +22,24 @@ package org.apache.james.webadmin.dto;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ActionMappingsTest {
+class ActionMappingsTest {
     private static final String ACTION = "SolveInconsistencies";
 
     @Test
-    public void parseShouldSucceedWithCorrectActionMappingsArgument() {
+    void parseShouldSucceedWithCorrectActionMappingsArgument() {
         assertThat(ActionMappings.parse(ACTION)).isEqualTo(ActionMappings.SolveInconsistencies);
     }
 
     @Test
-    public void parseShouldFailWithIncorrectActionMappingsArgument() {
+    void parseShouldFailWithIncorrectActionMappingsArgument() {
         assertThatThrownBy(() -> ActionMappings.parse("incorrect-action"))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void parseShouldFailWithMissingActionMappingsArgument() {
+    void parseShouldFailWithMissingActionMappingsArgument() {
         assertThatThrownBy(() -> ActionMappings.parse(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("'action' url parameter is mandatory");

@@ -42,7 +42,7 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
 
     @Override
     public Result run() {
-        return cassandraMappingsSourcesDAO.truncateTable()
+        return cassandraMappingsSourcesDAO.cleanAllData()
             .doOnError(e -> LOGGER.error("Error while cleaning up data in mappings sources projection table"))
             .then(Mono.fromCallable(mappingsSourcesMigration::run))
             .onErrorResume(e -> Mono.just(Result.PARTIAL))
