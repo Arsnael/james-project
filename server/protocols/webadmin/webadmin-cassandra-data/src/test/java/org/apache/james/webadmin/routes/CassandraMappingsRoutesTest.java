@@ -62,6 +62,7 @@ class CassandraMappingsRoutesTest {
 
     private WebAdminServer webAdminServer;
 
+    private MappingsSourcesMigration mappingsSourcesMigration;
     private CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO;
     private CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO;
     private MemoryTaskManager taskManager;
@@ -73,7 +74,7 @@ class CassandraMappingsRoutesTest {
     void setUp(CassandraCluster cassandra) throws ConfigurationException {
         cassandraRecipientRewriteTableDAO = new CassandraRecipientRewriteTableDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
         cassandraMappingsSourcesDAO = new CassandraMappingsSourcesDAO(cassandra.getConf());
-        MappingsSourcesMigration mappingsSourcesMigration = new MappingsSourcesMigration(cassandraRecipientRewriteTableDAO, cassandraMappingsSourcesDAO);
+        mappingsSourcesMigration = new MappingsSourcesMigration(cassandraRecipientRewriteTableDAO, cassandraMappingsSourcesDAO);
 
         CassandraMappingsService cassandraMappingsService = new CassandraMappingsService(mappingsSourcesMigration, cassandraMappingsSourcesDAO);
 
@@ -142,7 +143,7 @@ class CassandraMappingsRoutesTest {
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
             .body("message", is("Invalid arguments supplied in the user request"))
-            .body("details", is("No enum constant org.apache.james.webadmin.dto.ActionMappings.invalid-action"));
+            .body("details", is("'invalid-action' is not a valid action query parameter"));
     }
 
     @Test

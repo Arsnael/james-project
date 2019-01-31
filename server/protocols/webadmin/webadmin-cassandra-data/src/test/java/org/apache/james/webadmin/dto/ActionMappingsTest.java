@@ -35,7 +35,8 @@ class ActionMappingsTest {
     @Test
     void parseShouldFailWithIncorrectActionMappingsArgument() {
         assertThatThrownBy(() -> ActionMappings.parse("incorrect-action"))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("'incorrect-action' is not a valid action query parameter");
     }
 
     @Test

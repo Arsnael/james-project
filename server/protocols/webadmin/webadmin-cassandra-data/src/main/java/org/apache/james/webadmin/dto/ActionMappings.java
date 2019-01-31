@@ -19,6 +19,8 @@
 
 package org.apache.james.webadmin.dto;
 
+import java.util.Arrays;
+
 import com.google.common.base.Preconditions;
 
 public enum ActionMappings {
@@ -26,6 +28,9 @@ public enum ActionMappings {
 
     public static ActionMappings parse(String action) {
         Preconditions.checkArgument(action != null, "'action' url parameter is mandatory");
-        return ActionMappings.valueOf(action);
+        return Arrays.stream(ActionMappings.values())
+            .filter(element -> element.toString().equalsIgnoreCase(action))
+            .findAny()
+            .orElseThrow(() -> new IllegalArgumentException("'" + action + "' is not a valid action query parameter"));
     }
 }

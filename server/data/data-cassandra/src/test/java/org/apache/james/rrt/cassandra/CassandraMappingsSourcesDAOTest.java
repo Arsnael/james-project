@@ -81,7 +81,7 @@ class CassandraMappingsSourcesDAOTest {
         dao.addMapping(MAPPING, SOURCE).block();
         dao.addMapping(MAPPING, SOURCE_2).block();
 
-        dao.cleanAllData().block();
+        dao.removeAllData().block();
 
         assertThat(dao.retrieveSources(MAPPING).collectList().block()).isEmpty();
     }

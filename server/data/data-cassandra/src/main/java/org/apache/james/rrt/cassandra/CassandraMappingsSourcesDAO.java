@@ -106,7 +106,7 @@ public class CassandraMappingsSourcesDAO {
             .map(row -> MappingSource.parse(row.getString(SOURCE)));
     }
 
-    public Mono<Void> cleanAllData() {
+    public Mono<Void> removeAllData() {
         return executor.executeVoidReactor(truncateStatement.bind());
     }
 }
