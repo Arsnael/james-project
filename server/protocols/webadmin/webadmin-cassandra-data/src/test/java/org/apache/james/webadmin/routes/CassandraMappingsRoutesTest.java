@@ -160,10 +160,10 @@ class CassandraMappingsRoutesTest {
 
     @Test
     void postMappingsActionShouldResolveRRTInconsistencies() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_1, MAPPING);
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_2, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_1, MAPPING).block();
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_2, MAPPING).block();
 
-        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_1);
+        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_1).block();
 
         String taskId = with()
             .queryParam("action", MAPPINGS_ACTION)
@@ -184,10 +184,10 @@ class CassandraMappingsRoutesTest {
 
     @Test
     void postMappingsActionShouldResolveMappingsSourcesInconsistencies() {
-        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_1, MAPPING);
+        cassandraRecipientRewriteTableDAO.addMapping(SOURCE_1, MAPPING).block();
 
-        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_1);
-        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_2);
+        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_1).block();
+        cassandraMappingsSourcesDAO.addMapping(MAPPING, SOURCE_2).block();
 
         String taskId = with()
             .queryParam("action", MAPPINGS_ACTION)
