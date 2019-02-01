@@ -19,6 +19,8 @@
 
 package org.apache.james.rrt.cassandra.migration;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,19 +37,23 @@ import reactor.core.publisher.Mono;
 
 public class MappingsSourcesMigration implements Migration {
     private static final Logger LOGGER = LoggerFactory.getLogger(MappingsSourcesMigration.class);
+
     private final CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO;
     private final CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO;
+    private final AtomicLong processedMappingsCount;
 
     @Inject
     public MappingsSourcesMigration(CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO,
                                     CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO) {
         this.cassandraRecipientRewriteTableDAO = cassandraRecipientRewriteTableDAO;
         this.cassandraMappingsSourcesDAO = cassandraMappingsSourcesDAO;
+        this.processedMappingsCount = new AtomicLong(0);
     }
 
     @Override
     public Result run() {
         return cassandraRecipientRewriteTableDAO.getAllMappings()
+            .doOnNext(pair -> processedMappingsCount.incrementAndGet())
             .flatMap(this::migrate)
             .reduce(Result.COMPLETED, Task::combine)
             .doOnError(e -> LOGGER.error("Error while migrating mappings sources", e))
@@ -60,5 +66,9 @@ public class MappingsSourcesMigration implements Migration {
             .map(any -> Result.COMPLETED)
             .doOnError(e -> LOGGER.error("Error while performing migration of mappings sources", e))
             .onErrorResume(e -> Mono.just(Result.PARTIAL));
+    }
+
+    public long getProcessedMappingsCounts() {
+        return processedMappingsCount.get();
     }
 }

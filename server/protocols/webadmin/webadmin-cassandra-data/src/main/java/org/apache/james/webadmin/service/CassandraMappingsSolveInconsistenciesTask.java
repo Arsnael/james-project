@@ -19,16 +19,31 @@
 
 package org.apache.james.webadmin.service;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import org.apache.james.rrt.cassandra.CassandraMappingsSourcesDAO;
 import org.apache.james.rrt.cassandra.migration.MappingsSourcesMigration;
 import org.apache.james.task.Task;
+import org.apache.james.task.TaskExecutionDetails;
 
 import reactor.core.publisher.Mono;
 
 public class CassandraMappingsSolveInconsistenciesTask implements Task {
     public static final String TYPE = "cassandraMappingsSolveInconsistencies";
+
+    public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
+        private final long processedMappingsCount;
+
+        AdditionalInformation(long processedMappingsCount) {
+            this.processedMappingsCount = processedMappingsCount;
+        }
+
+        public long getProcessedMappingsCount() {
+            return processedMappingsCount;
+        }
+    }
 
     private final MappingsSourcesMigration mappingsSourcesMigration;
     private final CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO;
@@ -52,5 +67,10 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
     @Override
     public String type() {
         return TYPE;
+    }
+
+    @Override
+    public Optional<TaskExecutionDetails.AdditionalInformation> details() {
+        return Optional.of(new AdditionalInformation(mappingsSourcesMigration.getProcessedMappingsCounts()));
     }
 }
