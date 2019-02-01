@@ -34,14 +34,18 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
     public static final String TYPE = "cassandraMappingsSolveInconsistencies";
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
-        private final long processedMappingsCount;
+        private final MappingsSourcesMigration.AdditionalInformation info;
 
-        AdditionalInformation(long processedMappingsCount) {
-            this.processedMappingsCount = processedMappingsCount;
+        AdditionalInformation(MappingsSourcesMigration.AdditionalInformation info) {
+            this.info = info;
         }
 
-        public long getProcessedMappingsCount() {
-            return processedMappingsCount;
+        public long getSuccessfulMappingsCount() {
+            return info.getSuccessfulMappingsCount();
+        }
+
+        public long getErrorMappingsCount() {
+            return info.getErrorMappingsCount();
         }
     }
 
@@ -71,6 +75,6 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(new AdditionalInformation(mappingsSourcesMigration.getProcessedMappingsCounts()));
+        return Optional.of(new AdditionalInformation(mappingsSourcesMigration.getAdditionalInformation()));
     }
 }

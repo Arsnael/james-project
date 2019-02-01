@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 class MappingsSourcesMigrationTest {
     private static final int THREAD_COUNT = 10;
@@ -93,6 +94,9 @@ class MappingsSourcesMigrationTest {
 
         assertThat(cassandraMappingsSourcesDAO.retrieveSources(MAPPING).collectList().block())
             .containsExactly(SOURCE);
+
+        assertThat(migration.getAdditionalInformation().getSuccessfulMappingsCount()).isEqualTo(1);
+        assertThat(migration.getAdditionalInformation().getErrorMappingsCount()).isEqualTo(0);
     }
 
     @Test
@@ -106,6 +110,9 @@ class MappingsSourcesMigrationTest {
 
         assertThat(cassandraMappingsSourcesDAO.retrieveSources(MAPPING).collectList().block())
             .containsOnly(SOURCE, source2);
+
+        assertThat(migration.getAdditionalInformation().getSuccessfulMappingsCount()).isEqualTo(2);
+        assertThat(migration.getAdditionalInformation().getErrorMappingsCount()).isEqualTo(0);
     }
 
     @Test
@@ -117,6 +124,8 @@ class MappingsSourcesMigrationTest {
         when(cassandraRecipientRewriteTableDAO.getAllMappings()).thenReturn(Flux.error(new RuntimeException()));
 
         assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
+        assertThat(migration.getAdditionalInformation().getSuccessfulMappingsCount()).isEqualTo(0);
+        assertThat(migration.getAdditionalInformation().getErrorMappingsCount()).isEqualTo(0);
     }
 
     @Test
@@ -128,9 +137,11 @@ class MappingsSourcesMigrationTest {
         when(cassandraRecipientRewriteTableDAO.getAllMappings())
             .thenReturn(Flux.just(Pair.of(SOURCE, MAPPING)));
         when(cassandraMappingsSourcesDAO.addMapping(any(Mapping.class), any(MappingSource.class)))
-            .thenThrow(new RuntimeException());
+            .thenReturn(Mono.error(new RuntimeException()));
 
         assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
+        assertThat(migration.getAdditionalInformation().getSuccessfulMappingsCount()).isEqualTo(0);
+        assertThat(migration.getAdditionalInformation().getErrorMappingsCount()).isEqualTo(1);
     }
 
     @Test
