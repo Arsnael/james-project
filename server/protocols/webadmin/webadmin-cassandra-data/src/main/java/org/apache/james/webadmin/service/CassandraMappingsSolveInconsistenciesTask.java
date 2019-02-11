@@ -33,22 +33,6 @@ import reactor.core.publisher.Mono;
 public class CassandraMappingsSolveInconsistenciesTask implements Task {
     public static final String TYPE = "cassandraMappingsSolveInconsistencies";
 
-    public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
-        private final MappingsSourcesMigration.AdditionalInformation info;
-
-        AdditionalInformation(MappingsSourcesMigration.AdditionalInformation info) {
-            this.info = info;
-        }
-
-        public long getSuccessfulMappingsCount() {
-            return info.getSuccessfulMappingsCount();
-        }
-
-        public long getErrorMappingsCount() {
-            return info.getErrorMappingsCount();
-        }
-    }
-
     private final MappingsSourcesMigration mappingsSourcesMigration;
     private final CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO;
 
@@ -75,6 +59,6 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(new AdditionalInformation(mappingsSourcesMigration.getAdditionalInformation()));
+        return mappingsSourcesMigration.details();
     }
 }

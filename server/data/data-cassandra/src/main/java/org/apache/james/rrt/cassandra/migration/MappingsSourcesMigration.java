@@ -35,8 +35,6 @@ import org.apache.james.task.TaskExecutionDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import reactor.core.publisher.Mono;
 
 public class MappingsSourcesMigration implements Migration {
@@ -44,43 +42,35 @@ public class MappingsSourcesMigration implements Migration {
     private static final String TYPE = "mappingsSourcesMigration";
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
-        private final AtomicLong successfulMappingsCount;
-        private final AtomicLong errorMappingsCount;
+        private final long successfulMappingsCount;
+        private final long errorMappingsCount;
 
-        AdditionalInformation() {
-            this.successfulMappingsCount = new AtomicLong(0);
-            this.errorMappingsCount = new AtomicLong(0);
+        AdditionalInformation(long successfulMappingsCount, long errorMappingsCount) {
+            this.successfulMappingsCount = successfulMappingsCount;
+            this.errorMappingsCount = errorMappingsCount;
         }
 
         public long getSuccessfulMappingsCount() {
-            return successfulMappingsCount.get();
+            return successfulMappingsCount;
         }
 
         public long getErrorMappingsCount() {
-            return errorMappingsCount.get();
-        }
-
-        @JsonIgnore
-        void incrementSuccessfulCount() {
-            successfulMappingsCount.incrementAndGet();
-        }
-
-        @JsonIgnore
-        void incrementErrorCount() {
-            errorMappingsCount.incrementAndGet();
+            return errorMappingsCount;
         }
     }
 
     private final CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO;
     private final CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO;
-    private final AdditionalInformation additionalInformation;
+    private final AtomicLong successfulMappingsCount;
+    private final AtomicLong errorMappingsCount;
 
     @Inject
     public MappingsSourcesMigration(CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO,
                                     CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO) {
         this.cassandraRecipientRewriteTableDAO = cassandraRecipientRewriteTableDAO;
         this.cassandraMappingsSourcesDAO = cassandraMappingsSourcesDAO;
-        this.additionalInformation = new AdditionalInformation();
+        this.successfulMappingsCount = new AtomicLong(0);
+        this.errorMappingsCount = new AtomicLong(0);
     }
 
     @Override
@@ -96,10 +86,11 @@ public class MappingsSourcesMigration implements Migration {
     private Mono<Result> migrate(Pair<MappingSource, Mapping> mappingEntry) {
         return cassandraMappingsSourcesDAO.addMapping(mappingEntry.getRight(), mappingEntry.getLeft())
             .map(any -> Result.COMPLETED)
-            .doOnSuccess(success -> additionalInformation.incrementSuccessfulCount())
+            .doOnSuccess(success -> successfulMappingsCount.incrementAndGet())
             .doOnError(e -> {
-                LOGGER.error("Error while performing migration of mappings sources", e);
-                additionalInformation.incrementErrorCount();
+                LOGGER.error("Error while performing migration of mapping source: " + mappingEntry.getLeft().asString()
+                    + " with mapping: " + mappingEntry.getRight().asString(), e);
+                errorMappingsCount.incrementAndGet();
             })
             .onErrorResume(e -> Mono.just(Result.PARTIAL));
     }
@@ -111,10 +102,12 @@ public class MappingsSourcesMigration implements Migration {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(additionalInformation);
+        return Optional.of(getAdditionalInformation());
     }
 
-    public AdditionalInformation getAdditionalInformation() {
-        return additionalInformation;
+    AdditionalInformation getAdditionalInformation() {
+        return new AdditionalInformation(
+            successfulMappingsCount.get(),
+            errorMappingsCount.get());
     }
 }
