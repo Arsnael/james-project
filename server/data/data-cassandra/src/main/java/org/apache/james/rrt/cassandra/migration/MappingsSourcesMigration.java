@@ -88,8 +88,8 @@ public class MappingsSourcesMigration implements Migration {
             .map(any -> Result.COMPLETED)
             .doOnSuccess(success -> successfulMappingsCount.incrementAndGet())
             .doOnError(e -> {
-                LOGGER.error("Error while performing migration of mapping source: " + mappingEntry.getLeft().asString()
-                    + " with mapping: " + mappingEntry.getRight().asString(), e);
+                LOGGER.error("Error while performing migration of mapping source: {} with mapping: {}",
+                    mappingEntry.getLeft().asString(), mappingEntry.getRight().asString(), e);
                 errorMappingsCount.incrementAndGet();
             })
             .onErrorResume(e -> Mono.just(Result.PARTIAL));
@@ -102,10 +102,10 @@ public class MappingsSourcesMigration implements Migration {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(getAdditionalInformation());
+        return Optional.of(createAdditionalInformation());
     }
 
-    AdditionalInformation getAdditionalInformation() {
+    AdditionalInformation createAdditionalInformation() {
         return new AdditionalInformation(
             successfulMappingsCount.get(),
             errorMappingsCount.get());
