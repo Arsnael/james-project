@@ -145,6 +145,26 @@ class MappingsSourcesMigrationTest {
     }
 
     @Test
+    void migrationShouldHaveCorrectErrorCountWhenMultipleAddMappingFails() {
+        MappingSource source2 = MappingSource.fromUser("bob", Domain.LOCALHOST);
+
+        CassandraRecipientRewriteTableDAO cassandraRecipientRewriteTableDAO = mock(CassandraRecipientRewriteTableDAO.class);
+        CassandraMappingsSourcesDAO cassandraMappingsSourcesDAO = mock(CassandraMappingsSourcesDAO.class);
+        migration = new MappingsSourcesMigration(cassandraRecipientRewriteTableDAO, cassandraMappingsSourcesDAO);
+
+        when(cassandraRecipientRewriteTableDAO.getAllMappings())
+            .thenReturn(Flux.just(
+                Pair.of(SOURCE, MAPPING),
+                Pair.of(source2, MAPPING)));
+        when(cassandraMappingsSourcesDAO.addMapping(any(Mapping.class), any(MappingSource.class)))
+            .thenReturn(Mono.error(new RuntimeException()));
+
+        assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
+        assertThat(migration.createAdditionalInformation().getSuccessfulMappingsCount()).isEqualTo(0);
+        assertThat(migration.createAdditionalInformation().getErrorMappingsCount()).isEqualTo(2);
+    }
+
+    @Test
     void migrationShouldBeIdempotentWhenRunMultipleTimes() throws ExecutionException, InterruptedException {
         IntStream.range(0, MAPPING_COUNT)
             .forEach(i -> cassandraRecipientRewriteTableDAO
