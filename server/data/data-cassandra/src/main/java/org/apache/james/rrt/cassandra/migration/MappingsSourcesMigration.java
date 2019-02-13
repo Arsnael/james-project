@@ -85,14 +85,16 @@ public class MappingsSourcesMigration implements Migration {
 
     private Mono<Result> migrate(Pair<MappingSource, Mapping> mappingEntry) {
         return cassandraMappingsSourcesDAO.addMapping(mappingEntry.getRight(), mappingEntry.getLeft())
-            .map(any -> Result.COMPLETED)
-            .doOnSuccess(success -> successfulMappingsCount.incrementAndGet())
-            .doOnError(e -> {
+            .then(Mono.fromCallable(() -> {
+                successfulMappingsCount.incrementAndGet();
+                return Result.COMPLETED;
+            }))
+            .onErrorResume(e -> {
                 LOGGER.error("Error while performing migration of mapping source: {} with mapping: {}",
                     mappingEntry.getLeft().asString(), mappingEntry.getRight().asString(), e);
                 errorMappingsCount.incrementAndGet();
-            })
-            .onErrorResume(e -> Mono.just(Result.PARTIAL));
+                return Mono.just(Result.PARTIAL);
+            });
     }
 
     @Override
