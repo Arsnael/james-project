@@ -118,6 +118,17 @@ public interface MessageManager {
     Iterator<MessageUid> expunge(MessageRange set, MailboxSession mailboxSession) throws MailboxException;
 
     /**
+     * Deletes messages
+     *
+     * @param uids
+     *            list of {@link MessageUid} to delete
+     * @param mailboxSession
+     *            not null
+     * @throws MailboxException
+     */
+    void delete(List<MessageUid> uids, MailboxSession mailboxSession) throws MailboxException;
+
+    /**
      * Sets flags on messages within the given range. The new flags are returned
      * for each message altered.
      * 
