@@ -53,6 +53,8 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.apache.james.mailbox.store.mail.utils.ApplicableFlagCalculator;
 
+import com.github.steveash.guavate.Guavate;
+
 public class MaildirMessageMapper extends AbstractMessageMapper {
 
     private final MaildirStore maildirStore;
@@ -207,37 +209,58 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public Map<MessageUid, MessageMetaData> expungeMarkedForDeletionInMailbox(Mailbox mailbox, MessageRange set)
-            throws MailboxException {
-        List<MailboxMessage> results = new ArrayList<>();
-        final MessageUid from = set.getUidFrom();
-        final MessageUid to = set.getUidTo();
-        final Type type = set.getType();
-        switch (type) {
-        default:
-        case ALL:
-            results = findMessagesInMailbox(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, -1);
-            break;
-        case FROM:
-            results = findMessagesInMailboxBetweenUIDs(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, from, null,
-                    -1);
-            break;
-        case ONE:
-            results = findDeletedMessageInMailboxWithUID(mailbox, from);
-            break;
-        case RANGE:
-            results = findMessagesInMailboxBetweenUIDs(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, from, to,
-                    -1);
-            break;
+    public List<MessageUid> retrieveMessagesMarkedForDeletion(Mailbox mailbox, MessageRange messageRange) throws MailboxException {
+        List<MessageUid> results = new ArrayList<>();
+        MessageUid from = messageRange.getUidFrom();
+        MessageUid to = messageRange.getUidTo();
+        List<MailboxMessage> messages = findDeletedMessages(mailbox, messageRange, from, to);
+        return getUidList(messages);
+    }
+
+    @Override
+    public Map<MessageUid, MessageMetaData> deleteMessages(Mailbox mailbox, List<MessageUid> uids) throws MailboxException {
+        Map<MessageUid, MessageMetaData> data = new HashMap<>();
+        List<MessageRange> ranges = MessageRange.toRanges(uids);
+
+        for (MessageRange range : ranges) {
+            MessageUid from = range.getUidFrom();
+            MessageUid to = range.getUidTo();
+            List<MailboxMessage> messages = findDeletedMessages(mailbox, range, from, to);
+            data.putAll(deleteDeletedMessages(mailbox, messages));
         }
+
+        return data;
+    }
+
+    private List<MailboxMessage> findDeletedMessages(Mailbox mailbox, MessageRange messageRange, MessageUid from, MessageUid to) throws MailboxException {
+        switch (messageRange.getType()) {
+            case ONE:
+                return findDeletedMessageInMailboxWithUID(mailbox, from);
+            case RANGE:
+                return findMessagesInMailboxBetweenUIDs(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, from, to, -1);
+            case FROM:
+                return findMessagesInMailboxBetweenUIDs(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, from, null, -1);
+            case ALL:
+            default:
+                return findMessagesInMailbox(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, -1);
+        }
+    }
+
+    private Map<MessageUid, MessageMetaData> deleteDeletedMessages(Mailbox mailbox, List<MailboxMessage> messages) throws MailboxException {
         Map<MessageUid, MessageMetaData> uids = new HashMap<>();
-        for (MailboxMessage m : results) {
-            MessageUid uid = m.getUid();
-            uids.put(uid, m.metaData());
-            delete(mailbox, m);
+
+        for (MailboxMessage message : messages) {
+            uids.put(message.getUid(), message.metaData());
+            delete(mailbox, message);
         }
 
         return uids;
+    }
+
+    private List<MessageUid> getUidList(List<MailboxMessage> messages) {
+        return messages.stream()
+            .map(message -> message.getUid())
+            .collect(Guavate.toImmutableList());
     }
 
     @Override
