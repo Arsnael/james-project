@@ -53,6 +53,7 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.apache.james.mailbox.store.mail.utils.ApplicableFlagCalculator;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 
 public class MaildirMessageMapper extends AbstractMessageMapper {
@@ -239,25 +240,21 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
             case FROM:
                 return findMessagesInMailboxBetweenUIDs(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, from, null, -1);
             case ALL:
-            default:
                 return findMessagesInMailbox(mailbox, MaildirMessageName.FILTER_DELETED_MESSAGES, -1);
+            default:
+                throw new RuntimeException();
         }
     }
 
     private Map<MessageUid, MessageMetaData> deleteDeletedMessages(Mailbox mailbox, List<MailboxMessage> messages) throws MailboxException {
-        Map<MessageUid, MessageMetaData> uids = new HashMap<>();
-
-        for (MailboxMessage message : messages) {
-            uids.put(message.getUid(), message.metaData());
-            delete(mailbox, message);
-        }
-
-        return uids;
+        return messages.stream()
+            .peek(Throwing.<MailboxMessage>consumer(message -> delete(mailbox, message)).sneakyThrow())
+            .collect(Guavate.toImmutableMap(MailboxMessage::getUid, MailboxMessage::metaData));
     }
 
     private List<MessageUid> getUidList(List<MailboxMessage> messages) {
         return messages.stream()
-            .map(message -> message.getUid())
+            .map(MailboxMessage::getUid)
             .collect(Guavate.toImmutableList());
     }
 

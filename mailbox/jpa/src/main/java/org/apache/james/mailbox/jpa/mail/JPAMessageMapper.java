@@ -235,8 +235,9 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
             case FROM:
                 return findDeletedMessagesInMailboxAfterUID(mailboxId, from);
             case ALL:
-            default:
                 return findDeletedMessagesInMailbox(mailboxId);
+            default:
+                throw new RuntimeException();
         }
     }
 
@@ -255,9 +256,10 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
                 deleteDeletedMessagesInMailboxAfterUID(mailboxId, from);
                 break;
             case ALL:
-            default:
                 deleteDeletedMessagesInMailbox(mailboxId);
                 break;
+            default:
+                throw new RuntimeException();
         }
     }
 
