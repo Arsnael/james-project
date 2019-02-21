@@ -153,7 +153,6 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
         return getMembershipByUidForMailbox(mailbox).values()
             .stream()
             .filter(message -> uids.contains(message.getUid()))
-            .sorted()
             .peek(message -> delete(mailbox, message))
             .collect(Guavate.toImmutableMap(MailboxMessage::getUid, MailboxMessage::metaData));
     }

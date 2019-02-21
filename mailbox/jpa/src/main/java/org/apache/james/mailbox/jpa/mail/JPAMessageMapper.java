@@ -200,10 +200,8 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
     @Override
     public List<MessageUid> retrieveMessagesMarkedForDeletion(Mailbox mailbox, MessageRange messageRange) throws MailboxException {
         try {
-            MessageUid from = messageRange.getUidFrom();
-            MessageUid to = messageRange.getUidTo();
             JPAId mailboxId = (JPAId) mailbox.getMailboxId();
-            List<MailboxMessage> messages = findDeletedMessages(messageRange, from, to, mailboxId);
+            List<MailboxMessage> messages = findDeletedMessages(messageRange, mailboxId);
             return getUidList(messages);
         } catch (PersistenceException e) {
             throw new MailboxException("Search of MessageRange " + messageRange + " failed in mailbox " + mailbox, e);
@@ -217,17 +215,18 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
         List<MessageRange> ranges = MessageRange.toRanges(uids);
 
         ranges.forEach(range -> {
-            MessageUid from = range.getUidFrom();
-            MessageUid to = range.getUidTo();
-            List<MailboxMessage> messages = findDeletedMessages(range, from, to, mailboxId);
+            List<MailboxMessage> messages = findDeletedMessages(range, mailboxId);
             data.putAll(createMetaData(messages));
-            deleteDeletedMessages(range, from, to, mailboxId);
+            deleteDeletedMessages(range, mailboxId);
         });
 
         return data;
     }
 
-    private List<MailboxMessage> findDeletedMessages(MessageRange messageRange, MessageUid from, MessageUid to, JPAId mailboxId) {
+    private List<MailboxMessage> findDeletedMessages(MessageRange messageRange, JPAId mailboxId) {
+        MessageUid from = messageRange.getUidFrom();
+        MessageUid to = messageRange.getUidTo();
+
         switch (messageRange.getType()) {
             case ONE:
                 return findDeletedMessagesInMailboxWithUID(mailboxId, from);
@@ -241,7 +240,10 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
         }
     }
 
-    private void deleteDeletedMessages(MessageRange messageRange, MessageUid from, MessageUid to, JPAId mailboxId) {
+    private void deleteDeletedMessages(MessageRange messageRange, JPAId mailboxId) {
+        MessageUid from = messageRange.getUidFrom();
+        MessageUid to = messageRange.getUidTo();
+
         switch (messageRange.getType()) {
             case ONE:
                 deleteDeletedMessagesInMailboxWithUID(mailboxId, from);

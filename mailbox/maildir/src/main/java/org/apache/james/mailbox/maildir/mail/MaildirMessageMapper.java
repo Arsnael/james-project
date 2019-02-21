@@ -210,10 +210,7 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
 
     @Override
     public List<MessageUid> retrieveMessagesMarkedForDeletion(Mailbox mailbox, MessageRange messageRange) throws MailboxException {
-        List<MessageUid> results = new ArrayList<>();
-        MessageUid from = messageRange.getUidFrom();
-        MessageUid to = messageRange.getUidTo();
-        List<MailboxMessage> messages = findDeletedMessages(mailbox, messageRange, from, to);
+        List<MailboxMessage> messages = findDeletedMessages(mailbox, messageRange);
         return getUidList(messages);
     }
 
@@ -223,16 +220,17 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
         List<MessageRange> ranges = MessageRange.toRanges(uids);
 
         for (MessageRange range : ranges) {
-            MessageUid from = range.getUidFrom();
-            MessageUid to = range.getUidTo();
-            List<MailboxMessage> messages = findDeletedMessages(mailbox, range, from, to);
+            List<MailboxMessage> messages = findDeletedMessages(mailbox, range);
             data.putAll(deleteDeletedMessages(mailbox, messages));
         }
 
         return data;
     }
 
-    private List<MailboxMessage> findDeletedMessages(Mailbox mailbox, MessageRange messageRange, MessageUid from, MessageUid to) throws MailboxException {
+    private List<MailboxMessage> findDeletedMessages(Mailbox mailbox, MessageRange messageRange) throws MailboxException {
+        MessageUid from = messageRange.getUidFrom();
+        MessageUid to = messageRange.getUidTo();
+
         switch (messageRange.getType()) {
             case ONE:
                 return findDeletedMessageInMailboxWithUID(mailbox, from);
