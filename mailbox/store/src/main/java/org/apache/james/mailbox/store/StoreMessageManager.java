@@ -263,19 +263,12 @@ public class StoreMessageManager implements MessageManager {
         List<MessageUid> uids = retrieveMessagesMarkedForDeletion(set, mailboxSession);
         Map<MessageUid, MessageMetaData> deletedMessages = deleteMessages(uids, mailboxSession);
 
-        eventBus.dispatch(EventFactory.expunged()
-            .randomEventId()
-            .mailboxSession(mailboxSession)
-            .mailbox(getMailboxEntity())
-            .metaData(ImmutableSortedMap.copyOf(deletedMessages))
-            .build(),
-            new MailboxIdRegistrationKey(mailbox.getMailboxId()))
-            .block();
+        dispatchExpungeEvent(mailboxSession, deletedMessages);
         return deletedMessages.keySet().iterator();
     }
 
-    private List<MessageUid> retrieveMessagesMarkedForDeletion(final MessageRange messageRange, MailboxSession session) throws MailboxException {
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+    private List<MessageUid> retrieveMessagesMarkedForDeletion(MessageRange messageRange, MailboxSession session) throws MailboxException {
+        MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
 
         return messageMapper.execute(
             () -> messageMapper.retrieveMessagesMarkedForDeletion(getMailboxEntity(), messageRange));
@@ -285,6 +278,17 @@ public class StoreMessageManager implements MessageManager {
     public void delete(List<MessageUid> messageUids, MailboxSession mailboxSession) throws MailboxException {
         Map<MessageUid, MessageMetaData> deletedMessages = deleteMessages(messageUids, mailboxSession);
 
+        dispatchExpungeEvent(mailboxSession, deletedMessages);
+    }
+
+    private Map<MessageUid, MessageMetaData> deleteMessages(List<MessageUid> messageUids, MailboxSession session) throws MailboxException {
+        MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
+
+        return messageMapper.execute(
+            () -> messageMapper.deleteMessages(getMailboxEntity(), messageUids));
+    }
+
+    private void dispatchExpungeEvent(MailboxSession mailboxSession, Map<MessageUid, MessageMetaData> deletedMessages) throws MailboxException {
         eventBus.dispatch(EventFactory.expunged()
                 .randomEventId()
                 .mailboxSession(mailboxSession)
@@ -293,13 +297,6 @@ public class StoreMessageManager implements MessageManager {
                 .build(),
             new MailboxIdRegistrationKey(mailbox.getMailboxId()))
             .block();
-    }
-
-    private Map<MessageUid, MessageMetaData> deleteMessages(List<MessageUid> messageUids, MailboxSession session) throws MailboxException {
-        final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
-
-        return messageMapper.execute(
-            () -> messageMapper.deleteMessages(getMailboxEntity(), messageUids));
     }
 
     @Override
