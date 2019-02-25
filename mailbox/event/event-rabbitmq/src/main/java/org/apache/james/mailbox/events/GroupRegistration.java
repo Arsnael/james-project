@@ -147,6 +147,12 @@ class GroupRegistration implements Registration {
             .then();
     }
 
+    Mono<Void> reDeliver(Event event) {
+        byte[] eventAsBytes = eventSerializer.toJson(event).getBytes(StandardCharsets.UTF_8);
+
+        return retryHandler.handleRetry(eventAsBytes, event, DEFAULT_RETRY_COUNT);
+    }
+
     private void runListener(Event event) throws Exception {
         mailboxListenerExecutor.execute(
             mailboxListener,

@@ -124,4 +124,15 @@ public class RabbitMQEventBus implements EventBus {
         }
         throw new IllegalStateException("Event Bus is not running");
     }
+
+    @Override
+    public Mono<Void> reDeliver(Group group, Event event) {
+        if (isRunning) {
+            if (!event.isNoop()) {
+                return groupRegistrationHandler.retrieveGroupRegistration(group).reDeliver(event);
+            }
+            return Mono.empty();
+        }
+        throw new IllegalStateException("Event Bus is not running");
+    }
 }
