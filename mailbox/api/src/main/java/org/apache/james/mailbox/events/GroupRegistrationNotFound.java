@@ -23,7 +23,7 @@ public class GroupRegistrationNotFound extends RuntimeException {
     private final Group group;
 
     public GroupRegistrationNotFound(Group group) {
-        super("Cannot retrieve group registration of group: " + group.getClass().getCanonicalName());
+        super("Cannot retrieve group registration of group: " + group.asString());
         this.group = group;
     }
 
