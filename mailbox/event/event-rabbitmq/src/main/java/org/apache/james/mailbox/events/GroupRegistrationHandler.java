@@ -53,7 +53,7 @@ class GroupRegistrationHandler {
 
     GroupRegistration retrieveGroupRegistration(Group group) {
         return Optional.ofNullable(groupRegistrations.get(group))
-            .orElseThrow(() -> new RuntimeException("Cannot retrieve group registration of group: " + group.asString()));
+            .orElseThrow(() -> new GroupRegistrationNotFound(group));
     }
 
     void stop() {

@@ -301,7 +301,7 @@ public interface GroupContract {
         @Test
         default void redeliverShouldThrowWhenGroupNotRegistered() {
             assertThatThrownBy(() -> eventBus().reDeliver(GROUP_A, EVENT).block())
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(GroupRegistrationNotFound.class);
         }
 
         @Test
@@ -311,7 +311,32 @@ public interface GroupContract {
             eventBus().register(listener, GROUP_A).unregister();
 
             assertThatThrownBy(() -> eventBus().reDeliver(GROUP_A, EVENT).block())
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(GroupRegistrationNotFound.class);
+        }
+
+        @Test
+        default void redeliverShouldOnlySendEventToDefinedGroup() throws Exception {
+            MailboxListener listener = newListener();
+            MailboxListener listener2 = newListener();
+            eventBus().register(listener, GROUP_A);
+            eventBus().register(listener2, GROUP_B);
+
+            eventBus().reDeliver(GROUP_A, EVENT).block();
+
+            verify(listener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
+            verify(listener2, after(FIVE_HUNDRED_MS.toMillis()).never()).event(any());
+        }
+
+        @Test
+        default void groupListenersShouldNotReceiveNoopRedeliveredEvents() throws Exception {
+            MailboxListener listener = newListener();
+
+            eventBus().register(listener, GROUP_A);
+
+            MailboxListener.Added noopEvent = new MailboxListener.Added(MailboxSession.SessionId.of(18), User.fromUsername("bob"), MailboxPath.forUser("bob", "mailbox"), TestId.of(58), ImmutableSortedMap.of(), Event.EventId.random());
+            eventBus().reDeliver(GROUP_A, noopEvent).block();
+
+            verify(listener, after(FIVE_HUNDRED_MS.toMillis()).never()).event(any());
         }
     }
 
@@ -335,7 +360,19 @@ public interface GroupContract {
             eventBus().register(mailboxListener, GROUP_A);
 
             assertThatThrownBy(() -> eventBus2().reDeliver(GROUP_A, EVENT).block())
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(GroupRegistrationNotFound.class);
+        }
+
+        @Test
+        default void groupListenersShouldBeExecutedOnceWhenRedeliverInADistributedEnvironment() throws Exception {
+            MailboxListener mailboxListener = newListener();
+
+            eventBus().register(mailboxListener, GROUP_A);
+            eventBus2().register(mailboxListener, GROUP_A);
+
+            eventBus2().reDeliver(GROUP_A, EVENT).block();
+
+            verify(mailboxListener, timeout(ONE_SECOND.toMillis()).times(1)).event(any());
         }
 
         @Test

@@ -419,7 +419,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 rabbitMQExtension.getRabbitMQ().pause();
 
                 assertThatThrownBy(() -> eventBus.reDeliver(GROUP_A, EVENT).block())
-                    .isInstanceOf(RuntimeException.class);
+                    .isInstanceOf(GroupRegistrationNotFound.class);
 
                 rabbitMQExtension.getRabbitMQ().unpause();
 

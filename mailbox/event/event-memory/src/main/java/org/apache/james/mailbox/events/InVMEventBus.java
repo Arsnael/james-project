@@ -89,14 +89,17 @@ public class InVMEventBus implements EventBus {
 
     @Override
     public Mono<Void> reDeliver(Group group, Event event) {
-        return Mono.fromCallable(() -> groupDelivery(event, retrieveListenerFromGroup(group), group))
-            .flatMap(EventDelivery.ExecutionStages::synchronousListenerFuture)
-            .then();
+        if (!event.isNoop()) {
+            return Mono.fromCallable(() -> groupDelivery(event, retrieveListenerFromGroup(group), group))
+                .flatMap(EventDelivery.ExecutionStages::synchronousListenerFuture)
+                .then();
+        }
+        return Mono.empty();
     }
 
     private MailboxListener retrieveListenerFromGroup(Group group) {
         return Optional.ofNullable(groups.get(group))
-            .orElseThrow(() -> new RuntimeException("Cannot retrieve listener from group: " + group.asString()));
+            .orElseThrow(() -> new GroupRegistrationNotFound(group));
     }
 
     private Flux<EventDelivery.ExecutionStages> keyDeliveries(Event event, Set<RegistrationKey> keys) {
