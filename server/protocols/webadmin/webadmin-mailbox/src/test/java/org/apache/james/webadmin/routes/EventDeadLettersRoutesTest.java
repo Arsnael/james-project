@@ -32,17 +32,23 @@ import org.apache.james.core.User;
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.events.Event;
+import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventBusTestFixture;
 import org.apache.james.mailbox.events.EventDeadLetters;
+import org.apache.james.mailbox.events.InVMEventBus;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.events.MemoryEventDeadLetters;
+import org.apache.james.mailbox.events.delivery.InVmEventDelivery;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.event.EventFactory;
+import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
+import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
+import org.apache.james.webadmin.service.EventDeadLettersService;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
@@ -89,19 +95,21 @@ class EventDeadLettersRoutesTest {
 
     private WebAdminServer webAdminServer;
     private EventDeadLetters deadLetters;
+    private MemoryTaskManager taskManager;
 
     @BeforeEach
     void beforeEach() throws Exception {
         deadLetters = new MemoryEventDeadLetters();
         JsonTransformer jsonTransformer = new JsonTransformer();
         EventSerializer eventSerializer = new EventSerializer(new InMemoryId.Factory(), new InMemoryMessageId.Factory());
+        EventBus eventBus = new InVMEventBus(new InVmEventDelivery(new NoopMetricFactory()));
+        EventDeadLettersService service = new EventDeadLettersService(deadLetters, eventBus, eventSerializer);
 
+        taskManager = new MemoryTaskManager();
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new DefaultMetricFactory(),
-            new EventDeadLettersRoutes(
-                deadLetters,
-                jsonTransformer,
-                eventSerializer));
+            new EventDeadLettersRoutes(service, taskManager, jsonTransformer),
+            new TasksRoutes(taskManager, jsonTransformer));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
@@ -112,6 +120,7 @@ class EventDeadLettersRoutesTest {
     @AfterEach
     void tearDown() {
         webAdminServer.destroy();
+        taskManager.stop();
     }
 
     @Nested
@@ -170,7 +179,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void listEventsShouldFailWhenInvalidGroup() {
             when()
-                .get("/events/deadLetter/groups/invalid/events")
+                .get("/events/deadLetter/groups/invalid")
             .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
@@ -182,7 +191,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void listEventsShouldReturnEmptyWhenNone() {
             when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events")
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A)
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
@@ -194,7 +203,7 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupA(), EVENT_1).block();
 
             when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events")
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A)
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
@@ -207,7 +216,7 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupB(), EVENT_2).block();
 
             when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events")
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A)
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
@@ -220,7 +229,7 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupA(), EVENT_2).block();
 
             when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events")
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A)
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
@@ -235,7 +244,7 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupA(), EVENT_1).block();
 
             String response = when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.OK_200)
                 .contentType(ContentType.JSON)
@@ -248,7 +257,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void getEventShouldReturn404WhenNotFound() {
             when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.NOT_FOUND_404);
         }
@@ -256,7 +265,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void getEventShouldFailWhenInvalidEventId() {
             when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/invalid")
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/invalid")
             .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
@@ -268,7 +277,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void getEventShouldFailWhenInvalidGroup() {
             when()
-                .get("/events/deadLetter/groups/invalid/events/" + UUID_1)
+                .get("/events/deadLetter/groups/invalid/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
@@ -285,7 +294,7 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupA(), EVENT_1).block();
 
             when()
-                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.NO_CONTENT_204);
         }
@@ -293,7 +302,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void deleteShouldReturnOkWhenEventNotFound() {
             when()
-                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.NO_CONTENT_204);
         }
@@ -301,7 +310,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void deleteShouldFailWhenInvalidGroup() {
             when()
-                .delete("/events/deadLetter/groups/invalid/events/" + UUID_1)
+                .delete("/events/deadLetter/groups/invalid/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
@@ -313,7 +322,7 @@ class EventDeadLettersRoutesTest {
         @Test
         void deleteShouldFailWhenInvalidEventId() {
             when()
-                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/invalid")
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/invalid")
             .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
@@ -327,10 +336,10 @@ class EventDeadLettersRoutesTest {
             deadLetters.store(new EventBusTestFixture.GroupA(), EVENT_1).block();
 
             with()
-                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1);
+                .delete("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/" + UUID_1);
 
             when()
-                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/events/" + UUID_1)
+                .get("/events/deadLetter/groups/" + SERIALIZED_GROUP_A + "/" + UUID_1)
             .then()
                 .statusCode(HttpStatus.NOT_FOUND_404);
         }
