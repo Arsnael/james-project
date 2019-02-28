@@ -60,7 +60,6 @@ public class EventDeadLettersRoutes implements Routes {
     private static final String GROUP_PARAM = ":group";
     private static final String EVENT_ID_PARAM = ":eventId";
 
-    private static final String INVALID_ACTION_ARGUMENT_REQUEST = "Invalid action argument for performing an operation on EventDeadLetters.";
     private static final String INTERNAL_SERVER_ERROR = "Internal server error - Something went bad on the server side.";
 
     private final EventDeadLettersService eventDeadLettersService;
@@ -108,7 +107,7 @@ public class EventDeadLettersRoutes implements Routes {
             responseHeaders = {
                 @ResponseHeader(name = "Location", description = "URL of the resource associated with the scheduled task")
             }),
-        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = INVALID_ACTION_ARGUMENT_REQUEST),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid action argument"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = INTERNAL_SERVER_ERROR)
     })
     public TaskIdDto performActionOnAllEvents(Request request, Response response) {
@@ -127,7 +126,7 @@ public class EventDeadLettersRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = INTERNAL_SERVER_ERROR)
     })
     private Iterable<String> listGroups(Request request, Response response) {
-        return eventDeadLettersService.listGroupsAsString();
+        return eventDeadLettersService.listGroupsAsStrings();
     }
 
     @GET
@@ -177,7 +176,7 @@ public class EventDeadLettersRoutes implements Routes {
             responseHeaders = {
                 @ResponseHeader(name = "Location", description = "URL of the resource associated with the scheduled task")
             }),
-        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = INVALID_ACTION_ARGUMENT_REQUEST),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid group name or action argument"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = INTERNAL_SERVER_ERROR)
     })
     public TaskIdDto performActionOnGroupEvents(Request request, Response response) {
@@ -286,7 +285,8 @@ public class EventDeadLettersRoutes implements Routes {
             responseHeaders = {
                 @ResponseHeader(name = "Location", description = "URL of the resource associated with the scheduled task")
             }),
-        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = INVALID_ACTION_ARGUMENT_REQUEST),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid group name, event id or action argument"),
+        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "No event with this eventId"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = INTERNAL_SERVER_ERROR)
     })
     public TaskIdDto performActionOnSingleEvent(Request request, Response response) {

@@ -19,8 +19,6 @@
 
 package org.apache.james.webadmin.service;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -36,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 public class EventDeadLettersRedeliverTask implements Task {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventDeadLettersRedeliverTask.class);
@@ -43,11 +42,11 @@ public class EventDeadLettersRedeliverTask implements Task {
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
         private final long successfulRedeliveriesCount;
-        private final long failedRedeliverieCount;
+        private final long failedRedeliveriesCount;
 
-        AdditionalInformation(long successfulRedeliveriesCount, long failedRedeliverieCount) {
+        AdditionalInformation(long successfulRedeliveriesCount, long failedRedeliveriesCount) {
             this.successfulRedeliveriesCount = successfulRedeliveriesCount;
-            this.failedRedeliverieCount = failedRedeliverieCount;
+            this.failedRedeliveriesCount = failedRedeliveriesCount;
         }
 
         public long getSuccessfulRedeliveriesCount() {
@@ -55,27 +54,26 @@ public class EventDeadLettersRedeliverTask implements Task {
         }
 
         public long getFailedRedeliveriesCount() {
-            return failedRedeliverieCount;
+            return failedRedeliveriesCount;
         }
     }
 
     private final EventBus eventBus;
-    private final Map<Group, List<Event>> groupsWithEvents;
+    private final Flux<Tuple2<Group, Event>> groupsWithEvents;
     private final AtomicLong successfulRedeliveriesCount;
-    private final AtomicLong failedRedeliverieCount;
+    private final AtomicLong failedRedeliveriesCount;
 
     @Inject
-    EventDeadLettersRedeliverTask(EventBus eventBus, Map<Group, List<Event>> groupsWithEvents) {
+    EventDeadLettersRedeliverTask(EventBus eventBus, Flux<Tuple2<Group, Event>> groupsWithEvents) {
         this.eventBus = eventBus;
         this.groupsWithEvents = groupsWithEvents;
         this.successfulRedeliveriesCount = new AtomicLong(0L);
-        this.failedRedeliverieCount = new AtomicLong(0L);
+        this.failedRedeliveriesCount = new AtomicLong(0L);
     }
 
     @Override
     public Result run() {
-        return Flux.fromIterable(groupsWithEvents.entrySet())
-            .flatMap(entry -> redeliverGroupEvents(entry.getKey(), entry.getValue()))
+        return groupsWithEvents.flatMap(entry -> redeliverGroupEvent(entry.getT1(), entry.getT2()))
             .reduce(Result.COMPLETED, Task::combine)
             .onErrorResume(e -> {
                 LOGGER.error("Error while redelivering events", e);
@@ -84,13 +82,7 @@ public class EventDeadLettersRedeliverTask implements Task {
             .block();
     }
 
-    private Mono<Result> redeliverGroupEvents(Group group, List<Event> events) {
-        return Flux.fromStream(events.stream())
-            .flatMap(event -> redeliverEvent(group, event))
-            .reduce(Result.COMPLETED, Task::combine);
-    }
-
-    private Mono<Result> redeliverEvent(Group group, Event event) {
+    private Mono<Result> redeliverGroupEvent(Group group, Event event) {
         return eventBus.reDeliver(group, event)
             .then(Mono.fromCallable(() -> {
                 successfulRedeliveriesCount.incrementAndGet();
@@ -98,8 +90,8 @@ public class EventDeadLettersRedeliverTask implements Task {
             }))
             .onErrorResume(e -> {
                 LOGGER.error("Error while performing redelivery of event: {} for group: {}",
-                    group.asString(), event.getEventId().toString(), e);
-                failedRedeliverieCount.incrementAndGet();
+                    event.getEventId().toString(), group.asString(), e);
+                failedRedeliveriesCount.incrementAndGet();
                 return Mono.just(Result.PARTIAL);
             });
     }
@@ -117,6 +109,6 @@ public class EventDeadLettersRedeliverTask implements Task {
     AdditionalInformation createAdditionalInformation() {
         return new AdditionalInformation(
             successfulRedeliveriesCount.get(),
-            failedRedeliverieCount.get());
+            failedRedeliveriesCount.get());
     }
 }
