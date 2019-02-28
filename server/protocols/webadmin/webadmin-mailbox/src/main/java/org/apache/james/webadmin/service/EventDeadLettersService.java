@@ -30,7 +30,6 @@ import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventDeadLetters;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.task.Task;
-import org.apache.james.webadmin.dto.ActionEvents;
 
 import com.github.steveash.guavate.Guavate;
 
@@ -93,35 +92,27 @@ public class EventDeadLettersService {
     }
 
     private Flux<Tuple2<Group, Event>> getGroupWithEvents(Group group) {
-        return Flux.just(group).zipWith(listGroupEvents(group));
+        return listGroupEvents(group)
+            .flatMap(event -> Flux.zip(Mono.just(group), Mono.just(event)));
     }
 
-    public Task createActionOnEventsTask(ActionEvents action) {
-        Flux<Tuple2<Group, Event>> groupsWithEvents = listGroups().flatMap(group -> getGroupWithEvents(group));
+    public Task createActionOnEventsTask() {
+        Flux<Tuple2<Group, Event>> groupsWithEvents = listGroups().flatMap(this::getGroupWithEvents);
 
-        return createActionOnEventsTask(groupsWithEvents, action);
+        return redeliverEvents(groupsWithEvents);
     }
 
-    public Task createActionOnEventsTask(Group group, ActionEvents action) {
-        return createActionOnEventsTask(getGroupWithEvents(group), action);
+    public Task createActionOnEventsTask(Group group) {
+        return redeliverEvents(getGroupWithEvents(group));
     }
 
-    public Task createActionOnEventsTask(Group group, Event.EventId eventId, ActionEvents action) {
+    public Task createActionOnEventsTask(Group group, Event.EventId eventId) {
         Flux<Tuple2<Group, Event>> groupWithEvent = Flux.just(group).zipWith(getEvent(group, eventId));
 
-        return createActionOnEventsTask(groupWithEvent, action);
-    }
-
-    private Task createActionOnEventsTask(Flux<Tuple2<Group, Event>> groupsWithEvents, ActionEvents action) {
-        switch (action) {
-            case reDeliver:
-                return redeliverEvents(groupsWithEvents);
-            default:
-                throw new IllegalArgumentException(action + " is not a supported action");
-        }
+        return redeliverEvents(groupWithEvent);
     }
 
     private Task redeliverEvents(Flux<Tuple2<Group, Event>> groupsWithEvents) {
-        return new EventDeadLettersRedeliverTask(eventBus, groupsWithEvents);
+        return new EventDeadLettersRedeliverTask(eventBus, deadLetters, groupsWithEvents);
     }
 }

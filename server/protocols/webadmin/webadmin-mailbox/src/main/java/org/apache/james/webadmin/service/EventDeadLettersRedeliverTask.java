@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.events.EventDeadLetters;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
@@ -59,13 +60,15 @@ public class EventDeadLettersRedeliverTask implements Task {
     }
 
     private final EventBus eventBus;
+    private final EventDeadLetters deadLetters;
     private final Flux<Tuple2<Group, Event>> groupsWithEvents;
     private final AtomicLong successfulRedeliveriesCount;
     private final AtomicLong failedRedeliveriesCount;
 
     @Inject
-    EventDeadLettersRedeliverTask(EventBus eventBus, Flux<Tuple2<Group, Event>> groupsWithEvents) {
+    EventDeadLettersRedeliverTask(EventBus eventBus, EventDeadLetters deadLetters, Flux<Tuple2<Group, Event>> groupsWithEvents) {
         this.eventBus = eventBus;
+        this.deadLetters = deadLetters;
         this.groupsWithEvents = groupsWithEvents;
         this.successfulRedeliveriesCount = new AtomicLong(0L);
         this.failedRedeliveriesCount = new AtomicLong(0L);
@@ -85,6 +88,7 @@ public class EventDeadLettersRedeliverTask implements Task {
     private Mono<Result> redeliverGroupEvent(Group group, Event event) {
         return eventBus.reDeliver(group, event)
             .then(Mono.fromCallable(() -> {
+                deadLetters.remove(group, event.getEventId());
                 successfulRedeliveriesCount.incrementAndGet();
                 return Result.COMPLETED;
             }))

@@ -111,9 +111,9 @@ public class EventDeadLettersRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = INTERNAL_SERVER_ERROR)
     })
     public TaskIdDto performActionOnAllEvents(Request request, Response response) {
-        ActionEvents action = ActionEvents.parse(request.queryParams("action"));
+        assertValidActionParameter(request);
 
-        Task task = eventDeadLettersService.createActionOnEventsTask(action);
+        Task task = eventDeadLettersService.createActionOnEventsTask();
         TaskId taskId = taskManager.submit(task);
         return TaskIdDto.respond(response, taskId);
     }
@@ -181,9 +181,9 @@ public class EventDeadLettersRoutes implements Routes {
     })
     public TaskIdDto performActionOnGroupEvents(Request request, Response response) {
         Group group = parseGroup(request);
-        ActionEvents action = ActionEvents.parse(request.queryParams("action"));
+        assertValidActionParameter(request);
 
-        Task task = eventDeadLettersService.createActionOnEventsTask(group, action);
+        Task task = eventDeadLettersService.createActionOnEventsTask(group);
         TaskId taskId = taskManager.submit(task);
         return TaskIdDto.respond(response, taskId);
     }
@@ -292,11 +292,19 @@ public class EventDeadLettersRoutes implements Routes {
     public TaskIdDto performActionOnSingleEvent(Request request, Response response) {
         Group group = parseGroup(request);
         Event.EventId eventId = parseEventId(request);
-        ActionEvents action = ActionEvents.parse(request.queryParams("action"));
+        assertValidActionParameter(request);
 
-        Task task = eventDeadLettersService.createActionOnEventsTask(group, eventId, action);
+        Task task = eventDeadLettersService.createActionOnEventsTask(group, eventId);
         TaskId taskId = taskManager.submit(task);
         return TaskIdDto.respond(response, taskId);
+    }
+
+    private void assertValidActionParameter(Request request) {
+        ActionEvents action = ActionEvents.parse(request.queryParams("action"));
+
+        if (action != ActionEvents.reDeliver) {
+            throw new IllegalArgumentException(action + " is not a supported action");
+        }
     }
 
     private Group parseGroup(Request request) {
