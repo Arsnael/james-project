@@ -2502,6 +2502,7 @@ curl -XPOST http://ip:port/events/deadLetter
 ```
 
 Will create a task that will attempt to redeliver all events stored in "Event Dead Letter".
+If successful, redelivered events will then be removed from "Dead Letter".
 
 Response codes:
 
@@ -2515,6 +2516,7 @@ curl -XPOST http://ip:port/events/deadLetter/groups/org.apache.james.mailbox.eve
 ```
 
 Will create a task that will attempt to redeliver all events of a particular group stored in "Event Dead Letter".
+If successful, redelivered events will then be removed from "Dead Letter".
 
 Response codes:
 
@@ -2528,6 +2530,7 @@ curl -XPOST http://ip:port/events/deadLetter/groups/org.apache.james.mailbox.eve
 ```
 
 Will create a task that will attempt to redeliver a single event of a particular group stored in "Event Dead Letter".
+If successful, redelivered event will then be removed from "Dead Letter".
 
 Response codes:
 
