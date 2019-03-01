@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
-import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventDeadLetters;
