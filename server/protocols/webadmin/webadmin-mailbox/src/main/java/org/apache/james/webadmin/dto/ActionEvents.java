@@ -29,13 +29,13 @@ public enum ActionEvents {
     public static Optional<ActionEvents> find(String action) {
         Preconditions.checkArgument(action != null, "'action' url parameter is mandatory");
 
-        return Optional.ofNullable(getActionEvent(action));
+        return getActionEvent(action);
     }
 
-    private static ActionEvents getActionEvent(String action) {
+    private static Optional<ActionEvents> getActionEvent(String action) {
         if (action.equalsIgnoreCase(ActionEvents.REDELIVER.toString())) {
-            return ActionEvents.REDELIVER;
+            return Optional.of(ActionEvents.REDELIVER);
         }
-        return null;
+        return Optional.empty();
     }
 }
