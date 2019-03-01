@@ -410,7 +410,7 @@ class EventDeadLettersRoutesTest {
         }
 
         @Test
-        void postRedeliverAllEventsShouldRedeliverAndRemoveEventFromDeadLetters() {
+        void postRedeliverAllEventsShouldRemoveEventFromDeadLetters() {
             deadLetters.store(groupA, EVENT_1).block();
 
             String taskId = with()
@@ -435,7 +435,7 @@ class EventDeadLettersRoutesTest {
         }
 
         @Test
-        void postRedeliverAllEventsShouldRedeliverAndRemoveAllEventsFromDeadLetters() {
+        void postRedeliverAllEventsShouldRemoveAllEventsFromDeadLetters() {
             deadLetters.store(groupA, EVENT_1).block();
             deadLetters.store(groupA, EVENT_2).block();
             deadLetters.store(groupB, EVENT_2).block();
@@ -555,7 +555,7 @@ class EventDeadLettersRoutesTest {
         }
 
         @Test
-        void postRedeliverGroupEventsShouldRedeliverAndRemoveEventFromDeadLetters() {
+        void postRedeliverGroupEventsShouldRemoveEventFromDeadLetters() {
             deadLetters.store(groupA, EVENT_1).block();
 
             String taskId = with()
@@ -580,7 +580,7 @@ class EventDeadLettersRoutesTest {
         }
 
         @Test
-        void postRedeliverGroupEventsShouldRedeliverAndRemoveAllGroupEventsFromDeadLetters() {
+        void postRedeliverGroupEventsShouldRemoveAllGroupEventsFromDeadLetters() {
             deadLetters.store(groupA, EVENT_1).block();
             deadLetters.store(groupA, EVENT_2).block();
 
@@ -708,7 +708,7 @@ class EventDeadLettersRoutesTest {
         }
 
         @Test
-        void postRedeliverSingleEventShouldRedeliverAndRemoveEventFromDeadLetters() {
+        void postRedeliverSingleEventShouldRemoveEventFromDeadLetters() {
             deadLetters.store(groupA, EVENT_1).block();
 
             String taskId = with()

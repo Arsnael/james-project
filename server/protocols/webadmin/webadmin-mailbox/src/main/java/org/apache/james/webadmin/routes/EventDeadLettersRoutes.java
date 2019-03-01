@@ -104,7 +104,7 @@ public class EventDeadLettersRoutes implements Routes {
             name = "action",
             paramType = "query",
             example = "?action=reDeliver",
-            value = "Specify the action to perform on all events. For now only 'reDeliver' is supported as an action, "
+            value = "Specify the action to perform on all events. 'reDeliver' is supported as an action, "
                 + "and its purpose is to attempt a redelivery of all events present in dead letter."),
     })
     @ApiResponses(value = {
@@ -173,7 +173,7 @@ public class EventDeadLettersRoutes implements Routes {
             name = "action",
             paramType = "query",
             example = "?action=reDeliver",
-            value = "Specify the action to perform on all events of a particular group. For now only 'reDeliver' is supported as an action, "
+            value = "Specify the action to perform on all events of a particular group. 'reDeliver' is supported as an action, "
                 + "and its purpose is to attempt a redelivery of all events present in dead letter for the specified group."),
     })
     @ApiResponses(value = {
@@ -284,7 +284,7 @@ public class EventDeadLettersRoutes implements Routes {
             name = "action",
             paramType = "query",
             example = "?action=reDeliver",
-            value = "Specify the action to perform on an unique event. For now only 'reDeliver' is supported as an action, "
+            value = "Specify the action to perform on an unique event. 'reDeliver' is supported as an action, "
                 + "and its purpose is to attempt a redelivery of the specified event."),
     })
     @ApiResponses(value = {
