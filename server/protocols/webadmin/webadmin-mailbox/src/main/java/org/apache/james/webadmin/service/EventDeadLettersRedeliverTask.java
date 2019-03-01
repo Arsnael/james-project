@@ -23,8 +23,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-import javax.inject.Inject;
-
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventDeadLetters;
