@@ -92,7 +92,7 @@ public class EventDeadLettersRoutes implements Routes {
 
     @POST
     @Path("")
-    @ApiOperation(value = "Performing operations on all events")
+    @ApiOperation(value = "Performing action on all events")
     @ApiImplicitParams({
         @ApiImplicitParam(
             required = true,
@@ -114,7 +114,7 @@ public class EventDeadLettersRoutes implements Routes {
     public TaskIdDto performActionOnAllEvents(Request request, Response response) {
         assertValidActionParameter(request);
 
-        Task task = eventDeadLettersService.createActionOnEventsTask();
+        Task task = eventDeadLettersService.redeliverAllEvents();
         TaskId taskId = taskManager.submit(task);
         return TaskIdDto.respond(response, taskId);
     }
@@ -154,7 +154,7 @@ public class EventDeadLettersRoutes implements Routes {
 
     @POST
     @Path("/groups/" + GROUP_PARAM)
-    @ApiOperation(value = "Performing operations on events of a particular group")
+    @ApiOperation(value = "Performing action on events of a particular group")
     @ApiImplicitParams({
         @ApiImplicitParam(
             required = true,
@@ -184,7 +184,7 @@ public class EventDeadLettersRoutes implements Routes {
         Group group = parseGroup(request);
         assertValidActionParameter(request);
 
-        Task task = eventDeadLettersService.createActionOnEventsTask(group);
+        Task task = eventDeadLettersService.redeliverGroupEvents(group);
         TaskId taskId = taskManager.submit(task);
         return TaskIdDto.respond(response, taskId);
     }
@@ -256,7 +256,7 @@ public class EventDeadLettersRoutes implements Routes {
 
     @POST
     @Path("/groups/" + GROUP_PARAM + "/" + EVENT_ID_PARAM)
-    @ApiOperation(value = "Performing operations on an event")
+    @ApiOperation(value = "Performing action on an event")
     @ApiImplicitParams({
         @ApiImplicitParam(
             required = true,
@@ -295,7 +295,7 @@ public class EventDeadLettersRoutes implements Routes {
         Event.EventId eventId = parseEventId(request);
         assertValidActionParameter(request);
 
-        Task task = eventDeadLettersService.createActionOnEventsTask(group, eventId);
+        Task task = eventDeadLettersService.redeliverSingleEvent(group, eventId);
         TaskId taskId = taskManager.submit(task);
         return TaskIdDto.respond(response, taskId);
     }
