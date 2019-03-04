@@ -23,29 +23,29 @@ import static org.apache.james.webadmin.service.EventDeadLettersRedeliverService
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Supplier;
 
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class EventDeadLettersRedeliverTask implements Task {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventDeadLettersRedeliverTask.class);
     public static final String TYPE = "eventDeadLettersRedeliverTask";
 
     public static class AdditionalInformation implements TaskExecutionDetails.AdditionalInformation {
         private final long successfulRedeliveriesCount;
         private final long failedRedeliveriesCount;
+        private final Optional<Group> group;
+        private final Optional<Event.EventId> eventId;
 
-        AdditionalInformation(long successfulRedeliveriesCount, long failedRedeliveriesCount) {
+        AdditionalInformation(long successfulRedeliveriesCount, long failedRedeliveriesCount,
+                              Optional<Group> group, Optional<Event.EventId> eventId) {
             this.successfulRedeliveriesCount = successfulRedeliveriesCount;
             this.failedRedeliveriesCount = failedRedeliveriesCount;
+            this.group = group;
+            this.eventId = eventId;
         }
 
         public long getSuccessfulRedeliveriesCount() {
@@ -55,23 +55,33 @@ public class EventDeadLettersRedeliverTask implements Task {
         public long getFailedRedeliveriesCount() {
             return failedRedeliveriesCount;
         }
+
+        @JsonInclude(JsonInclude.Include.NON_ABSENT)
+        public Optional<String> getGroup() {
+            return group.map(Group::asString);
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_ABSENT)
+        public Optional<String> getEventId() {
+            return eventId.map(eventId -> eventId.getId().toString());
+        }
     }
 
     private final EventDeadLettersRedeliverService service;
-    private final Supplier<Flux<Tuple2<Group, Event>>> groupsWithEvents;
+    private final EventRetriever eventRetriever;
     private final AtomicLong successfulRedeliveriesCount;
     private final AtomicLong failedRedeliveriesCount;
 
-    EventDeadLettersRedeliverTask(EventDeadLettersRedeliverService service, Supplier<Flux<Tuple2<Group, Event>>> groupsWithEvents) {
+    EventDeadLettersRedeliverTask(EventDeadLettersRedeliverService service, EventRetriever eventRetriever) {
         this.service = service;
-        this.groupsWithEvents = groupsWithEvents;
+        this.eventRetriever = eventRetriever;
         this.successfulRedeliveriesCount = new AtomicLong(0L);
         this.failedRedeliveriesCount = new AtomicLong(0L);
     }
 
     @Override
     public Result run() {
-        return service.redeliverEvents(groupsWithEvents)
+        return service.redeliverEvents(eventRetriever)
             .map(this::updateCounters)
             .reduce(Result.COMPLETED, Task::combine)
             .block();
@@ -102,6 +112,8 @@ public class EventDeadLettersRedeliverTask implements Task {
     AdditionalInformation createAdditionalInformation() {
         return new AdditionalInformation(
             successfulRedeliveriesCount.get(),
-            failedRedeliveriesCount.get());
+            failedRedeliveriesCount.get(),
+            eventRetriever.forGroup(),
+            eventRetriever.forEvent());
     }
 }

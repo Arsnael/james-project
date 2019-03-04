@@ -19,8 +19,6 @@
 
 package org.apache.james.webadmin.service;
 
-import java.util.function.Supplier;
-
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventDeadLetters;
@@ -30,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 public class EventDeadLettersRedeliverService {
     enum RedeliverResult {
@@ -48,8 +45,9 @@ public class EventDeadLettersRedeliverService {
         this.deadLetters = deadLetters;
     }
 
-    Flux<RedeliverResult> redeliverEvents(Supplier<Flux<Tuple2<Group, Event>>> groupsWithEvents) {
-        return groupsWithEvents.get().flatMap(entry -> redeliverGroupEvents(entry.getT1(), entry.getT2()));
+    Flux<RedeliverResult> redeliverEvents(EventRetriever eventRetriever) {
+        return eventRetriever.retrieveEvents(deadLetters)
+            .flatMap(entry -> redeliverGroupEvents(entry.getT1(), entry.getT2()));
     }
 
     private Mono<RedeliverResult> redeliverGroupEvents(Group group, Event event) {
