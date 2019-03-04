@@ -19,8 +19,6 @@
 
 package org.apache.james.webadmin.service;
 
-import static org.apache.james.webadmin.service.EventDeadLettersRedeliverService.RedeliverResult;
-
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -87,16 +85,18 @@ public class EventDeadLettersRedeliverTask implements Task {
             .block();
     }
 
-    private Result updateCounters(RedeliverResult redeliverResult) {
-        switch (redeliverResult) {
-            case REDELIVER_SUCCESS:
+    private Result updateCounters(Result result) {
+        switch (result) {
+            case COMPLETED:
                 successfulRedeliveriesCount.incrementAndGet();
-                return Result.COMPLETED;
-            case REDELIVER_FAIL:
-            default:
+                break;
+            case PARTIAL:
                 failedRedeliveriesCount.incrementAndGet();
-                return Result.PARTIAL;
+                break;
+            default:
+                throw new RuntimeException("Result case: " + result.toString() + " not recognized");
         }
+        return result;
     }
 
     @Override

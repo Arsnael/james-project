@@ -23,6 +23,7 @@ import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.events.EventDeadLetters;
 import org.apache.james.mailbox.events.Group;
+import org.apache.james.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +31,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class EventDeadLettersRedeliverService {
-    enum RedeliverResult {
-        REDELIVER_SUCCESS,
-        REDELIVER_FAIL
-    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventDeadLettersRedeliverService.class);
 
@@ -45,21 +42,21 @@ public class EventDeadLettersRedeliverService {
         this.deadLetters = deadLetters;
     }
 
-    Flux<RedeliverResult> redeliverEvents(EventRetriever eventRetriever) {
+    Flux<Task.Result> redeliverEvents(EventRetriever eventRetriever) {
         return eventRetriever.retrieveEvents(deadLetters)
             .flatMap(entry -> redeliverGroupEvents(entry.getT1(), entry.getT2()));
     }
 
-    private Mono<RedeliverResult> redeliverGroupEvents(Group group, Event event) {
+    private Mono<Task.Result> redeliverGroupEvents(Group group, Event event) {
         return eventBus.reDeliver(group, event)
             .then(Mono.fromCallable(() -> {
                 deadLetters.remove(group, event.getEventId());
-                return RedeliverResult.REDELIVER_SUCCESS;
+                return Task.Result.COMPLETED;
             }))
             .onErrorResume(e -> {
                 LOGGER.error("Error while performing redelivery of event: {} for group: {}",
                     event.getEventId().toString(), group.asString(), e);
-                return Mono.just(RedeliverResult.REDELIVER_FAIL);
+                return Mono.just(Task.Result.PARTIAL);
             });
     }
 }
