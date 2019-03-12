@@ -23,16 +23,17 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.james.CassandraJmapTestRule;
 import org.apache.james.DockerCassandraRule;
@@ -42,7 +43,6 @@ import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.MailboxListener;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
@@ -50,6 +50,9 @@ import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.routes.EventDeadLettersRoutes;
 import org.apache.james.webadmin.routes.TasksRoutes;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionFactory;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -103,10 +106,7 @@ public class EventDeadLettersIntegrationTest {
         }
 
         private Optional<Integer> extractEventRetries(Event event) {
-            if (retries.containsKey(event.getEventId())) {
-                return Optional.of(retries.get(event.getEventId()));
-            }
-            return Optional.empty();
+            return Optional.ofNullable(retries.get(event.getEventId()));
         }
 
         List<Event> getSuccessfulEvents() {
@@ -128,9 +128,15 @@ public class EventDeadLettersIntegrationTest {
     private static final String EVENTS_ACTION = "reDeliver";
     private static final String SERIALIZED_GROUP = new RetryEventsListenerGroup().asString();
 
-    private static final MailboxPath MAILBOX_PATH = MailboxPath.forUser(BOB, DefaultMailboxes.INBOX);
-
-    RetryEventsListener retryEventsListener = new RetryEventsListener();
+    private Duration slowPacedPollInterval = ONE_HUNDRED_MILLISECONDS;
+    private ConditionFactory calmlyAwait = Awaitility.with()
+        .pollInterval(slowPacedPollInterval)
+        .and()
+        .with()
+        .pollDelay(slowPacedPollInterval)
+        .await();
+    private ConditionFactory awaitAtMostTenSeconds = calmlyAwait.atMost(10, TimeUnit.SECONDS);
+    private RetryEventsListener retryEventsListener = new RetryEventsListener();
 
     @ClassRule
     public static DockerCassandraRule cassandra = new DockerCassandraRule();
@@ -139,7 +145,7 @@ public class EventDeadLettersIntegrationTest {
     public CassandraJmapTestRule cassandraJmapTestRule = CassandraJmapTestRule.defaultTestRule();
 
     private GuiceJamesServer guiceJamesServer;
-    private MailboxProbe mailboxProbe;
+    private MailboxProbeImpl mailboxProbe;
 
     @Before
     public void setUp() throws Exception {
@@ -166,10 +172,14 @@ public class EventDeadLettersIntegrationTest {
     }
 
     private void generateInitialEvent() {
-        mailboxProbe.createMailbox(MAILBOX_PATH.getNamespace(), MAILBOX_PATH.getUser(), MAILBOX_PATH.getName());
+        mailboxProbe.createMailbox(MailboxPath.forUser(BOB, DefaultMailboxes.INBOX));
     }
 
-    private String retrieveFailedEventId() {
+    private void generateSecondEvent() {
+        mailboxProbe.createMailbox(MailboxPath.forUser(BOB, DefaultMailboxes.OUTBOX));
+    }
+
+    private String retrieveFirstFailedEventId() {
         ArrayList<String> response = when()
             .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
         .then()
@@ -225,21 +235,19 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
-        String failedEventId = retrieveFailedEventId();
+        String failedEventId = retrieveFirstFailedEventId();
 
         when()
             .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
         .then()
-            .statusCode(HttpStatus.OK_200)
-            .contentType(ContentType.JSON)
-            .body(".", notNullValue());
+            .statusCode(HttpStatus.OK_200);
     }
 
     @Test
     public void multipleFailedEventShouldBeStoredInDeadLetter() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
-        mailboxProbe.createMailbox("#bobox", BOB, DefaultMailboxes.INBOX);
+        generateSecondEvent();
 
         when()
             .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
@@ -254,7 +262,7 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
-        String failedEventId = retrieveFailedEventId();
+        String failedEventId = retrieveFirstFailedEventId();
 
         when()
             .delete(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
@@ -272,7 +280,7 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
-        String failedEventId = retrieveFailedEventId();
+        String failedEventId = retrieveFirstFailedEventId();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
@@ -302,7 +310,7 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(5);
         generateInitialEvent();
 
-        String failedEventId = retrieveFailedEventId();
+        String failedEventId = retrieveFirstFailedEventId();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
@@ -321,14 +329,14 @@ public class EventDeadLettersIntegrationTest {
             .body("additionalInformation.group", is(SERIALIZED_GROUP))
             .body("additionalInformation.eventId", is(failedEventId));
 
-        assertThat(retryEventsListener.getSuccessfulEvents()).hasSize(1);
+        awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 1);
     }
 
     @Test
     public void multipleFailedEventsShouldNotBeInDeadLettersAfterSuccessfulGroupRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
-        mailboxProbe.createMailbox("#bobox", BOB, DefaultMailboxes.INBOX);
+        generateSecondEvent();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
@@ -358,7 +366,7 @@ public class EventDeadLettersIntegrationTest {
     public void multipleFailedEventsShouldBeCorrectlyProcessedByListenerAfterSuccessfulGroupRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(5);
         generateInitialEvent();
-        mailboxProbe.createMailbox("#bobox", BOB, DefaultMailboxes.INBOX);
+        generateSecondEvent();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
@@ -376,14 +384,14 @@ public class EventDeadLettersIntegrationTest {
             .body("additionalInformation.failedRedeliveriesCount", is(0))
             .body("additionalInformation.group", is(SERIALIZED_GROUP));
 
-        assertThat(retryEventsListener.getSuccessfulEvents()).hasSize(2);
+        awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
     }
 
     @Test
     public void multipleFailedEventsShouldNotBeInDeadLettersAfterSuccessfulAllRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
-        mailboxProbe.createMailbox("#bobox", BOB, DefaultMailboxes.INBOX);
+        generateSecondEvent();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
@@ -412,7 +420,7 @@ public class EventDeadLettersIntegrationTest {
     public void multipleFailedEventsShouldBeCorrectlyProcessedByListenerAfterSuccessfulAllRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(5);
         generateInitialEvent();
-        mailboxProbe.createMailbox("#bobox", BOB, DefaultMailboxes.INBOX);
+        generateSecondEvent();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
@@ -429,7 +437,7 @@ public class EventDeadLettersIntegrationTest {
             .body("additionalInformation.successfulRedeliveriesCount", is(2))
             .body("additionalInformation.failedRedeliveriesCount", is(0));
 
-        assertThat(retryEventsListener.getSuccessfulEvents()).hasSize(2);
+        awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
     }
 
     @Test
@@ -438,7 +446,7 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(8);
         generateInitialEvent();
 
-        String failedEventId = retrieveFailedEventId();
+        String failedEventId = retrieveFirstFailedEventId();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
@@ -460,8 +468,6 @@ public class EventDeadLettersIntegrationTest {
         when()
             .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
         .then()
-            .statusCode(HttpStatus.OK_200)
-            .contentType(ContentType.JSON)
-            .body(".", notNullValue());
+            .statusCode(HttpStatus.OK_200);
     }
 }
