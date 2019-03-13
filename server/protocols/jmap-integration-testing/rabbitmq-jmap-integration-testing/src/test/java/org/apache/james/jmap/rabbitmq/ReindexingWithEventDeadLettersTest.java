@@ -44,7 +44,7 @@ import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.JamesServerExtensionBuilder;
+import org.apache.james.JamesServerBuilder;
 import org.apache.james.JmapJamesServerContract;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.modules.RabbitMQExtension;
@@ -82,7 +82,7 @@ class ReindexingWithEventDeadLettersTest {
     private static SwarmGenericContainer elasticSearchContainer = new SwarmGenericContainer(Images.ELASTICSEARCH_2)
         .withExposedPorts(ELASTIC_SEARCH_HTTP_PORT, ELASTIC_SEARCH_PORT);
 
-    private static final JamesServerExtensionBuilder.ServerProvider CONFIGURATION_BUILDER = configuration -> GuiceJamesServer
+    private static final JamesServerBuilder.ServerProvider CONFIGURATION_BUILDER = configuration -> GuiceJamesServer
             .forConfiguration(configuration)
             .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
@@ -91,7 +91,7 @@ class ReindexingWithEventDeadLettersTest {
                 .toInstance(WebAdminConfiguration.TEST_CONFIGURATION));
 
     @RegisterExtension
-    JamesServerExtension testExtension = new JamesServerExtensionBuilder()
+    JamesServerExtension testExtension = new JamesServerBuilder()
         .extension(new DockerElasticSearchExtension(elasticSearchContainer))
         .extension(new CassandraExtension())
         .extension(new RabbitMQExtension())
