@@ -20,8 +20,8 @@
 package org.apache.james.jmap.rabbitmq;
 
 import static io.restassured.RestAssured.with;
-import static org.apache.james.DockerElasticSearchRegistrableExtension.ELASTIC_SEARCH_HTTP_PORT;
-import static org.apache.james.DockerElasticSearchRegistrableExtension.ELASTIC_SEARCH_PORT;
+import static org.apache.james.DockerElasticSearchExtension.ELASTIC_SEARCH_HTTP_PORT;
+import static org.apache.james.DockerElasticSearchExtension.ELASTIC_SEARCH_PORT;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.JmapCommonRequests.getDraftId;
 import static org.apache.james.jmap.JmapCommonRequests.listMessageIdsForAccount;
@@ -41,7 +41,7 @@ import java.util.List;
 
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
-import org.apache.james.DockerElasticSearchRegistrableExtension;
+import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.JamesServerExtensionBuilder;
@@ -92,7 +92,7 @@ class ReindexingWithEventDeadLettersTest {
 
     @RegisterExtension
     JamesServerExtension testExtension = new JamesServerExtensionBuilder()
-        .extension(new DockerElasticSearchRegistrableExtension(elasticSearchContainer))
+        .extension(new DockerElasticSearchExtension(elasticSearchContainer))
         .extension(new CassandraExtension())
         .extension(new RabbitMQExtension())
         .extension(new SwiftBlobStoreExtension(PayloadCodecFactory.AES256))
