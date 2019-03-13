@@ -181,18 +181,12 @@ class ReindexingWithEventDeadLettersTest {
         with()
             .header("Authorization", aliceAccessToken.serialize())
             .body(requestBody)
-            .post("/jmap")
-        .then()
-            .log().ifValidationFails()
-            .statusCode(200)
-            .body(NAME, equalTo("messagesSet"))
-            .body(ARGUMENTS + ".notCreated", aMapWithSize(0))
-            .body(ARGUMENTS + ".created", aMapWithSize(1));
+            .post("/jmap");
     }
 
     private List<String> listElasticSearchFailedEvents() {
         return webAdminApi.with()
-            .get("/events/deadLetter/groups/" + ELASTICSEARCH_LISTENER_GROUP).prettyPeek()
+            .get("/events/deadLetter/groups/" + ELASTICSEARCH_LISTENER_GROUP)
         .andReturn()
             .body()
             .jsonPath()
