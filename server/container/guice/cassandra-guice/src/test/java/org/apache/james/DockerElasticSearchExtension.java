@@ -26,13 +26,13 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 import com.google.inject.Module;
 
-public class DockerElasticSearchRegistrableExtension implements GuiceModuleTestExtension {
+public class DockerElasticSearchExtension implements GuiceModuleTestExtension {
     public static final int ELASTIC_SEARCH_PORT = 9300;
     public static final int ELASTIC_SEARCH_HTTP_PORT = 9200;
 
     private final SwarmGenericContainer elasticSearchContainer;
 
-    public DockerElasticSearchRegistrableExtension(SwarmGenericContainer elasticSearchContainer) {
+    public DockerElasticSearchExtension(SwarmGenericContainer elasticSearchContainer) {
         this.elasticSearchContainer = elasticSearchContainer;
     }
 

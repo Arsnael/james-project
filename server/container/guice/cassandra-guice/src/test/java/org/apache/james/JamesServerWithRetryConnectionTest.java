@@ -20,8 +20,8 @@
 package org.apache.james;
 
 import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
-import static org.apache.james.DockerElasticSearchRegistrableExtension.ELASTIC_SEARCH_HTTP_PORT;
-import static org.apache.james.DockerElasticSearchRegistrableExtension.ELASTIC_SEARCH_PORT;
+import static org.apache.james.DockerElasticSearchExtension.ELASTIC_SEARCH_HTTP_PORT;
+import static org.apache.james.DockerElasticSearchExtension.ELASTIC_SEARCH_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -56,7 +56,7 @@ class JamesServerWithRetryConnectionTest {
 
     @RegisterExtension
     static JamesServerExtension testExtension = new JamesServerExtensionBuilder()
-        .extension(new DockerElasticSearchRegistrableExtension(elasticSearchContainer))
+        .extension(new DockerElasticSearchExtension(elasticSearchContainer))
         .extension(new CassandraExtension(cassandraRule))
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
