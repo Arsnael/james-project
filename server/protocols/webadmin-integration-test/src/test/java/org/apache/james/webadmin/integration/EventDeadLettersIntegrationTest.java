@@ -22,7 +22,6 @@ package org.apache.james.webadmin.integration;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.james.CassandraJmapTestRule;
@@ -94,7 +92,7 @@ public class EventDeadLettersIntegrationTest {
 
         @Override
         public void event(Event event) throws Exception {
-            int currentRetries = extractEventRetries(event).orElse(0);
+            int currentRetries = retries.getOrDefault(event.getEventId(), 0);
 
             if (currentRetries < retriesBeforeSuccess) {
                 retries.put(event.getEventId(), currentRetries + 1);
@@ -103,10 +101,6 @@ public class EventDeadLettersIntegrationTest {
                 retries.remove(event.getEventId());
                 successfulEvents.add(event);
             }
-        }
-
-        private Optional<Integer> extractEventRetries(Event event) {
-            return Optional.ofNullable(retries.get(event.getEventId()));
         }
 
         List<Event> getSuccessfulEvents() {
@@ -126,7 +120,7 @@ public class EventDeadLettersIntegrationTest {
     private static final String BOB = "bob@" + DOMAIN;
     private static final String BOB_PASSWORD = "bobPassword";
     private static final String EVENTS_ACTION = "reDeliver";
-    private static final String SERIALIZED_GROUP = new RetryEventsListenerGroup().asString();
+    private static final String GROUP_ID = new RetryEventsListenerGroup().asString();
 
     private Duration slowPacedPollInterval = ONE_HUNDRED_MILLISECONDS;
     private ConditionFactory calmlyAwait = Awaitility.with()
@@ -180,24 +174,21 @@ public class EventDeadLettersIntegrationTest {
     }
 
     private String retrieveFirstFailedEventId() {
-        ArrayList<String> response = when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
-        .then()
-            .statusCode(HttpStatus.OK_200)
-            .contentType(ContentType.JSON)
-            .extract()
-            .as(ArrayList.class);
+        List<String> response = with()
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
+            .jsonPath()
+            .getList(".");
 
         return response.get(0);
     }
 
     @Test
-    public void failedEventShouldBeStoredInRetryListenerFailedEventsList() {
+    public void failedEventShouldBeStoredInDeadLetterUnderItsGroupId() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
         .then()
             .statusCode(HttpStatus.OK_200)
             .contentType(ContentType.JSON)
@@ -205,7 +196,7 @@ public class EventDeadLettersIntegrationTest {
     }
 
     @Test
-    public void successfulEventShouldNotBeStoredInRetryListenerFailedEventsList() {
+    public void successfulEventShouldNotBeStoredInDeadLetter() {
         retryEventsListener.setRetriesBeforeSuccess(3);
         generateInitialEvent();
 
@@ -218,7 +209,7 @@ public class EventDeadLettersIntegrationTest {
     }
 
     @Test
-    public void failedEventGroupShouldBeStoredInDeadLetter() {
+    public void groupIdOfFailedEventShouldBeStoredInDeadLetter() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
@@ -227,7 +218,7 @@ public class EventDeadLettersIntegrationTest {
         .then()
             .statusCode(HttpStatus.OK_200)
             .contentType(ContentType.JSON)
-            .body(".", containsInAnyOrder(SERIALIZED_GROUP));
+            .body(".", containsInAnyOrder(GROUP_ID));
     }
 
     @Test
@@ -238,7 +229,7 @@ public class EventDeadLettersIntegrationTest {
         String failedEventId = retrieveFirstFailedEventId();
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
         .then()
             .statusCode(HttpStatus.OK_200);
     }
@@ -250,7 +241,7 @@ public class EventDeadLettersIntegrationTest {
         generateSecondEvent();
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
         .then()
             .statusCode(HttpStatus.OK_200)
             .contentType(ContentType.JSON)
@@ -264,19 +255,17 @@ public class EventDeadLettersIntegrationTest {
 
         String failedEventId = retrieveFirstFailedEventId();
 
-        when()
-            .delete(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
-        .then()
-            .statusCode(HttpStatus.NO_CONTENT_204);
+        with()
+            .delete(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId);
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
         .then()
             .statusCode(HttpStatus.NOT_FOUND_404);
     }
 
     @Test
-    public void failedEventShouldNotBeInDeadLettersAfterSuccessfulRedelivery() {
+    public void taskShouldBeCompletedAfterSuccessfulRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
@@ -284,7 +273,7 @@ public class EventDeadLettersIntegrationTest {
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
             .jsonPath()
             .get("taskId");
 
@@ -296,11 +285,29 @@ public class EventDeadLettersIntegrationTest {
             .body("status", is("completed"))
             .body("additionalInformation.successfulRedeliveriesCount", is(1))
             .body("additionalInformation.failedRedeliveriesCount", is(0))
-            .body("additionalInformation.group", is(SERIALIZED_GROUP))
+            .body("additionalInformation.group", is(GROUP_ID))
             .body("additionalInformation.eventId", is(failedEventId));
+    }
+
+    @Test
+    public void failedEventShouldNotBeInDeadLettersAfterSuccessfulRedelivery() {
+        retryEventsListener.setRetriesBeforeSuccess(4);
+        generateInitialEvent();
+
+        String failedEventId = retrieveFirstFailedEventId();
+
+        String taskId = with()
+            .queryParam("action", EVENTS_ACTION)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+            .jsonPath()
+            .get("taskId");
+
+        with()
+            .basePath(TasksRoutes.BASE)
+            .get(taskId + "/await");
 
         when()
-            .get("/events/deadLetter/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
+            .get("/events/deadLetter/groups/" + GROUP_ID + "/" + failedEventId)
         .then()
             .statusCode(HttpStatus.NOT_FOUND_404);
     }
@@ -314,33 +321,26 @@ public class EventDeadLettersIntegrationTest {
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
             .jsonPath()
             .get("taskId");
 
-        given()
+        with()
             .basePath(TasksRoutes.BASE)
-        .when()
-            .get(taskId + "/await")
-        .then()
-            .body("status", is("completed"))
-            .body("additionalInformation.successfulRedeliveriesCount", is(1))
-            .body("additionalInformation.failedRedeliveriesCount", is(0))
-            .body("additionalInformation.group", is(SERIALIZED_GROUP))
-            .body("additionalInformation.eventId", is(failedEventId));
+            .get(taskId + "/await");
 
         awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 1);
     }
 
     @Test
-    public void multipleFailedEventsShouldNotBeInDeadLettersAfterSuccessfulGroupRedelivery() {
+    public void taskShouldBeCompletedAfterSuccessfulGroupRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
         generateSecondEvent();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
             .jsonPath()
             .get("taskId");
 
@@ -352,10 +352,27 @@ public class EventDeadLettersIntegrationTest {
             .body("status", is("completed"))
             .body("additionalInformation.successfulRedeliveriesCount", is(2))
             .body("additionalInformation.failedRedeliveriesCount", is(0))
-            .body("additionalInformation.group", is(SERIALIZED_GROUP));
+            .body("additionalInformation.group", is(GROUP_ID));
+    }
+
+    @Test
+    public void multipleFailedEventsShouldNotBeInDeadLettersAfterSuccessfulGroupRedelivery() {
+        retryEventsListener.setRetriesBeforeSuccess(4);
+        generateInitialEvent();
+        generateSecondEvent();
+
+        String taskId = with()
+            .queryParam("action", EVENTS_ACTION)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
+            .jsonPath()
+            .get("taskId");
+
+        with()
+            .basePath(TasksRoutes.BASE)
+            .get(taskId + "/await");
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
         .then()
             .statusCode(HttpStatus.OK_200)
             .contentType(ContentType.JSON)
@@ -370,25 +387,19 @@ public class EventDeadLettersIntegrationTest {
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
             .jsonPath()
             .get("taskId");
 
-        given()
+        with()
             .basePath(TasksRoutes.BASE)
-        .when()
-            .get(taskId + "/await")
-        .then()
-            .body("status", is("completed"))
-            .body("additionalInformation.successfulRedeliveriesCount", is(2))
-            .body("additionalInformation.failedRedeliveriesCount", is(0))
-            .body("additionalInformation.group", is(SERIALIZED_GROUP));
+            .get(taskId + "/await");
 
         awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
     }
 
     @Test
-    public void multipleFailedEventsShouldNotBeInDeadLettersAfterSuccessfulAllRedelivery() {
+    public void taskShouldBeCompletedAfterSuccessfulAllRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
         generateSecondEvent();
@@ -407,9 +418,26 @@ public class EventDeadLettersIntegrationTest {
             .body("status", is("completed"))
             .body("additionalInformation.successfulRedeliveriesCount", is(2))
             .body("additionalInformation.failedRedeliveriesCount", is(0));
+    }
+
+    @Test
+    public void multipleFailedEventsShouldNotBeInDeadLettersAfterSuccessfulAllRedelivery() {
+        retryEventsListener.setRetriesBeforeSuccess(4);
+        generateInitialEvent();
+        generateSecondEvent();
+
+        String taskId = with()
+            .queryParam("action", EVENTS_ACTION)
+        .post(EventDeadLettersRoutes.BASE_PATH)
+            .jsonPath()
+            .get("taskId");
+
+        with()
+            .basePath(TasksRoutes.BASE)
+            .get(taskId + "/await");
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
         .then()
             .statusCode(HttpStatus.OK_200)
             .contentType(ContentType.JSON)
@@ -428,14 +456,9 @@ public class EventDeadLettersIntegrationTest {
             .jsonPath()
             .get("taskId");
 
-        given()
+        with()
             .basePath(TasksRoutes.BASE)
-        .when()
-            .get(taskId + "/await")
-        .then()
-            .body("status", is("completed"))
-            .body("additionalInformation.successfulRedeliveriesCount", is(2))
-            .body("additionalInformation.failedRedeliveriesCount", is(0));
+            .get(taskId + "/await");
 
         awaitAtMostTenSeconds.until(() -> retryEventsListener.getSuccessfulEvents().size() == 2);
     }
@@ -450,7 +473,7 @@ public class EventDeadLettersIntegrationTest {
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
             .jsonPath()
             .get("taskId");
 
@@ -462,11 +485,11 @@ public class EventDeadLettersIntegrationTest {
             .body("status", is("failed"))
             .body("additionalInformation.successfulRedeliveriesCount", is(0))
             .body("additionalInformation.failedRedeliveriesCount", is(1))
-            .body("additionalInformation.group", is(SERIALIZED_GROUP))
+            .body("additionalInformation.group", is(GROUP_ID))
             .body("additionalInformation.eventId", is(failedEventId));
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + SERIALIZED_GROUP + "/" + failedEventId)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
         .then()
             .statusCode(HttpStatus.OK_200);
     }
