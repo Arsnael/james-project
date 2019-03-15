@@ -37,7 +37,7 @@ import reactor.core.scheduler.Schedulers;
 public class PreDeletionHooks {
     public static final PreDeletionHooks NO_PRE_DELETION_HOOK = new PreDeletionHooks(ImmutableSet.of(), new NoopMetricFactory());
 
-    private static final String PRE_DELETION_HOOK_METRIC_NAME = "preDeletionHook";
+    static final String PRE_DELETION_HOOK_METRIC_NAME = "preDeletionHook";
 
     private final Set<PreDeletionHook> hooks;
     private final MetricFactory metricFactory;

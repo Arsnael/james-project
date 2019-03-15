@@ -19,10 +19,13 @@
 
 package org.apache.james.mailbox.store;
 
+import static org.apache.james.mailbox.store.PreDeletionHooks.PRE_DELETION_HOOK_METRIC_NAME;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -40,7 +43,8 @@ import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
-import org.apache.james.metrics.api.NoopMetricFactory;
+import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.metrics.api.TimeMetric;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
@@ -63,13 +67,25 @@ class PreDeletionHooksTest {
     private PreDeletionHook hook1;
     private PreDeletionHook hook2;
     private PreDeletionHooks testee;
+    private MetricFactory metricFactory;
+    private TimeMetric timeMetric;
 
     @BeforeEach
     void setUp() {
         hook1 = mock(PreDeletionHook.class);
         hook2 = mock(PreDeletionHook.class);
 
-        testee = new PreDeletionHooks(ImmutableSet.of(hook1, hook2), new NoopMetricFactory());
+        metricFactory = spy(MetricFactory.class);
+        timeMetric = spy(TimeMetric.class);
+
+        testee = new PreDeletionHooks(ImmutableSet.of(hook1, hook2), metricFactory);
+
+        setupMetricExpectations();
+    }
+
+    private void setupMetricExpectations() {
+        when(metricFactory.timer(PRE_DELETION_HOOK_METRIC_NAME))
+            .thenReturn(timeMetric);
     }
 
     @Test
@@ -152,5 +168,15 @@ class PreDeletionHooksTest {
         assertThatCode(() -> testee.runHooks(DELETE_OPERATION).block())
             .describedAs("RunHook does not throw if hooks are executed in a sequential manner")
             .doesNotThrowAnyException();
+    }
+
+    @Test
+    void runHooksShouldPublishTimerMetrics() {
+        when(hook1.notifyDelete(any())).thenReturn(Mono.empty());
+        when(hook2.notifyDelete(any())).thenReturn(Mono.empty());
+
+        testee.runHooks(DELETE_OPERATION).block();
+
+        verify(timeMetric, times(2)).stopAndPublish();
     }
 }
