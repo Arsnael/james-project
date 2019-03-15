@@ -40,9 +40,9 @@ import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
+import org.apache.james.metrics.api.NoopMetricFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.reactivestreams.Publisher;
 
@@ -69,7 +69,7 @@ class PreDeletionHooksTest {
         hook1 = mock(PreDeletionHook.class);
         hook2 = mock(PreDeletionHook.class);
 
-        testee = new PreDeletionHooks(ImmutableSet.of(hook1, hook2));
+        testee = new PreDeletionHooks(ImmutableSet.of(hook1, hook2), new NoopMetricFactory());
     }
 
     @Test
