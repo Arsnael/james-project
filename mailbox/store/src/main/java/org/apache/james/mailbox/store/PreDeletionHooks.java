@@ -26,7 +26,6 @@ import javax.inject.Inject;
 import org.apache.james.mailbox.extension.PreDeletionHook;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.NoopMetricFactory;
-import org.apache.james.util.MDCBuilder;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -53,9 +52,7 @@ public class PreDeletionHooks {
             .publishOn(Schedulers.elastic())
             .limitRate(1)
             .flatMap(hook -> metricFactory.runPublishingTimerMetric(PRE_DELETION_HOOK_METRIC_NAME,
-                MDCBuilder.create()
-                    .addContext(MDCBuilder.ACTION, "PRE_DELETION_HOOK")
-                    .wrapArround(() -> hook.notifyDelete(deleteOperation))))
+                () -> hook.notifyDelete(deleteOperation)))
             .then();
     }
 }
