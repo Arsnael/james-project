@@ -40,6 +40,7 @@ import org.apache.james.mailbox.DefaultMailboxes;
 import org.apache.james.mailbox.events.Event;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.events.MailboxListener;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
@@ -75,14 +76,10 @@ public class EventDeadLettersIntegrationTest {
         private Map<Event.EventId, Integer> retries;
         private List<Event> successfulEvents;
 
-        private void init() {
+        RetryEventsListener() {
             this.retriesBeforeSuccess = 0;
             this.retries = new HashMap<>();
             this.successfulEvents = new ArrayList<>();
-        }
-
-        RetryEventsListener() {
-            init();
         }
 
         @Override
@@ -110,10 +107,6 @@ public class EventDeadLettersIntegrationTest {
         void setRetriesBeforeSuccess(int retriesBeforeSuccess) {
             this.retriesBeforeSuccess = retriesBeforeSuccess;
         }
-
-        void clear() {
-            init();
-        }
     }
 
     private static final String DOMAIN = "domain.tld";
@@ -121,6 +114,8 @@ public class EventDeadLettersIntegrationTest {
     private static final String BOB_PASSWORD = "bobPassword";
     private static final String EVENTS_ACTION = "reDeliver";
     private static final String GROUP_ID = new RetryEventsListenerGroup().asString();
+
+    private static final MailboxPath BOB_INBOX_PATH = MailboxPath.forUser(BOB, DefaultMailboxes.INBOX);
 
     private Duration slowPacedPollInterval = ONE_HUNDRED_MILLISECONDS;
     private ConditionFactory calmlyAwait = Awaitility.with()
@@ -130,7 +125,7 @@ public class EventDeadLettersIntegrationTest {
         .pollDelay(slowPacedPollInterval)
         .await();
     private ConditionFactory awaitAtMostTenSeconds = calmlyAwait.atMost(10, TimeUnit.SECONDS);
-    private RetryEventsListener retryEventsListener = new RetryEventsListener();
+    private RetryEventsListener retryEventsListener;
 
     @ClassRule
     public static DockerCassandraRule cassandra = new DockerCassandraRule();
@@ -143,7 +138,7 @@ public class EventDeadLettersIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        retryEventsListener.clear();
+        retryEventsListener = new RetryEventsListener();
         guiceJamesServer = cassandraJmapTestRule.jmapServer(cassandra.getModule())
             .overrideWith(binder -> Multibinder.newSetBinder(binder, MailboxListener.GroupMailboxListener.class).addBinding().toInstance(retryEventsListener));
         guiceJamesServer.start();
@@ -164,8 +159,8 @@ public class EventDeadLettersIntegrationTest {
         guiceJamesServer.stop();
     }
 
-    private void generateInitialEvent() {
-        mailboxProbe.createMailbox(MailboxPath.forUser(BOB, DefaultMailboxes.INBOX));
+    private MailboxId generateInitialEvent() {
+        return mailboxProbe.createMailbox(BOB_INBOX_PATH);
     }
 
     private void generateSecondEvent() {
@@ -223,14 +218,21 @@ public class EventDeadLettersIntegrationTest {
     @Test
     public void failedEventShouldBeStoredInDeadLetter() {
         retryEventsListener.setRetriesBeforeSuccess(4);
-        generateInitialEvent();
+        MailboxId mailboxId = generateInitialEvent();
 
         String failedEventId = retrieveFirstFailedEventId();
 
         when()
             .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
         .then()
-            .statusCode(HttpStatus.OK_200);
+            .statusCode(HttpStatus.OK_200)
+            .contentType(ContentType.JSON)
+            .body("MailboxAdded.eventId", is(failedEventId))
+            .body("MailboxAdded.mailboxId", is(mailboxId.serialize()))
+            .body("MailboxAdded.user", is(BOB))
+            .body("MailboxAdded.mailboxPath.namespace", is(BOB_INBOX_PATH.getNamespace()))
+            .body("MailboxAdded.mailboxPath.user", is(BOB_INBOX_PATH.getUser()))
+            .body("MailboxAdded.mailboxPath.name", is(BOB_INBOX_PATH.getName()));
     }
 
     @Test
@@ -476,16 +478,9 @@ public class EventDeadLettersIntegrationTest {
             .jsonPath()
             .get("taskId");
 
-        given()
+        with()
             .basePath(TasksRoutes.BASE)
-        .when()
-            .get(taskId + "/await")
-        .then()
-            .body("status", is("failed"))
-            .body("additionalInformation.successfulRedeliveriesCount", is(0))
-            .body("additionalInformation.failedRedeliveriesCount", is(1))
-            .body("additionalInformation.group", is(GROUP_ID))
-            .body("additionalInformation.eventId", is(failedEventId));
+            .get(taskId + "/await");
 
         when()
             .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
