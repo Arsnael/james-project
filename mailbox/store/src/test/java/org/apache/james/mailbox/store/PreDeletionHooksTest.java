@@ -110,11 +110,17 @@ class PreDeletionHooksTest {
 
         @Override
         public TimeMetric timer(String name) {
-            return new RecordingTimeMetric(name, executionTime -> executionTimesInMs.put(name, executionTime));
+            return new RecordingTimeMetric(name, executionTime -> {
+                synchronized (executionTimesInMs) {
+                    executionTimesInMs.put(name, executionTime);
+                }
+            });
         }
 
         Collection<Long> executionTimesFor(String name) {
-            return executionTimesInMs.get(name);
+            synchronized (executionTimesInMs) {
+                return executionTimesInMs.get(name);
+            }
         }
     }
 
@@ -211,15 +217,16 @@ class PreDeletionHooksTest {
     }
 
     @Test
-    void runHooksShouldPublishTimerMetrics() throws Exception {
+    void runHooksShouldPublishTimerMetrics() {
         long sleepDurationInMs = Duration.ofSeconds(1).toMillis();
-        Mono monoAnswer = Mono.fromCallable(() -> {
+
+        Mono<Void> notifyDeleteAnswer = Mono.fromCallable(() -> {
             Thread.sleep(sleepDurationInMs);
             return Mono.empty();
-        });
+        }).then();
 
-        when(hook1.notifyDelete(any())).thenReturn(monoAnswer);
-        when(hook2.notifyDelete(any())).thenReturn(monoAnswer);
+        when(hook1.notifyDelete(any())).thenReturn(notifyDeleteAnswer);
+        when(hook2.notifyDelete(any())).thenReturn(notifyDeleteAnswer);
 
         testee.runHooks(DELETE_OPERATION).block();
 
