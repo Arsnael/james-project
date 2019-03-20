@@ -464,7 +464,6 @@ public class EventDeadLettersIntegrationTest {
     }
 
     @Test
-    @Ignore("JAMES-2666 not working yet, need to fix the redeliver task")
     public void failedEventShouldStillBeInDeadLettersAfterFailedRedelivery() {
         retryEventsListener.setRetriesBeforeSuccess(8);
         generateInitialEvent();
@@ -481,8 +480,10 @@ public class EventDeadLettersIntegrationTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
+        String newFailedInsertionId = retrieveFirstFailedInsertionId();
+
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + newFailedInsertionId)
         .then()
             .statusCode(HttpStatus.OK_200);
     }
