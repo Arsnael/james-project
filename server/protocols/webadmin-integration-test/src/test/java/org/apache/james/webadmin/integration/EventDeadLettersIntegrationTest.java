@@ -167,7 +167,7 @@ public class EventDeadLettersIntegrationTest {
         mailboxProbe.createMailbox(MailboxPath.forUser(BOB, DefaultMailboxes.OUTBOX));
     }
 
-    private String retrieveFirstFailedEventId() {
+    private String retrieveFirstFailedInsertionId() {
         List<String> response = with()
             .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID)
             .jsonPath()
@@ -220,14 +220,13 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(4);
         MailboxId mailboxId = generateInitialEvent();
 
-        String failedEventId = retrieveFirstFailedEventId();
+        String failedInsertionId = retrieveFirstFailedInsertionId();
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
         .then()
             .statusCode(HttpStatus.OK_200)
             .contentType(ContentType.JSON)
-            .body("MailboxAdded.eventId", is(failedEventId))
             .body("MailboxAdded.mailboxId", is(mailboxId.serialize()))
             .body("MailboxAdded.user", is(BOB))
             .body("MailboxAdded.mailboxPath.namespace", is(BOB_INBOX_PATH.getNamespace()))
@@ -254,13 +253,13 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
-        String failedEventId = retrieveFirstFailedEventId();
+        String failedInsertionId = retrieveFirstFailedInsertionId();
 
         with()
-            .delete(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId);
+            .delete(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId);
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
         .then()
             .statusCode(HttpStatus.NOT_FOUND_404);
     }
@@ -270,11 +269,11 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
-        String failedEventId = retrieveFirstFailedEventId();
+        String failedInsertionId = retrieveFirstFailedInsertionId();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
             .jsonPath()
             .get("taskId");
 
@@ -287,7 +286,7 @@ public class EventDeadLettersIntegrationTest {
             .body("additionalInformation.successfulRedeliveriesCount", is(1))
             .body("additionalInformation.failedRedeliveriesCount", is(0))
             .body("additionalInformation.group", is(GROUP_ID))
-            .body("additionalInformation.eventId", is(failedEventId));
+            .body("additionalInformation.insertionId", is(failedInsertionId));
     }
 
     @Test
@@ -295,11 +294,11 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(4);
         generateInitialEvent();
 
-        String failedEventId = retrieveFirstFailedEventId();
+        String failedInsertionId = retrieveFirstFailedInsertionId();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
             .jsonPath()
             .get("taskId");
 
@@ -308,7 +307,7 @@ public class EventDeadLettersIntegrationTest {
             .get(taskId + "/await");
 
         when()
-            .get("/events/deadLetter/groups/" + GROUP_ID + "/" + failedEventId)
+            .get("/events/deadLetter/groups/" + GROUP_ID + "/" + failedInsertionId)
         .then()
             .statusCode(HttpStatus.NOT_FOUND_404);
     }
@@ -318,11 +317,11 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(5);
         generateInitialEvent();
 
-        String failedEventId = retrieveFirstFailedEventId();
+        String failedInsertionId = retrieveFirstFailedInsertionId();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
             .jsonPath()
             .get("taskId");
 
@@ -470,11 +469,11 @@ public class EventDeadLettersIntegrationTest {
         retryEventsListener.setRetriesBeforeSuccess(8);
         generateInitialEvent();
 
-        String failedEventId = retrieveFirstFailedEventId();
+        String failedInsertionId = retrieveFirstFailedInsertionId();
 
         String taskId = with()
             .queryParam("action", EVENTS_ACTION)
-        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+        .post(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
             .jsonPath()
             .get("taskId");
 
@@ -483,7 +482,7 @@ public class EventDeadLettersIntegrationTest {
             .get(taskId + "/await");
 
         when()
-            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedEventId)
+            .get(EventDeadLettersRoutes.BASE_PATH + "/groups/" + GROUP_ID + "/" + failedInsertionId)
         .then()
             .statusCode(HttpStatus.OK_200);
     }
