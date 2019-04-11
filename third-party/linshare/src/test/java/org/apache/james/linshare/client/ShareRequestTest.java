@@ -31,6 +31,8 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 
 class ShareRequestTest {
 
+    private static final String MESSAGE = "message";
+
     @Test
     void shouldMatchBeanContract() {
         EqualsVerifier.forClass(ShareRequest.class)
@@ -40,6 +42,7 @@ class ShareRequestTest {
     @Test
     void builderShouldThrowWhenPassingNullRecipient() {
         assertThatThrownBy(() -> ShareRequest.builder()
+                .message(MESSAGE)
                 .addDocumentId(new Document.DocumentId(UUID.fromString("89bc2e3b-e07e-405f-9520-2de33a0a836c")))
                 .addRecipient(null)
                 .build())
@@ -47,8 +50,19 @@ class ShareRequestTest {
     }
 
     @Test
+    void builderShouldThrowWhenPassingNullMessage() {
+        assertThatThrownBy(() -> ShareRequest.builder()
+                .message(null)
+                .addDocumentId(new Document.DocumentId(UUID.fromString("89bc2e3b-e07e-405f-9520-2de33a0a836c")))
+                .addRecipient(new MailAddress("user@james.org"))
+                .build())
+            .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
     void builderShouldThrowWhenPassingNullDocumentId() {
         assertThatThrownBy(() -> ShareRequest.builder()
+                .message(MESSAGE)
                 .addDocumentId(null)
                 .addRecipient(new MailAddress("user@james.org"))
                 .build())
@@ -58,6 +72,7 @@ class ShareRequestTest {
     @Test
     void builderShouldThrowWhenNoRecipient() {
         assertThatThrownBy(() -> ShareRequest.builder()
+                .message(MESSAGE)
                 .addRecipient(new MailAddress("user@james.org"))
                 .build())
             .isInstanceOf(IllegalArgumentException.class);
@@ -66,6 +81,7 @@ class ShareRequestTest {
     @Test
     void builderShouldThrowWhenNoDocumentId() {
         assertThatThrownBy(() -> ShareRequest.builder()
+                .message(MESSAGE)
                 .addDocumentId(new Document.DocumentId(UUID.fromString("89bc2e3b-e07e-405f-9520-2de33a0a836c")))
                 .build())
             .isInstanceOf(IllegalArgumentException.class);
