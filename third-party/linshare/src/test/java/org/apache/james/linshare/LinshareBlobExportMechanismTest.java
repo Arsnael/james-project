@@ -25,6 +25,7 @@ import static org.apache.james.linshare.LinshareFixture.USER_2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 
 import java.nio.charset.StandardCharsets;
 
@@ -98,6 +99,7 @@ class LinshareBlobExportMechanismTest {
                     .get("/api/email")
                 .then()
                     .body("[1].subject", containsString("John Doe has shared a file with you"))
+                    .body("[1].to", hasItem(USER_2.getUsername()))
                     .body("[1].html", containsString(EXPLANATION)));
     }
 
