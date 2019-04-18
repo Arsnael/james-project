@@ -19,7 +19,6 @@
 
 package org.apache.james.linshare.client;
 
-import static io.restassured.RestAssured.given;
 import static org.apache.james.linshare.LinshareFixture.USER_1;
 import static org.apache.james.linshare.LinshareFixture.USER_2;
 import static org.apache.james.linshare.LinshareFixture.USER_3;
@@ -154,9 +153,8 @@ class LinshareAPITest {
     void shareShouldTriggerAnEmail() throws Exception {
         Document user1Document = user1LinshareAPI.uploadDocument(templateFile());
 
-        String message = "Very specific message";
         ShareRequest shareRequest = ShareRequest.builder()
-            .message(message)
+            .message(MESSAGE)
             .addDocumentId(user1Document.getId())
             .addRecipient(new MailAddress(USER_2.getUsername()))
             .build();
@@ -165,12 +163,7 @@ class LinshareAPITest {
 
         Awaitility.waitAtMost(Duration.TEN_SECONDS)
             .pollInterval(Duration.ONE_SECOND)
-            .untilAsserted(
-                () -> given(linshareExtension.getLinshare().fakeSmtpRequestSpecification())
-                    .get("/api/email")
-                .then()
-                    .body("[1].subject", containsString("John Doe has shared a file with you"))
-                    .body("[1].html", containsString(message)));
+            .untilAsserted(this::assertMessageReceivedByTheSmtpServer);
     }
 
 
@@ -232,5 +225,11 @@ class LinshareAPITest {
             .flatMap(Collection::stream)
             .map(ReceivedShare::getDocument)
             .collect(Guavate.toImmutableList());
+    }
+
+    private void assertMessageReceivedByTheSmtpServer() {
+        linshareExtension.getLinshare().assertEmailReceived(response -> response
+            .body("[1].subject", containsString("John Doe has shared a file with you"))
+            .body("[1].html", containsString(MESSAGE)));
     }
 }

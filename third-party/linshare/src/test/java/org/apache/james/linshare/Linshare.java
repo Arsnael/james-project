@@ -19,11 +19,13 @@
 
 package org.apache.james.linshare;
 
+import static io.restassured.RestAssured.given;
 import static io.restassured.config.EncoderConfig.encoderConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.function.Function;
 
 import org.apache.james.util.docker.Images;
 import org.testcontainers.containers.GenericContainer;
@@ -33,6 +35,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 
 public class Linshare {
@@ -147,5 +150,13 @@ public class Linshare {
             .setPort(linshareSmtp.getMappedPort(80))
             .setBaseUri("http://" + linshareSmtp.getContainerIpAddress())
             .build();
+    }
+
+    public void assertEmailReceived(Function<ValidatableResponse, ValidatableResponse> expectations) {
+        expectations.apply(
+            given(fakeSmtpRequestSpecification())
+                .get("/api/email")
+            .then()
+                .statusCode(200));
     }
 }

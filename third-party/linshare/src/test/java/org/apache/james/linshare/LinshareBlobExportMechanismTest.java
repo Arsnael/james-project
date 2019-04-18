@@ -19,7 +19,6 @@
 
 package org.apache.james.linshare;
 
-import static io.restassured.RestAssured.given;
 import static org.apache.james.linshare.LinshareFixture.USER_1;
 import static org.apache.james.linshare.LinshareFixture.USER_2;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -94,13 +93,7 @@ class LinshareBlobExportMechanismTest {
 
         Awaitility.waitAtMost(Duration.TEN_SECONDS)
             .pollInterval(Duration.ONE_SECOND)
-            .untilAsserted(
-                () -> given(linshareExtension.getLinshare().fakeSmtpRequestSpecification())
-                    .get("/api/email")
-                .then()
-                    .body("[1].subject", containsString("John Doe has shared a file with you"))
-                    .body("[1].to", hasItem(USER_2.getUsername()))
-                    .body("[1].html", containsString(EXPLANATION)));
+            .untilAsserted(this::assertMessageReceivedByTheSmtpServer);
     }
 
     @Test
@@ -114,5 +107,12 @@ class LinshareBlobExportMechanismTest {
                 .fileExtension(FileExtension.of("txt"))
                 .export())
             .isInstanceOf(BlobExportMechanism.BlobExportException.class);
+    }
+
+    private void assertMessageReceivedByTheSmtpServer() {
+        linshareExtension.getLinshare().assertEmailReceived(response -> response
+            .body("[1].subject", containsString("John Doe has shared a file with you"))
+            .body("[1].to", hasItem(USER_2.getUsername()))
+            .body("[1].html", containsString(EXPLANATION)));
     }
 }
