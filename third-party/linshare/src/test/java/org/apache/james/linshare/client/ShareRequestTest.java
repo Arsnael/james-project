@@ -70,7 +70,7 @@ class ShareRequestTest {
     }
 
     @Test
-    void builderShouldThrowWhenNoRecipient() {
+    void builderShouldThrowWhenNoDocumentId() {
         assertThatThrownBy(() -> ShareRequest.builder()
                 .message(MESSAGE)
                 .addRecipient(new MailAddress("user@james.org"))
@@ -79,7 +79,7 @@ class ShareRequestTest {
     }
 
     @Test
-    void builderShouldThrowWhenNoDocumentId() {
+    void builderShouldThrowWhenNoRecipient() {
         assertThatThrownBy(() -> ShareRequest.builder()
                 .message(MESSAGE)
                 .addDocumentId(new Document.DocumentId(UUID.fromString("89bc2e3b-e07e-405f-9520-2de33a0a836c")))
