@@ -38,7 +38,7 @@ class LinshareConfigurationTest {
     }
 
     @Test
-    void fromShouldReturnThrowWhenUrlIsNull() {
+    void fromShouldThrowWhenUrlIsNull() {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
         configuration.addProperty("blob.export.linshare.token", "token");
         configuration.addProperty("blob.export.linshare.url", null);
