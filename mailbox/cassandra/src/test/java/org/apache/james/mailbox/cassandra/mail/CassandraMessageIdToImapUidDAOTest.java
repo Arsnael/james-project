@@ -46,11 +46,13 @@ import com.datastax.driver.core.utils.UUIDs;
 
 import reactor.core.publisher.Flux;
 
-@ExtendWith(CassandraRestartExtension.class)
 class CassandraMessageIdToImapUidDAOTest {
     public static final CassandraModule MODULE = CassandraModule.aggregateModules(
             CassandraSchemaVersionModule.MODULE,
             CassandraMessageModule.MODULE);
+
+    @RegisterExtension
+    static CassandraRestartExtension cassandraRestartExtension = new CassandraRestartExtension().forceRestart();
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(MODULE);
