@@ -24,10 +24,16 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 public class CassandraRestartExtension implements BeforeAllCallback, BeforeEachCallback {
+    private boolean forceRestart = false;
+
+    public CassandraRestartExtension forceRestart() {
+        forceRestart = true;
+        return this;
+    }
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) {
-        DockerCassandraSingleton.restartAfterMaxTestsPlayed();
+        DockerCassandraSingleton.restartAfterMaxTestsPlayed(forceRestart);
     }
 
     @Override

@@ -29,9 +29,15 @@ import org.testcontainers.containers.GenericContainer;
 public class DockerCassandraRule implements TestRule {
 
     private boolean allowRestart = false;
+    private boolean forceRestart = false;
 
     public DockerCassandraRule allowRestart() {
         allowRestart = true;
+        return this;
+    }
+
+    public DockerCassandraRule forceRestart() {
+        forceRestart = true;
         return this;
     }
 
@@ -44,7 +50,7 @@ public class DockerCassandraRule implements TestRule {
         DockerCassandraSingleton.singleton.start();
         DockerCassandraSingleton.incrementTestsPlayed();
         if (allowRestart) {
-            DockerCassandraSingleton.restartAfterMaxTestsPlayed();
+            DockerCassandraSingleton.restartAfterMaxTestsPlayed(forceRestart);
         }
     }
 
