@@ -48,8 +48,8 @@ public class DockerCassandraRule implements TestRule {
 
     public void start() {
         DockerCassandraSingleton.singleton.start();
-        DockerCassandraSingleton.incrementTestsPlayed();
         if (allowRestart) {
+            DockerCassandraSingleton.incrementTestsPlayed();
             DockerCassandraSingleton.restartAfterMaxTestsPlayed(forceRestart);
         }
     }
