@@ -31,10 +31,12 @@ import org.apache.commons.configuration.CombinedConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.container.spring.bean.factory.AbstractBeanFactory;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.mailrepository.api.Protocol;
@@ -209,6 +211,11 @@ public class MailRepositoryStoreBeanFactory extends AbstractBeanFactory implemen
             }
         }
 
+    }
+
+    @Override
+    public MailRepository select(MailRepositoryUrl url, MailRepositoryProperties properties) throws MailRepositoryStoreException {
+        throw new NotImplementedException("not implemented");
     }
 
     @Override

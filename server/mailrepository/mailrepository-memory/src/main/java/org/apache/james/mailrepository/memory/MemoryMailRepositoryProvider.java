@@ -20,6 +20,7 @@
 package org.apache.james.mailrepository.memory;
 
 import org.apache.james.mailrepository.api.MailRepository;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.mailrepository.api.MailRepositoryProvider;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 
@@ -32,5 +33,10 @@ public class MemoryMailRepositoryProvider implements MailRepositoryProvider {
     @Override
     public MailRepository provide(MailRepositoryUrl url) {
         return new MemoryMailRepository();
+    }
+
+    @Override
+    public MailRepository provide(MailRepositoryUrl url, MailRepositoryProperties properties) {
+        return new MemoryMailRepository(properties);
     }
 }

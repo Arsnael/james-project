@@ -24,4 +24,6 @@ public interface MailRepositoryProvider {
     String canonicalName();
 
     MailRepository provide(MailRepositoryUrl url);
+
+    MailRepository provide(MailRepositoryUrl url, MailRepositoryProperties properties);
 }

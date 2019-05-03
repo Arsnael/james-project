@@ -33,6 +33,14 @@ public interface MailRepositoryStore {
     MailRepository select(MailRepositoryUrl url) throws MailRepositoryStoreException;
 
     /**
+     * Select the {@link MailRepository} for the given url.
+     *
+     * If the repository is not referenced by {@link MailRepositoryStore::getUrls}, it will be created with the defined properties,
+     * and its URL referenced by {@link MailRepositoryStore::getUrls}.
+     */
+    MailRepository select(MailRepositoryUrl url, MailRepositoryProperties properties) throws MailRepositoryStoreException;
+
+    /**
      * Create the {@link MailRepository} for the given url and return it. If the repository already exists,
      * then no new repository is created, the old one will be returned.
      *
@@ -40,6 +48,16 @@ public interface MailRepositoryStore {
      */
     default MailRepository create(MailRepositoryUrl url) throws MailRepositoryStoreException {
         return select(url);
+    }
+
+    /**
+     * Create the {@link MailRepository} for the given url and properties and return it. If the repository already exists,
+     * then no new repository is created, the old one will be returned.
+     *
+     * The URL of the created repository will be referenced by {@link MailRepositoryStore::getUrls}
+     */
+    default MailRepository create(MailRepositoryUrl url, MailRepositoryProperties properties) throws MailRepositoryStoreException {
+        return select(url, properties);
     }
 
     /**

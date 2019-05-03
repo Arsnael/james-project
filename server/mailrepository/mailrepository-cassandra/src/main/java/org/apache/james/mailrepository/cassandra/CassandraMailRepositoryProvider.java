@@ -21,8 +21,10 @@ package org.apache.james.mailrepository.cassandra;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.blob.mail.MimeMessageStore;
 import org.apache.james.mailrepository.api.MailRepository;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.mailrepository.api.MailRepositoryProvider;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 
@@ -49,5 +51,10 @@ public class CassandraMailRepositoryProvider implements MailRepositoryProvider {
     @Override
     public MailRepository provide(MailRepositoryUrl url) {
         return new CassandraMailRepository(url, keysDAO, countDAO, mailDAO, mimeMessageStoreFactory.mimeMessageStore());
+    }
+
+    @Override
+    public MailRepository provide(MailRepositoryUrl url, MailRepositoryProperties properties) {
+        throw new NotImplementedException("not implemented");
     }
 }

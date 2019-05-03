@@ -21,8 +21,10 @@ package org.apache.james.mailrepository.file;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mailrepository.api.MailRepository;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.mailrepository.api.MailRepositoryProvider;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 
@@ -45,5 +47,10 @@ public class FileMailRepositoryProvider implements MailRepositoryProvider {
         FileMailRepository fileMailRepository = new FileMailRepository();
         fileMailRepository.setFileSystem(fileSystem);
         return fileMailRepository;
+    }
+
+    @Override
+    public MailRepository provide(MailRepositoryUrl url, MailRepositoryProperties properties) {
+        throw new NotImplementedException("not implemented");
     }
 }

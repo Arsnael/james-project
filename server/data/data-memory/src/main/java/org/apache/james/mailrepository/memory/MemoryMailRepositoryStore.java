@@ -37,6 +37,7 @@ import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.mailrepository.api.MailRepositoryProvider;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
@@ -57,6 +58,9 @@ public class MemoryMailRepositoryStore implements MailRepositoryStore, Startable
     private final Map<Protocol, MailRepositoryProvider> protocolToRepositoryProvider;
     private final Map<Protocol, HierarchicalConfiguration> perProtocolMailRepositoryDefaultConfiguration;
     private final MailRepositoryStoreConfiguration configuration;
+    private final MailRepositoryProperties browsableMailRepository = MailRepositoryProperties.builder()
+        .canBrowse()
+        .build();
 
     @Inject
     public MemoryMailRepositoryStore(MailRepositoryUrlStore urlStore, Set<MailRepositoryProvider> mailRepositories, MailRepositoryStoreConfiguration configuration) {
@@ -111,12 +115,17 @@ public class MemoryMailRepositoryStore implements MailRepositoryStore, Startable
 
     @Override
     public MailRepository select(MailRepositoryUrl mailRepositoryUrl) {
-        return destinationToRepositoryAssociations.computeIfAbsent(mailRepositoryUrl,
-            Throwing.function(this::createNewMailRepository).sneakyThrow());
+        return select(mailRepositoryUrl, browsableMailRepository);
     }
 
-    private MailRepository createNewMailRepository(MailRepositoryUrl mailRepositoryUrl) throws MailRepositoryStoreException {
-        MailRepository newMailRepository = retrieveMailRepository(mailRepositoryUrl);
+    @Override
+    public MailRepository select(MailRepositoryUrl mailRepositoryUrl, MailRepositoryProperties properties) {
+        return destinationToRepositoryAssociations.computeIfAbsent(mailRepositoryUrl,
+            Throwing.function(url -> createNewMailRepository(mailRepositoryUrl, properties)).sneakyThrow());
+    }
+
+    private MailRepository createNewMailRepository(MailRepositoryUrl mailRepositoryUrl, MailRepositoryProperties properties) throws MailRepositoryStoreException {
+        MailRepository newMailRepository = retrieveMailRepository(mailRepositoryUrl, properties);
         initializeNewRepository(newMailRepository, createRepositoryCombinedConfig(mailRepositoryUrl));
         urlStore.add(mailRepositoryUrl);
 
@@ -148,10 +157,10 @@ public class MemoryMailRepositoryStore implements MailRepositoryStore, Startable
         }
     }
 
-    private MailRepository retrieveMailRepository(MailRepositoryUrl mailRepositoryUrl) throws MailRepositoryStoreException {
+    private MailRepository retrieveMailRepository(MailRepositoryUrl mailRepositoryUrl, MailRepositoryProperties properties) throws MailRepositoryStoreException {
         Protocol protocol = mailRepositoryUrl.getProtocol();
         return Optional.ofNullable(protocolToRepositoryProvider.get(protocol))
             .orElseThrow(() -> new MailRepositoryStoreException("No Mail Repository associated with " + protocol.getValue()))
-            .provide(mailRepositoryUrl);
+            .provide(mailRepositoryUrl, properties);
     }
 }
