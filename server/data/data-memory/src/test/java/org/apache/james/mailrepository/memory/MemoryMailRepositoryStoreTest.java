@@ -23,12 +23,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
+import java.util.List;
+
+import javax.mail.MessagingException;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.server.core.configuration.Configuration;
@@ -39,6 +43,8 @@ import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.Sets;
 
 public class MemoryMailRepositoryStoreTest {
@@ -46,6 +52,13 @@ public class MemoryMailRepositoryStoreTest {
     private static final MailRepositoryUrl UNKNOWN_PROTOCOL_REPO = MailRepositoryUrl.from("toto://repo");
     private static final MailRepositoryUrl MEMORY2_REPO = MailRepositoryUrl.from("memory2://repo");
     private static final MailRepositoryPath PATH_REPO = MailRepositoryPath.from("repo");
+
+    private static final MailRepositoryProperties NON_BROWSABLE = MailRepositoryProperties.builder()
+        .canNotBrowse()
+        .build();
+    private static final MailRepositoryProperties BROWSABLE = MailRepositoryProperties.builder()
+        .canBrowse()
+        .build();
 
     private MemoryMailRepositoryUrlStore urlStore;
 
@@ -257,6 +270,53 @@ public class MemoryMailRepositoryStoreTest {
         assertThatThrownBy(() -> repositoryStore.select(UNKNOWN_PROTOCOL_REPO));
 
         assertThat(urlStore.listDistinct()).isEmpty();
+    }
+
+    @Test
+    public void selectShouldInitWithDefaultMailRepositoryProperties() throws MessagingException {
+        MailRepository mailRepository = repositoryStore.select(MEMORY1_REPO);
+
+        assertThat(mailRepository.getProperties())
+            .isEqualTo(BROWSABLE);
+    }
+
+    @Test
+    public void selectShouldReturnMailRepositoryWithCorrectProperties() throws MessagingException {
+        MailRepository mailRepository = repositoryStore.select(MEMORY1_REPO, NON_BROWSABLE);
+
+        assertThat(mailRepository.getProperties())
+            .isEqualTo(NON_BROWSABLE);
+    }
+
+    @Test
+    public void selectExistingMailRepositoryShouldReturnItWithCreatedProperties() throws MessagingException {
+        repositoryStore.select(MEMORY1_REPO, NON_BROWSABLE);
+        MailRepository mailRepository = repositoryStore.select(MEMORY1_REPO, BROWSABLE);
+
+        assertThat(mailRepository.getProperties())
+            .isEqualTo(NON_BROWSABLE);
+    }
+
+    @Test
+    public void getShouldReturnPreviouslyCreatedMailRepositoryWithCorrectProperties() throws MessagingException {
+        repositoryStore.select(MEMORY1_REPO, NON_BROWSABLE);
+        MailRepository mailRepository = repositoryStore.get(MEMORY1_REPO).get();
+
+        assertThat(mailRepository.getProperties())
+            .isEqualTo(NON_BROWSABLE);
+    }
+
+    @Test
+    public void getByPathShouldReturnPreviouslyCreatedMatchingMailRepositoriesWithCorrectProperties() {
+        repositoryStore.select(MEMORY1_REPO, BROWSABLE);
+        repositoryStore.select(MEMORY2_REPO, NON_BROWSABLE);
+
+        List<MailRepositoryProperties> propertiesList = repositoryStore.getByPath(PATH_REPO)
+            .map(Throwing.function(MailRepository::getProperties).sneakyThrow())
+            .collect(Guavate.toImmutableList());
+
+        assertThat(propertiesList)
+            .containsExactly(BROWSABLE, NON_BROWSABLE);
     }
 
 }
