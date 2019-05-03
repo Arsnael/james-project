@@ -26,9 +26,11 @@ import javax.mail.MessagingException;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.repository.api.Initializable;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
@@ -160,5 +162,10 @@ public abstract class AbstractMailRepository implements MailRepository, Configur
     public void removeAll() throws MessagingException {
         ImmutableList.copyOf(list())
             .forEach(Throwing.<MailKey>consumer(this::remove).sneakyThrow());
+    }
+
+    @Override
+    public MailRepositoryProperties getProperties() {
+        throw new NotImplementedException("not implemented");
     }
 }

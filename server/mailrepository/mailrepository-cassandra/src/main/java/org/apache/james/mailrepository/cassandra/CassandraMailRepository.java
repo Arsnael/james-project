@@ -25,10 +25,12 @@ import java.util.Iterator;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.blob.api.Store;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.mailet.Mail;
 
@@ -145,6 +147,11 @@ public class CassandraMailRepository implements MailRepository {
             .flatMap(this::removeAsync)
             .then()
             .block();
+    }
+
+    @Override
+    public MailRepositoryProperties getProperties() {
+        throw new NotImplementedException("not implemented");
     }
 
     @Override

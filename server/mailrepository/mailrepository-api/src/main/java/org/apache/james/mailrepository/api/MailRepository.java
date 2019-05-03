@@ -97,6 +97,11 @@ public interface MailRepository {
     void removeAll() throws MessagingException;
 
     /**
+     * @return properties stored in that repository
+     */
+    MailRepositoryProperties getProperties() throws MessagingException;
+
+    /**
      * @deprecated This method is implementation dependent, it has been moved to org.apache.james.mailrepository.lib.AbstractMailRepository
      */
     @Deprecated

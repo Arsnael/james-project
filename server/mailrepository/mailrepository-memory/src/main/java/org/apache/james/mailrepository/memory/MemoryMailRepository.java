@@ -25,14 +25,30 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
+import org.apache.james.mailrepository.api.MailRepositoryProperties;
 import org.apache.mailet.Mail;
+
+import com.google.common.base.Preconditions;
 
 public class MemoryMailRepository implements MailRepository {
 
+    private static final MailRepositoryProperties DEFAULT_PROPERTIES = MailRepositoryProperties.builder()
+        .canBrowse()
+        .build();
+
     private final ConcurrentHashMap<MailKey, Mail> mails;
+    private final MailRepositoryProperties properties;
+
 
     public MemoryMailRepository() {
-        mails = new ConcurrentHashMap<>();
+        this(DEFAULT_PROPERTIES);
+    }
+
+    public MemoryMailRepository(MailRepositoryProperties properties) {
+        Preconditions.checkNotNull(properties);
+
+        this.mails = new ConcurrentHashMap<>();
+        this.properties = properties;
     }
 
     @Override
@@ -85,5 +101,10 @@ public class MemoryMailRepository implements MailRepository {
     @Override
     public void removeAll() {
         mails.clear();
+    }
+
+    @Override
+    public MailRepositoryProperties getProperties() {
+        return properties;
     }
 }
