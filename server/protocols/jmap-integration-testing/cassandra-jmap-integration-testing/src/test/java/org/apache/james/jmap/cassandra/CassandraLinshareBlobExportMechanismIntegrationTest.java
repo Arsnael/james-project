@@ -26,7 +26,6 @@ import org.apache.james.EmbeddedElasticSearchExtension;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.JmapJamesServerContract;
 import org.apache.james.jmap.methods.integration.LinshareBlobExportMechanismIntegrationTest;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.modules.LinshareGuiceExtension;
@@ -52,13 +51,14 @@ public class CassandraLinshareBlobExportMechanismIntegrationTest extends Linshar
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-            .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
-            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class)
-                .toInstance(WebAdminConfiguration.TEST_CONFIGURATION))
-            .overrideWith(binder -> binder.bind(PreDeletionHooksConfiguration.class)
-                .toInstance(PreDeletionHooksConfiguration.forHooks(
-                    PreDeletionHookConfiguration.forClass(DeletedMessageVaultHook.class))))
-            .overrideWith(binder -> binder.bind(MailRepositoryDeletedMessageVault.Configuration.class)
-                .toInstance(new MailRepositoryDeletedMessageVault.Configuration(MailRepositoryUrl.from("cassandra://var/deletedMessages/user")))))
+            .overrideWith(binder -> {
+                binder.bind(WebAdminConfiguration.class)
+                    .toInstance(WebAdminConfiguration.TEST_CONFIGURATION);
+                binder.bind(PreDeletionHooksConfiguration.class)
+                    .toInstance(PreDeletionHooksConfiguration.forHooks(
+                        PreDeletionHookConfiguration.forClass(DeletedMessageVaultHook.class)));
+                binder.bind(MailRepositoryDeletedMessageVault.Configuration.class)
+                    .toInstance(new MailRepositoryDeletedMessageVault.Configuration(MailRepositoryUrl.from("cassandra://var/deletedMessages/user")));
+            }))
         .build();
 }
