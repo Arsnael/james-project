@@ -22,7 +22,6 @@ package org.apache.james.jmap.memory;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
-import org.apache.james.JmapJamesServerContract;
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.jmap.methods.integration.LinshareBlobExportMechanismIntegrationTest;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
@@ -47,13 +46,14 @@ class MemoryLinshareBlobExportMechanismIntegrationTest extends LinshareBlobExpor
         .server(configuration -> GuiceJamesServer.forConfiguration(configuration)
             .combineWith(MemoryJamesServerMain.IN_MEMORY_SERVER_AGGREGATE_MODULE)
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
-            .overrideWith(JmapJamesServerContract.DOMAIN_LIST_CONFIGURATION_MODULE)
-            .overrideWith(binder -> binder.bind(WebAdminConfiguration.class)
-                .toInstance(WebAdminConfiguration.TEST_CONFIGURATION))
-            .overrideWith(binder -> binder.bind(PreDeletionHooksConfiguration.class)
-                .toInstance(PreDeletionHooksConfiguration.forHooks(
-                    PreDeletionHookConfiguration.forClass(DeletedMessageVaultHook.class))))
-            .overrideWith(binder -> binder.bind(MailRepositoryDeletedMessageVault.Configuration.class)
-                .toInstance(new MailRepositoryDeletedMessageVault.Configuration(MailRepositoryUrl.from("memory://var/deletedMessages/user")))))
+            .overrideWith(binder -> {
+                binder.bind(WebAdminConfiguration.class)
+                    .toInstance(WebAdminConfiguration.TEST_CONFIGURATION);
+                binder.bind(PreDeletionHooksConfiguration.class)
+                    .toInstance(PreDeletionHooksConfiguration.forHooks(
+                        PreDeletionHookConfiguration.forClass(DeletedMessageVaultHook.class)));
+                binder.bind(MailRepositoryDeletedMessageVault.Configuration.class)
+                    .toInstance(new MailRepositoryDeletedMessageVault.Configuration(MailRepositoryUrl.from("memory://var/deletedMessages/user")));
+            }))
         .build();
 }
