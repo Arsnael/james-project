@@ -46,6 +46,7 @@ import io.restassured.specification.RequestSpecification;
 
 class LinshareBlobExportMechanismTest {
     private static final String EXPLANATION = "Explanation about the file being shared";
+    private static final FileExtension FILE_TEXT_EXTENSION = FileExtension.of("txt");
 
     @RegisterExtension
     static LinshareExtension linshareExtension = new LinshareExtension();
@@ -68,14 +69,10 @@ class LinshareBlobExportMechanismTest {
     }
 
     @Test
-    void exportShouldShareTheDocumentViaLinShare() throws Exception {
+    void exportShouldShareTheDocumentViaLinshare() throws Exception {
         BlobId blobId = blobStore.save("content").block();
 
-        testee.blobId(blobId)
-            .with(new MailAddress(USER_2.getUsername()))
-            .explanation(EXPLANATION)
-            .fileExtension(FileExtension.of("txt"))
-            .export();
+        exportBlob(blobId);
 
         assertThat(user2API.receivedShares())
             .hasSize(1)
@@ -88,11 +85,7 @@ class LinshareBlobExportMechanismTest {
     void exportShouldSendAnEmailToSharee() throws Exception {
         BlobId blobId = blobStore.save("content").block();
 
-        testee.blobId(blobId)
-            .with(new MailAddress(USER_2.getUsername()))
-            .explanation(EXPLANATION)
-            .fileExtension(FileExtension.of("txt"))
-            .export();
+        exportBlob(blobId);
 
         RequestSpecification request = given(linshareExtension.getLinshare().fakeSmtpRequestSpecification());
 
@@ -113,14 +106,10 @@ class LinshareBlobExportMechanismTest {
     }
 
     @Test
-    void exportShouldShareTheDocumentAndAllowDownloadViaLinShare() throws Exception {
+    void exportShouldShareTheDocumentAndAllowDownloadViaLinshare() throws Exception {
         BlobId blobId = blobStore.save("content").block();
 
-        testee.blobId(blobId)
-            .with(new MailAddress(USER_2.getUsername()))
-            .explanation(EXPLANATION)
-            .fileExtension(FileExtension.of("txt"))
-            .export();
+        exportBlob(blobId);
 
         Document sharedDoc = user2API.receivedShares().get(0).getDocument();
         byte[] sharedFile =  linshareExtension.downloadSharedFile(USER_2, sharedDoc.getId(), sharedDoc.getName());
@@ -132,11 +121,15 @@ class LinshareBlobExportMechanismTest {
         BlobId blobId = blobIdFactory.randomId();
 
         assertThatThrownBy(
-            () -> testee.blobId(blobId)
-                .with(new MailAddress(USER_2.getUsername()))
-                .explanation(EXPLANATION)
-                .fileExtension(FileExtension.of("txt"))
-                .export())
+            () -> exportBlob(blobId))
             .isInstanceOf(BlobExportMechanism.BlobExportException.class);
+    }
+
+    private void exportBlob(BlobId blobId) throws Exception {
+        testee.blobId(blobId)
+            .with(new MailAddress(USER_2.getUsername()))
+            .explanation(EXPLANATION)
+            .fileExtension(FILE_TEXT_EXTENSION)
+            .export();
     }
 }
