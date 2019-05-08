@@ -68,7 +68,7 @@ public class DeletedMessagesVaultRequests {
             .body("status", is("completed"));
     }
 
-    public static void deleteVault(RequestSpecification webAdminApi, String user, String messageId) {
+    public static void deleteFromVault(RequestSpecification webAdminApi, String user, String messageId) {
         String taskId =
             webAdminApi.with()
                 .delete("/deletedMessages/users/" + user + "/messages/" + messageId)

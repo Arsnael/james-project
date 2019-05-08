@@ -22,7 +22,7 @@ package org.apache.james.jmap.methods.integration;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static io.restassured.config.ParamConfig.UpdateStrategy.REPLACE;
-import static org.apache.james.jmap.DeletedMessagesVaultRequests.deleteVault;
+import static org.apache.james.jmap.DeletedMessagesVaultRequests.deleteFromVault;
 import static org.apache.james.jmap.DeletedMessagesVaultRequests.exportVaultContent;
 import static org.apache.james.jmap.DeletedMessagesVaultRequests.purgeVault;
 import static org.apache.james.jmap.DeletedMessagesVaultRequests.restoreMessagesForUserWithQuery;
@@ -668,7 +668,7 @@ public abstract class DeletedMessagesVaultTest {
         homerDeletesMessages(listMessageIdsForAccount(homerAccessToken));
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
-        deleteVault(webAdminApi, HOMER, messageIdOfHomer);
+        deleteFromVault(webAdminApi, HOMER, messageIdOfHomer);
 
         String fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
         try (ZipAssert zipAssert = assertThatZip(new FileInputStream(fileLocation))) {
@@ -683,7 +683,7 @@ public abstract class DeletedMessagesVaultTest {
 
         String messageIdOfHomer = listMessageIdsForAccount(homerAccessToken).get(0);
 
-        deleteVault(webAdminApi, HOMER, messageIdOfHomer);
+        deleteFromVault(webAdminApi, HOMER, messageIdOfHomer);
 
         String fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
         try (ZipAssert zipAssert = assertThatZip(new FileInputStream(fileLocation))) {
@@ -702,7 +702,7 @@ public abstract class DeletedMessagesVaultTest {
         homerDeletesMessages(listMessageIdsForAccount(homerAccessToken));
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
-        deleteVault(webAdminApi, HOMER, messageIdOfBart);
+        deleteFromVault(webAdminApi, HOMER, messageIdOfBart);
 
         String fileLocation = exportAndGetFileLocationFromLastMail(EXPORT_ALL_HOMER_MESSAGES_TO_BART, bartAccessToken);
         try (ZipAssert zipAssert = assertThatZip(new FileInputStream(fileLocation))) {
@@ -721,7 +721,7 @@ public abstract class DeletedMessagesVaultTest {
         homerDeletesMessages(listMessageIdsForAccount(homerAccessToken));
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
 
-        deleteVault(webAdminApi, HOMER, messageIdOfHomer);
+        deleteFromVault(webAdminApi, HOMER, messageIdOfHomer);
 
         assertThat(listMessageIdsForAccount(homerAccessToken))
             .hasSize(0);
