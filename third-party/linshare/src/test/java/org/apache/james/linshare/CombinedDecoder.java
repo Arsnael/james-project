@@ -28,7 +28,6 @@ import com.google.common.base.Preconditions;
 
 import feign.FeignException;
 import feign.Response;
-import feign.Util;
 import feign.codec.Decoder;
 
 public class CombinedDecoder implements Decoder {
@@ -52,29 +51,15 @@ public class CombinedDecoder implements Decoder {
             }
 
             ReadyToBuild registerSingleTypeDecoder(SingleTypeDecoder decoder) {
+                Preconditions.checkNotNull(decoder);
                 decoders.put(decoder.handledType(), decoder);
                 return this;
             }
 
             CombinedDecoder build() {
+                Preconditions.checkNotNull(defaultDecoder);
                 return new CombinedDecoder(defaultDecoder, decoders.build());
             }
-        }
-    }
-
-    public static class ByteArrayDecoder implements SingleTypeDecoder {
-        private static final Type BYTE_TYPE = byte[].class;
-
-        @Override
-        public Type handledType() {
-            return BYTE_TYPE;
-        }
-
-        @Override
-        public Object decode(Response response, Type type) throws IOException, FeignException {
-            Preconditions.checkArgument(type.equals(BYTE_TYPE));
-
-            return Util.toByteArray(response.body().asInputStream());
         }
     }
 

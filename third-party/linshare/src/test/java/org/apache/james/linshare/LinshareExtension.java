@@ -61,7 +61,7 @@ public class LinshareExtension implements BeforeEachCallback {
                 .encoder(new FormEncoder(new JacksonEncoder()))
                 .decoder(CombinedDecoder.builder()
                     .defaultDecoder(new JacksonDecoder())
-                    .registerSingleTypeDecoder(new CombinedDecoder.ByteArrayDecoder())
+                    .registerSingleTypeDecoder(new ByteArrayDecoder())
                     .build())
                 .target(LinshareAPIForTesting.class, linshare.getUrl());
         }
