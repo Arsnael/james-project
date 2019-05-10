@@ -28,6 +28,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.export.api.BlobExportMechanism;
@@ -113,7 +115,7 @@ class LinshareBlobExportMechanismTest {
 
         Document sharedDoc = user2API.receivedShares().get(0).getDocument();
         byte[] sharedFile =  linshareExtension.downloadSharedFile(USER_2, sharedDoc.getId(), sharedDoc.getName());
-        assertThat(sharedFile).isNotEmpty();
+        assertThat(sharedFile).isEqualTo("content".getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
