@@ -29,10 +29,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class NodeMappingFactoryTest {
-    public static final String MESSAGE = "message";
-    public static final IndexName INDEX_NAME = new IndexName("index");
-    public static final ReadAliasName ALIAS_NAME = new ReadAliasName("alias");
-    public static final TypeName TYPE_NAME = new TypeName("type");
+    private static final String MESSAGE = "message";
+    private static final IndexName INDEX_NAME = new IndexName("index");
+    private static final ReadAliasName ALIAS_NAME = new ReadAliasName("alias");
+    private static final TypeName TYPE_NAME = new TypeName("type");
 
     @Rule
     public DockerElasticSearchRule elasticSearch = new DockerElasticSearchRule();
