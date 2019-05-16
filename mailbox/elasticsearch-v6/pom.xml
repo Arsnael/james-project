@@ -36,11 +36,11 @@
     <dependencies>
         <dependency>
             <groupId>${james.groupId}</groupId>
-            <artifactId>apache-james-backends-es</artifactId>
+            <artifactId>apache-james-backends-es-v6</artifactId>
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
-            <artifactId>apache-james-backends-es</artifactId>
+            <artifactId>apache-james-backends-es-v6</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -156,16 +156,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>2.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>2.2.1</version>
-            <type>test-jar</type>
-            <scope>test</scope>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>6.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
