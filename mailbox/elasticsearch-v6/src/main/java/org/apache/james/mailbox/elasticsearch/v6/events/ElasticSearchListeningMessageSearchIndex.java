@@ -101,7 +101,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     @Override
     public Iterator<MessageUid> search(MailboxSession session, Mailbox mailbox, SearchQuery searchQuery) throws MailboxException {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
-        Optional<Long> noLimit = Optional.empty();
+        Optional<Integer> noLimit = Optional.empty();
         return searcher
                 .search(ImmutableList.of(mailbox.getMailboxId()), searchQuery, noLimit)
                 .map(SearchResult::getMessageUid)

@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.james.backends.es.v6.AliasName;
+import org.apache.james.backends.es.v6.NodeMappingFactory;
 import org.apache.james.backends.es.v6.ReadAliasName;
 import org.apache.james.backends.es.v6.search.ScrollIterable;
 import org.apache.james.mailbox.MessageUid;
@@ -42,7 +43,6 @@ import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,9 @@ import com.google.common.collect.ImmutableList;
 public class ElasticSearchSearcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchSearcher.class);
-    private static final TimeValue TIMEOUT = new TimeValue(60000);
+    private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
+    private static final ImmutableList STORED_FIELDS = ImmutableList.of(JsonMessageConstants.MAILBOX_ID,
+        JsonMessageConstants.UID, JsonMessageConstants.MESSAGE_ID);
 
     private final RestHighLevelClient client;
     private final QueryConverter queryConverter;
@@ -72,8 +74,8 @@ public class ElasticSearchSearcher {
     }
 
     public Stream<MessageSearchIndex.SearchResult> search(Collection<MailboxId> mailboxIds, SearchQuery query,
-                                                          Optional<Long> limit) {
-        SearchRequest searchRequest = getSearchRequest(mailboxIds, query, limit);
+                                                          Optional<Integer> limit) {
+        SearchRequest searchRequest = prepareSearch(mailboxIds, query, limit);
         Stream<MessageSearchIndex.SearchResult> pairStream = new ScrollIterable(client, searchRequest).stream()
             .flatMap(this::transformResponseToUidStream);
 
@@ -81,25 +83,24 @@ public class ElasticSearchSearcher {
             .orElse(pairStream);
     }
 
-    private SearchRequest getSearchRequest(Collection<MailboxId> users, SearchQuery query, Optional<Long> limit) {
-        return query.getSorts()
-            .stream()
-            .reduce(
-                new SearchRequest(aliasName.getValue())
-                    .scroll(TIMEOUT),
-                (searchRequest, sort) -> searchRequest.source(getSearchSourceBuilder(users, query, limit, SortConverter.convertSort(sort))),
-                (partialResult1, partialResult2) -> partialResult1);
-    }
-
-    private SearchSourceBuilder getSearchSourceBuilder(Collection<MailboxId> users, SearchQuery query, Optional<Long> limit, SortBuilder sort) {
-        return new SearchSourceBuilder()
+    private SearchRequest prepareSearch(Collection<MailboxId> users, SearchQuery query, Optional<Integer> limit) {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
             .query(queryConverter.from(users, query))
             .size(computeRequiredSize(limit))
-            .storedFields(ImmutableList.of(JsonMessageConstants.MAILBOX_ID, JsonMessageConstants.UID, JsonMessageConstants.MESSAGE_ID))
-            .sort(sort);
+            .storedFields(STORED_FIELDS);
+
+        query.getSorts()
+            .stream()
+            .map(SortConverter::convertSort)
+            .forEach(searchSourceBuilder::sort);
+
+        return new SearchRequest(aliasName.getValue())
+            .types(NodeMappingFactory.DEFAULT_MAPPING_NAME)
+            .scroll(TIMEOUT)
+            .source(searchSourceBuilder);
     }
 
-    private int computeRequiredSize(Optional<Long> limit) {
+    private int computeRequiredSize(Optional<Integer> limit) {
         return limit.map(value -> Math.min(value.intValue(), size))
             .orElse(size);
     }
