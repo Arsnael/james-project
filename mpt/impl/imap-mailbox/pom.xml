@@ -74,6 +74,12 @@
             </dependency>
             <dependency>
                 <groupId>${james.groupId}</groupId>
+                <artifactId>apache-james-mpt-imapmailbox-elasticsearch-v6</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>${james.groupId}</groupId>
                 <artifactId>apache-james-mpt-imapmailbox-inmemory</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
