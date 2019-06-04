@@ -24,10 +24,8 @@ import static org.apache.james.modules.mailbox.ElasticSearchMailboxModule.ELASTI
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -137,11 +135,9 @@ public class ElasticSearchQuotaSearcherModule extends AbstractModule {
     @Provides
     @Singleton
     public ElasticSearchQuotaMailboxListener provideListener(RestHighLevelClient client,
-                                                             @Named("AsyncExecutor") ExecutorService executor,
                                                              ElasticSearchQuotaConfiguration configuration) {
         return new ElasticSearchQuotaMailboxListener(
             new ElasticSearchIndexer(client,
-                executor,
                 configuration.getWriteAliasQuotaRatioName()),
                 new QuotaRatioToElasticSearchJson());
     }
