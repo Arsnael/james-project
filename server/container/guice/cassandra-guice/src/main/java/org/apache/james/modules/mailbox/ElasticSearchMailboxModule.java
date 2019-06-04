@@ -24,6 +24,7 @@ import static org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearche
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -138,9 +139,11 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     @Singleton
     @Named(MailboxElasticSearchConstants.InjectionNames.MAILBOX)
     private ElasticSearchIndexer createMailboxElasticSearchIndexer(RestHighLevelClient client,
+                                                                   @Named("AsyncExecutor") ExecutorService executor,
                                                                    ElasticSearchMailboxConfiguration configuration) {
         return new ElasticSearchIndexer(
             client,
+            executor,
             configuration.getWriteAliasMailboxName());
     }
 
