@@ -21,6 +21,8 @@ package org.apache.james.backends.es;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -29,13 +31,11 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.ValidationException;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,20 +51,22 @@ public class ElasticSearchIndexer {
 
     private final RestHighLevelClient client;
     private final AliasName aliasName;
-    private final int batchSize;
+    private final DeleteByQueryPerformer deleteByQueryPerformer;
 
     public ElasticSearchIndexer(RestHighLevelClient client,
+                                ExecutorService executor,
                                 WriteAliasName aliasName) {
-        this(client, aliasName, DEFAULT_BATCH_SIZE);
+        this(client, executor, aliasName, DEFAULT_BATCH_SIZE);
     }
 
     @VisibleForTesting
     public ElasticSearchIndexer(RestHighLevelClient client,
+                                ExecutorService executor,
                                 WriteAliasName aliasName,
                                 int batchSize) {
         this.client = client;
+        this.deleteByQueryPerformer = new DeleteByQueryPerformer(client, executor, batchSize, aliasName);
         this.aliasName = aliasName;
-        this.batchSize = batchSize;
     }
 
     public IndexResponse index(String id, String content) throws IOException {
@@ -76,8 +78,7 @@ public class ElasticSearchIndexer {
             new IndexRequest(aliasName.getValue())
                 .type(NodeMappingFactory.DEFAULT_MAPPING_NAME)
                 .id(id)
-                .source(content, XContentType.JSON),
-            RequestOptions.DEFAULT);
+                .source(content, XContentType.JSON));
     }
 
     public Optional<BulkResponse> update(List<UpdatedRepresentation> updatedDocumentParts) throws IOException {
@@ -89,7 +90,7 @@ public class ElasticSearchIndexer {
                     NodeMappingFactory.DEFAULT_MAPPING_NAME,
                     updatedDocumentPart.getId())
                 .doc(updatedDocumentPart.getUpdatedDocumentPart(), XContentType.JSON)));
-            return Optional.of(client.bulk(request, RequestOptions.DEFAULT));
+            return Optional.of(client.bulk(request));
         } catch (ValidationException e) {
             LOGGER.warn("Error while updating index", e);
             return Optional.empty();
@@ -103,21 +104,15 @@ public class ElasticSearchIndexer {
                 new DeleteRequest(aliasName.getValue())
                     .type(NodeMappingFactory.DEFAULT_MAPPING_NAME)
                     .id(id)));
-            return Optional.of(client.bulk(request, RequestOptions.DEFAULT));
+            return Optional.of(client.bulk(request));
         } catch (ValidationException e) {
             LOGGER.warn("Error while deleting index", e);
             return Optional.empty();
         }
     }
 
-    public void deleteAllMatchingQuery(QueryBuilder queryBuilder) {
-        DeleteByQueryRequest request = new DeleteByQueryRequest(aliasName.getValue())
-            .setDocTypes(NodeMappingFactory.DEFAULT_MAPPING_NAME)
-            .setScroll(TIMEOUT)
-            .setQuery(queryBuilder)
-            .setBatchSize(batchSize);
-
-        client.deleteByQueryAsync(request, RequestOptions.DEFAULT, new ListenerToFuture<>());
+    public Future<Void> deleteAllMatchingQuery(QueryBuilder queryBuilder) {
+        return deleteByQueryPerformer.perform(queryBuilder);
     }
 
     private void checkArgument(String content) {
