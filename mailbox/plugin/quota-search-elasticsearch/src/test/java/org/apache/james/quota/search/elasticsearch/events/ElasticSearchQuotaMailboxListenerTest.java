@@ -25,6 +25,7 @@ import static org.apache.james.quota.search.QuotaSearchFixture.TestConstants.QUO
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
 
 import org.apache.james.backends.es.DockerElasticSearchRule;
 import org.apache.james.backends.es.ElasticSearchConfiguration;
@@ -38,9 +39,9 @@ import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.quota.search.elasticsearch.QuotaRatioElasticSearchConstants;
 import org.apache.james.quota.search.elasticsearch.QuotaSearchIndexCreationUtil;
 import org.apache.james.quota.search.elasticsearch.json.QuotaRatioToElasticSearchJson;
+import org.apache.james.util.concurrent.NamedThreadFactory;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -68,6 +69,7 @@ public class ElasticSearchQuotaMailboxListenerTest {
 
         quotaMailboxListener = new ElasticSearchQuotaMailboxListener(
             new ElasticSearchIndexer(client,
+                Executors.newSingleThreadExecutor(NamedThreadFactory.withClassName(getClass())),
                 QuotaRatioElasticSearchConstants.DEFAULT_QUOTA_RATIO_WRITE_ALIAS,
                 BATCH_SIZE),
             new QuotaRatioToElasticSearchJson());
@@ -95,8 +97,7 @@ public class ElasticSearchQuotaMailboxListenerTest {
         SearchResponse searchResponse = client.search(new SearchRequest(QuotaRatioElasticSearchConstants.DEFAULT_QUOTA_RATIO_READ_ALIAS.getValue())
                 .types(NodeMappingFactory.DEFAULT_MAPPING_NAME)
                 .source(new SearchSourceBuilder()
-                    .query(QueryBuilders.matchAllQuery())),
-            RequestOptions.DEFAULT);
+                    .query(QueryBuilders.matchAllQuery())));
 
         assertThat(searchResponse.getHits().getTotalHits()).isEqualTo(1);
     }

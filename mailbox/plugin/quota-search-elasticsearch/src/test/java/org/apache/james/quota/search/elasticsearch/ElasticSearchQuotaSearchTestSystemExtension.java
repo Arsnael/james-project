@@ -21,6 +21,8 @@ package org.apache.james.quota.search.elasticsearch;
 
 import static org.mockito.Mockito.mock;
 
+import java.util.concurrent.Executors;
+
 import org.apache.james.backends.es.DockerElasticSearch;
 import org.apache.james.backends.es.DockerElasticSearchSingleton;
 import org.apache.james.backends.es.ElasticSearchConfiguration;
@@ -33,6 +35,7 @@ import org.apache.james.quota.search.QuotaSearchTestSystem;
 import org.apache.james.quota.search.elasticsearch.events.ElasticSearchQuotaMailboxListener;
 import org.apache.james.quota.search.elasticsearch.json.QuotaRatioToElasticSearchJson;
 import org.apache.james.user.memory.MemoryUsersRepository;
+import org.apache.james.util.concurrent.NamedThreadFactory;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -69,6 +72,7 @@ public class ElasticSearchQuotaSearchTestSystemExtension implements ParameterRes
 
             ElasticSearchQuotaMailboxListener listener = new ElasticSearchQuotaMailboxListener(
                 new ElasticSearchIndexer(client,
+                    Executors.newSingleThreadExecutor(NamedThreadFactory.withClassName(getClass())),
                     QuotaRatioElasticSearchConstants.DEFAULT_QUOTA_RATIO_WRITE_ALIAS),
                 new QuotaRatioToElasticSearchJson());
 
