@@ -53,7 +53,7 @@ public class DeleteByQueryPerformer {
     public Mono<Void> perform(QueryBuilder queryBuilder) {
         return Flux.fromStream(new ScrollIterable(client, prepareSearch(queryBuilder)).stream())
             .flatMap(searchResponse -> deleteRetrievedIds(client, searchResponse))
-            .then(Mono.empty());
+            .thenEmpty(Mono.empty());
     }
 
     private SearchRequest prepareSearch(QueryBuilder queryBuilder) {
