@@ -21,8 +21,6 @@ package org.apache.james.backends.es;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -33,7 +31,6 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.ValidationException;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.slf4j.Logger;
@@ -45,7 +42,6 @@ import com.google.common.base.Preconditions;
 public class ElasticSearchIndexer {
     private static final int DEBUG_MAX_LENGTH_CONTENT = 1000;
     private static final int DEFAULT_BATCH_SIZE = 100;
-    private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchIndexer.class);
 
@@ -54,18 +50,16 @@ public class ElasticSearchIndexer {
     private final DeleteByQueryPerformer deleteByQueryPerformer;
 
     public ElasticSearchIndexer(RestHighLevelClient client,
-                                ExecutorService executor,
                                 WriteAliasName aliasName) {
-        this(client, executor, aliasName, DEFAULT_BATCH_SIZE);
+        this(client, aliasName, DEFAULT_BATCH_SIZE);
     }
 
     @VisibleForTesting
     public ElasticSearchIndexer(RestHighLevelClient client,
-                                ExecutorService executor,
                                 WriteAliasName aliasName,
                                 int batchSize) {
         this.client = client;
-        this.deleteByQueryPerformer = new DeleteByQueryPerformer(client, executor, batchSize, aliasName);
+        this.deleteByQueryPerformer = new DeleteByQueryPerformer(client, batchSize, aliasName);
         this.aliasName = aliasName;
     }
 
@@ -111,8 +105,8 @@ public class ElasticSearchIndexer {
         }
     }
 
-    public Future<Void> deleteAllMatchingQuery(QueryBuilder queryBuilder) {
-        return deleteByQueryPerformer.perform(queryBuilder);
+    public void deleteAllMatchingQuery(QueryBuilder queryBuilder) {
+        deleteByQueryPerformer.perform(queryBuilder).block();
     }
 
     private void checkArgument(String content) {

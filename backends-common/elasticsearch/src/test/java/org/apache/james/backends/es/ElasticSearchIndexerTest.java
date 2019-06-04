@@ -24,9 +24,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
-import java.util.concurrent.Executors;
-
-import org.apache.james.util.concurrent.NamedThreadFactory;
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
@@ -63,7 +60,6 @@ public class ElasticSearchIndexerTest {
             .addAlias(ALIAS_NAME)
             .createIndexAndAliases(getESClient());
         testee = new ElasticSearchIndexer(getESClient(),
-            Executors.newSingleThreadExecutor(NamedThreadFactory.withClassName(getClass())),
             ALIAS_NAME, MINIMUM_BATCH_SIZE);
     }
 

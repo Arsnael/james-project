@@ -19,10 +19,6 @@
 
 package org.apache.james.backends.es;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import org.apache.james.backends.es.search.ScrollIterable;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -37,32 +33,27 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 public class DeleteByQueryPerformer {
-    public static final TimeValue TIMEOUT = new TimeValue(60000);
+    private static final TimeValue TIMEOUT = new TimeValue(60000);
 
     private final RestHighLevelClient client;
-    private final ExecutorService executor;
     private final int batchSize;
     private final WriteAliasName aliasName;
 
     @VisibleForTesting
-    public DeleteByQueryPerformer(RestHighLevelClient client, ExecutorService executor, int batchSize, WriteAliasName aliasName) {
+    public DeleteByQueryPerformer(RestHighLevelClient client, int batchSize, WriteAliasName aliasName) {
         this.client = client;
-        this.executor = executor;
         this.batchSize = batchSize;
         this.aliasName = aliasName;
     }
 
-    public Future<Void> perform(QueryBuilder queryBuilder) {
-        return executor.submit(() -> doDeleteByQuery(queryBuilder));
-    }
-
-    protected Void doDeleteByQuery(QueryBuilder queryBuilder) {
-        new ScrollIterable(client, prepareSearch(queryBuilder))
-            .stream()
-            .map(searchResponse -> deleteRetrievedIds(client, searchResponse))
-            .forEach(CompletableFuture::join);
-        return null;
+    public Mono<Void> perform(QueryBuilder queryBuilder) {
+        return Flux.fromStream(new ScrollIterable(client, prepareSearch(queryBuilder)).stream())
+            .flatMap(searchResponse -> deleteRetrievedIds(client, searchResponse))
+            .then(Mono.empty());
     }
 
     private SearchRequest prepareSearch(QueryBuilder queryBuilder) {
@@ -78,7 +69,7 @@ public class DeleteByQueryPerformer {
             .size(batchSize);
     }
 
-    private CompletableFuture<BulkResponse> deleteRetrievedIds(RestHighLevelClient client, SearchResponse searchResponse) {
+    private Mono<BulkResponse> deleteRetrievedIds(RestHighLevelClient client, SearchResponse searchResponse) {
         BulkRequest request = new BulkRequest();
 
         for (SearchHit hit : searchResponse.getHits()) {
@@ -87,9 +78,7 @@ public class DeleteByQueryPerformer {
                     .type(NodeMappingFactory.DEFAULT_MAPPING_NAME)
                     .id(hit.getId()));
         }
-        ListenerToFuture<BulkResponse> listener = new ListenerToFuture<>();
-        client.bulkAsync(request, listener);
 
-        return listener.getFuture();
+        return Mono.fromCallable(() -> client.bulk(request));
     }
 }
