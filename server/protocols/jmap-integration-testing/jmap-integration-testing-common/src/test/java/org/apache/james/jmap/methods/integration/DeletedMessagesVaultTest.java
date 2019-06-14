@@ -240,6 +240,22 @@ public abstract class DeletedMessagesVaultTest {
     }
 
     @Test
+    public void restoreShouldCreateRestoreMessagesMailbox() {
+        bartSendMessageToHomer();
+        WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
+
+        homerDeletesMessages(listMessageIdsForAccount(homerAccessToken));
+        WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 0);
+
+        restoreAllMessagesOfHomer();
+        WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
+
+        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
+        assertThat(mailboxProbe.listUserMailboxes(HOMER))
+            .contains(DefaultMailboxes.RESTORED_MESSAGES);
+    }
+
+    @Test
     public void postShouldRestoreMatchingMessages() {
         bartSendMessageToHomerWithSubject("aaaaa");
         bartSendMessageToHomerWithSubject("bbbbb");
