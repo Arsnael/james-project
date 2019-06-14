@@ -56,6 +56,7 @@ import org.apache.james.jmap.ExportRequest;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.categories.BasicFeature;
 import org.apache.james.mailbox.DefaultMailboxes;
+import org.apache.james.mailbox.Role;
 import org.apache.james.mailbox.backup.ZipAssert;
 import org.apache.james.mailbox.backup.ZipAssert.EntryChecks;
 import org.apache.james.mailbox.model.MailboxId;
@@ -252,7 +253,7 @@ public abstract class DeletedMessagesVaultTest {
 
         MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
         assertThat(mailboxProbe.listUserMailboxes(HOMER))
-            .contains(DefaultMailboxes.RESTORED_MESSAGES);
+            .contains(Role.RESTORED_MESSAGES.getDefaultMailbox());
     }
 
     @Test
