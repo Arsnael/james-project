@@ -252,7 +252,7 @@ public abstract class DeletedMessagesVaultTest {
         restoreAllMessagesOfHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
-        assertThat(homerHasMailboxWithRole(Role.RESTORED_MESSAGES));
+        assertThat(homerHasMailboxWithRole(Role.RESTORED_MESSAGES)).isTrue();
     }
 
     @Test
