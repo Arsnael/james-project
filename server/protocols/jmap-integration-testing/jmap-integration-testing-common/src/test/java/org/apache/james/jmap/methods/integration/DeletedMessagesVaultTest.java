@@ -28,6 +28,7 @@ import static org.apache.james.jmap.DeletedMessagesVaultRequests.purgeVault;
 import static org.apache.james.jmap.DeletedMessagesVaultRequests.restoreMessagesForUserWithQuery;
 import static org.apache.james.jmap.HttpJmapAuthentication.authenticateJamesUser;
 import static org.apache.james.jmap.JmapCommonRequests.deleteMessages;
+import static org.apache.james.jmap.JmapCommonRequests.getAllMailboxesIds;
 import static org.apache.james.jmap.JmapCommonRequests.getLastMessageId;
 import static org.apache.james.jmap.JmapCommonRequests.getOutboxId;
 import static org.apache.james.jmap.JmapCommonRequests.listMessageIdsForAccount;
@@ -251,9 +252,7 @@ public abstract class DeletedMessagesVaultTest {
         restoreAllMessagesOfHomer();
         WAIT_TWO_MINUTES.until(() -> listMessageIdsForAccount(homerAccessToken).size() == 1);
 
-        MailboxProbe mailboxProbe = jmapServer.getProbe(MailboxProbeImpl.class);
-        assertThat(mailboxProbe.listUserMailboxes(HOMER))
-            .contains(Role.RESTORED_MESSAGES.getDefaultMailbox());
+        assertThat(homerHasMailboxWithRole(Role.RESTORED_MESSAGES));
     }
 
     @Test
@@ -852,5 +851,12 @@ public abstract class DeletedMessagesVaultTest {
             .body(updateRequestBody)
             .when()
             .post("/jmap");
+    }
+
+    private boolean homerHasMailboxWithRole(Role role) {
+        return getAllMailboxesIds(homerAccessToken).stream()
+            .filter(mailbox -> mailbox.get("role") != null)
+            .anyMatch(mailbox -> mailbox.get("role").equalsIgnoreCase(role.serialize())
+                && mailbox.get("name").equalsIgnoreCase(role.getDefaultMailbox()));
     }
 }
