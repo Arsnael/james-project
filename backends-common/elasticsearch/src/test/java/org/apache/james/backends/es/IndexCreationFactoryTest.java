@@ -59,6 +59,15 @@ public class IndexCreationFactoryTest {
             .createIndexAndAliases(client);
     }
 
+
+    @Test
+    public void createIndexAndAliasShouldNotThrowWhenIndexIsSameAsPreviouslyDefinedAlias() {
+        new IndexCreationFactory(ElasticSearchConfiguration.DEFAULT_CONFIGURATION)
+            .useIndex(new IndexName("alias"))
+            .addAlias(ALIAS_NAME)
+            .createIndexAndAliases(client);
+    }
+
     @Test
     public void useIndexShouldThrowWhenNull() {
         assertThatThrownBy(() ->
