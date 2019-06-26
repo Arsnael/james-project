@@ -115,6 +115,8 @@ public class IndexCreationFactory {
             } catch (ElasticsearchStatusException exception) {
                 if (exception.getMessage().contains(INDEX_ALREADY_EXISTS_EXCEPTION_MESSAGE)) {
                     LOGGER.info("Index [{}] already exist", indexName);
+                } else if (exception.getMessage().contains(INDEX_NAME_EXCEPTION_MESSAGE)) {
+                    LOGGER.info("Index [{}] already exist as alias", indexName);
                 } else {
                     throw exception;
                 }
@@ -170,6 +172,7 @@ public class IndexCreationFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexCreationFactory.class);
     private static final String INDEX_ALREADY_EXISTS_EXCEPTION_MESSAGE = "type=resource_already_exists_exception";
+    private static final String INDEX_NAME_EXCEPTION_MESSAGE = "type=invalid_index_name_exception";
 
     private final int nbShards;
     private final int nbReplica;
