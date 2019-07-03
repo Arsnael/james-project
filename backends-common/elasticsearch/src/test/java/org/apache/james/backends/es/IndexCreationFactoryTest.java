@@ -19,6 +19,7 @@
 
 package org.apache.james.backends.es;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
@@ -53,19 +54,21 @@ public class IndexCreationFactoryTest {
 
     @Test
     public void createIndexAndAliasShouldNotThrowWhenCalledSeveralTime() {
-        new IndexCreationFactory(ElasticSearchConfiguration.DEFAULT_CONFIGURATION)
-            .useIndex(INDEX_NAME)
-            .addAlias(ALIAS_NAME)
-            .createIndexAndAliases(client);
+        assertThatCode(() -> new IndexCreationFactory(ElasticSearchConfiguration.DEFAULT_CONFIGURATION)
+                .useIndex(INDEX_NAME)
+                .addAlias(ALIAS_NAME)
+                .createIndexAndAliases(client))
+            .doesNotThrowAnyException();
     }
 
 
     @Test
     public void createIndexAndAliasShouldNotThrowWhenIndexIsSameAsPreviouslyDefinedAlias() {
-        new IndexCreationFactory(ElasticSearchConfiguration.DEFAULT_CONFIGURATION)
-            .useIndex(new IndexName("alias"))
-            .addAlias(ALIAS_NAME)
-            .createIndexAndAliases(client);
+        assertThatCode(() -> new IndexCreationFactory(ElasticSearchConfiguration.DEFAULT_CONFIGURATION)
+                .useIndex(new IndexName("alias"))
+                .addAlias(ALIAS_NAME)
+                .createIndexAndAliases(client))
+            .doesNotThrowAnyException();
     }
 
     @Test
