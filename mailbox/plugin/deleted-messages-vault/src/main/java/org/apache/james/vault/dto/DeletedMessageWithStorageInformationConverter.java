@@ -56,8 +56,7 @@ public class DeletedMessageWithStorageInformationConverter {
     public StorageInformation toStorageInformation(DeletedMessageWithStorageInformationDTO.StorageInformationDTO storageInformationDTO) {
         return StorageInformation.builder()
             .bucketName(BucketName.of(storageInformationDTO.getBucketName()))
-            .blobId(blobFactory.from(storageInformationDTO.getBlobId()))
-            .build();
+            .blobId(blobFactory.from(storageInformationDTO.getBlobId()));
     }
 
     public DeletedMessage toDeletedMessage(DeletedMessageWithStorageInformationDTO.DeletedMessageDTO deletedMessageDTO) {
