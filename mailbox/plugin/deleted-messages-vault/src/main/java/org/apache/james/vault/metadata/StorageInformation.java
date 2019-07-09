@@ -47,7 +47,7 @@ public class StorageInformation {
     private final BucketName bucketName;
     private final BlobId blobId;
 
-    public StorageInformation(BucketName bucketName, BlobId blobId) {
+    private StorageInformation(BucketName bucketName, BlobId blobId) {
         Preconditions.checkNotNull(bucketName);
         Preconditions.checkNotNull(blobId);
 
