@@ -88,15 +88,27 @@ public class DeletedMessageWithStorageInformationDTO {
         public static DeletedMessageDTO from(DeletedMessage deletedMessage) {
             return new DeletedMessageDTO(
                 deletedMessage.getMessageId().serialize(),
-                getOriginMailboxes(deletedMessage.getOriginMailboxes()),
+                serializeOriginMailboxes(deletedMessage.getOriginMailboxes()),
                 deletedMessage.getOwner().asString(),
                 deletedMessage.getDeliveryDate().toString(),
                 deletedMessage.getDeletionDate().toString(),
                 deletedMessage.getSender().asString(),
-                getRecipients(deletedMessage.getRecipients()),
+                serializeRecipients(deletedMessage.getRecipients()),
                 deletedMessage.getSubject(),
                 deletedMessage.hasAttachment(),
                 deletedMessage.getSize());
+        }
+
+        private static ImmutableList<String> serializeOriginMailboxes(List<MailboxId> originMailboxes) {
+            return originMailboxes.stream()
+                .map(MailboxId::serialize)
+                .collect(Guavate.toImmutableList());
+        }
+
+        private static ImmutableList<String> serializeRecipients(List<MailAddress> recipients) {
+            return recipients.stream()
+                .map(MailAddress::asString)
+                .collect(Guavate.toImmutableList());
         }
 
         private final String messageId;
@@ -171,18 +183,6 @@ public class DeletedMessageWithStorageInformationDTO {
 
         public long getSize() {
             return size;
-        }
-
-        private static ImmutableList<String> getOriginMailboxes(List<MailboxId> originMailboxes) {
-            return originMailboxes.stream()
-                .map(MailboxId::serialize)
-                .collect(Guavate.toImmutableList());
-        }
-
-        private static ImmutableList<String> getRecipients(List<MailAddress> recipients) {
-            return recipients.stream()
-                .map(MailAddress::asString)
-                .collect(Guavate.toImmutableList());
         }
 
         @Override

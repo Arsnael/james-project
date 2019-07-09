@@ -62,12 +62,12 @@ public class DeletedMessageWithStorageInformationConverter {
     public DeletedMessage toDeletedMessage(DeletedMessageWithStorageInformationDTO.DeletedMessageDTO deletedMessageDTO) {
         return DeletedMessage.builder()
             .messageId(messageIdFactory.fromString(deletedMessageDTO.getMessageId()))
-            .originMailboxes(toOriginMailboxes(deletedMessageDTO.getOriginMailboxes()))
+            .originMailboxes(deserializeOriginMailboxes(deletedMessageDTO.getOriginMailboxes()))
             .user(User.fromUsername(deletedMessageDTO.getOwner()))
             .deliveryDate(ZonedDateTime.parse(deletedMessageDTO.getDeliveryDate()))
             .deletionDate(ZonedDateTime.parse(deletedMessageDTO.getDeletionDate()))
             .sender(MaybeSender.getMailSender(deletedMessageDTO.getSender()))
-            .recipients(toRecipients(deletedMessageDTO.getRecipients()))
+            .recipients(deserializeRecipients(deletedMessageDTO.getRecipients()))
             .hasAttachment(deletedMessageDTO.getHasAttachment())
             .size(deletedMessageDTO.getSize())
             .subject(deletedMessageDTO.getSubject())
@@ -80,13 +80,13 @@ public class DeletedMessageWithStorageInformationConverter {
             toStorageInformation(deletedMessageWithStorageInfoDTO.getStorageInformation()));
     }
 
-    private ImmutableList<MailboxId> toOriginMailboxes(List<String> originMailboxes) {
+    private ImmutableList<MailboxId> deserializeOriginMailboxes(List<String> originMailboxes) {
         return originMailboxes.stream()
             .map(mailboxId -> mailboxIdFactory.fromString(mailboxId))
             .collect(Guavate.toImmutableList());
     }
 
-    private ImmutableList<MailAddress> toRecipients(List<String> recipients) {
+    private ImmutableList<MailAddress> deserializeRecipients(List<String> recipients) {
         return recipients.stream()
             .map(Throwing.function(recipient -> new MailAddress(recipient)))
             .collect(Guavate.toImmutableList());
