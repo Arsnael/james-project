@@ -5,8 +5,8 @@
     "44"
   ],
   "owner":"bob@apache.org",
-  "deliveryDate":"2014-10-30T14:12Z",
-  "deletionDate":"2015-10-30T14:12Z",
+  "deliveryDate":"2014-10-30T14:12:00Z",
+  "deletionDate":"2015-10-30T14:12:00Z",
   "sender":"sender@localhost",
   "recipients": [
     "recipient1@localhost",

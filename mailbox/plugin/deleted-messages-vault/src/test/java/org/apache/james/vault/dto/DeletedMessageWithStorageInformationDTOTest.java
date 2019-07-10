@@ -21,16 +21,19 @@ package org.apache.james.vault.dto;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.apache.james.util.ClassLoaderUtils.getSystemResourceAsString;
+import static org.apache.james.vault.DeletedMessageFixture.DELETED_MESSAGE;
+import static org.apache.james.vault.DeletedMessageFixture.DELETED_MESSAGE_WITH_SUBJECT;
 import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTO.DeletedMessageDTO;
 import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTO.StorageInformationDTO;
-import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTOFixture.DELETED_MESSAGE_DTO;
-import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTOFixture.DELETED_MESSAGE_WITH_STORAGE_INFO_DTO;
-import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTOFixture.DELETED_MESSAGE_WITH_SUBJECT_DTO;
-import static org.apache.james.vault.dto.DeletedMessageWithStorageInformationDTOFixture.STORAGE_INFORMATION_DTO;
+import static org.apache.james.vault.metadata.DeletedMessageVaultMetadataFixture.STORAGE_INFORMATION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
+import org.apache.james.blob.api.HashBlobId;
+import org.apache.james.mailbox.inmemory.InMemoryId;
+import org.apache.james.mailbox.inmemory.InMemoryMessageId;
+import org.apache.james.vault.metadata.DeletedMessageWithStorageInformation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,9 +42,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
 class DeletedMessageWithStorageInformationDTOTest {
+    private static final StorageInformationDTO STORAGE_INFORMATION_DTO = StorageInformationDTO.toDTO(STORAGE_INFORMATION);
+
+    private static final DeletedMessageDTO DELETED_MESSAGE_DTO = DeletedMessageDTO.toDTO(DELETED_MESSAGE);
+
+    private static final DeletedMessageDTO DELETED_MESSAGE_WITH_SUBJECT_DTO = DeletedMessageDTO.toDTO(DELETED_MESSAGE_WITH_SUBJECT);
+
+    private static final DeletedMessageWithStorageInformation DELETED_MESSAGE_WITH_STORAGE_INFO =
+        new DeletedMessageWithStorageInformation(DELETED_MESSAGE_WITH_SUBJECT, STORAGE_INFORMATION);
+
+    private static final DeletedMessageWithStorageInformationDTO DELETED_MESSAGE_WITH_STORAGE_INFO_DTO =
+        DeletedMessageWithStorageInformationDTO.toDTO(DELETED_MESSAGE_WITH_STORAGE_INFO);
+
     private static final String STORAGE_INFORMATION_JSON = getSystemResourceAsString("json/storage_information.json");
 
     private static final String DELETED_MESSAGE_JSON = getSystemResourceAsString("json/deleted_message.json");
@@ -51,74 +64,65 @@ class DeletedMessageWithStorageInformationDTOTest {
         getSystemResourceAsString("json/deleted_message_with_storage_information.json");
 
     private ObjectMapper objectMapper;
+    private DeletedMessageWithStorageInformationConverter converter;
 
     @BeforeEach
     void setup() {
         this.objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
             .setSerializationInclusion(JsonInclude.Include.NON_ABSENT);
+
+        this.converter = new DeletedMessageWithStorageInformationConverter(
+            new HashBlobId.Factory(),
+            new InMemoryMessageId.Factory(),
+            new InMemoryId.Factory());
     }
 
     @Test
-    void storageInformationDTOShouldRespectBeanContract() {
-        EqualsVerifier.forClass(StorageInformationDTO.class).verify();
-    }
-
-    @Test
-    void deletedMessageDTOShouldRespectBeanContract() {
-        EqualsVerifier.forClass(DeletedMessageDTO.class).verify();
-    }
-
-    @Test
-    void deletedMessageWithStorageInformationDTOShouldRespectBeanContract() {
-        EqualsVerifier.forClass(DeletedMessageWithStorageInformationDTO.class).verify();
-    }
-
-    @Test
-    void shouldSerializeStorageInformationDTO() throws JsonProcessingException {
+    void shouldSerializeStorageInformation() throws JsonProcessingException {
         assertThatJson(objectMapper.writeValueAsString(STORAGE_INFORMATION_DTO))
             .isEqualTo(STORAGE_INFORMATION_JSON);
     }
 
     @Test
-    void shouldDeserializeStorageInformationDTO() throws IOException {
-        assertThat(objectMapper.readValue(STORAGE_INFORMATION_JSON, StorageInformationDTO.class))
-            .isEqualTo(STORAGE_INFORMATION_DTO);
+    void shouldDeserializeStorageInformation() throws IOException {
+        assertThat(converter.toDomainObject(objectMapper.readValue(STORAGE_INFORMATION_JSON, StorageInformationDTO.class)))
+            .isEqualTo(STORAGE_INFORMATION);
     }
 
     @Test
-    void shouldSerializeDeletedMessageDTO() throws JsonProcessingException {
+    void shouldSerializeDeletedMessage() throws JsonProcessingException {
         assertThatJson(objectMapper.writeValueAsString(DELETED_MESSAGE_DTO))
             .isEqualTo(DELETED_MESSAGE_JSON);
     }
 
     @Test
-    void shouldDeserializeDeletedMessageDTO() throws IOException {
-        assertThat(objectMapper.readValue(DELETED_MESSAGE_JSON, DeletedMessageDTO.class))
-            .isEqualTo(DELETED_MESSAGE_DTO);
+    void shouldDeserializeDeletedMessage() throws IOException {
+        assertThat(converter.toDomainObject(objectMapper.readValue(DELETED_MESSAGE_JSON, DeletedMessageDTO.class)))
+            .isEqualTo(DELETED_MESSAGE);
     }
 
     @Test
-    void shouldSerializeDeletedMessageDTOWithSubject() throws JsonProcessingException {
+    void shouldSerializeDeletedMessageWithSubject() throws JsonProcessingException {
         assertThatJson(objectMapper.writeValueAsString(DELETED_MESSAGE_WITH_SUBJECT_DTO))
             .isEqualTo(DELETED_MESSAGE_WITH_SUBJECT_JSON);
     }
 
     @Test
-    void shouldDeserializeDeletedMessageDTOWithSubject() throws IOException {
-        assertThat(objectMapper.readValue(DELETED_MESSAGE_WITH_SUBJECT_JSON, DeletedMessageDTO.class))
-            .isEqualTo(DELETED_MESSAGE_WITH_SUBJECT_DTO);
+    void shouldDeserializeDeletedMessageWithSubject() throws IOException {
+        assertThat(converter.toDomainObject(objectMapper.readValue(DELETED_MESSAGE_WITH_SUBJECT_JSON, DeletedMessageDTO.class)))
+            .isEqualTo(DELETED_MESSAGE_WITH_SUBJECT);
     }
 
     @Test
-    void shouldSerializeDeletedMessageWithStorageInformationDTO() throws JsonProcessingException {
+    void shouldSerializeDeletedMessageWithStorageInformation() throws JsonProcessingException {
         assertThatJson(objectMapper.writeValueAsString(DELETED_MESSAGE_WITH_STORAGE_INFO_DTO))
             .isEqualTo(DELETED_MESSAGE_WITH_STORAGE_INFO_JSON);
     }
 
     @Test
-    void shouldDeserializeDeletedMessageWithStorageInformationDTO() throws IOException {
-        assertThat(objectMapper.readValue(DELETED_MESSAGE_WITH_STORAGE_INFO_JSON, DeletedMessageWithStorageInformationDTO.class))
-            .isEqualTo(DELETED_MESSAGE_WITH_STORAGE_INFO_DTO);
+    void shouldDeserializeDeletedMessageWithStorageInformation() throws IOException {
+        assertThat(converter.toDomainObject(objectMapper.readValue(DELETED_MESSAGE_WITH_STORAGE_INFO_JSON, DeletedMessageWithStorageInformationDTO.class)))
+            .isEqualTo(DELETED_MESSAGE_WITH_STORAGE_INFO);
     }
 }
