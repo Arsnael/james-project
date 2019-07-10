@@ -19,8 +19,9 @@
 
 package org.apache.james.vault.dto;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
@@ -40,7 +41,7 @@ public class DeletedMessageWithStorageInformationDTO {
 
     public static class StorageInformationDTO {
 
-        public static StorageInformationDTO from(StorageInformation storageInformation) {
+        public static StorageInformationDTO toDTO(StorageInformation storageInformation) {
             return new StorageInformationDTO(storageInformation.getBucketName().asString(),
                 storageInformation.getBlobId().asString());
         }
@@ -65,33 +66,17 @@ public class DeletedMessageWithStorageInformationDTO {
         public String getBlobId() {
             return blobId;
         }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof StorageInformationDTO) {
-                StorageInformationDTO that = (StorageInformationDTO) o;
-
-                return Objects.equals(this.bucketName, that.bucketName)
-                    && Objects.equals(this.blobId, that.blobId);
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(bucketName, blobId);
-        }
     }
 
     public static class DeletedMessageDTO {
 
-        public static DeletedMessageDTO from(DeletedMessage deletedMessage) {
+        public static DeletedMessageDTO toDTO(DeletedMessage deletedMessage) {
             return new DeletedMessageDTO(
                 deletedMessage.getMessageId().serialize(),
                 serializeOriginMailboxes(deletedMessage.getOriginMailboxes()),
                 deletedMessage.getOwner().asString(),
-                deletedMessage.getDeliveryDate().toString(),
-                deletedMessage.getDeletionDate().toString(),
+                serializeZonedDateTime(deletedMessage.getDeliveryDate()),
+                serializeZonedDateTime(deletedMessage.getDeletionDate()),
                 deletedMessage.getSender().asString(),
                 serializeRecipients(deletedMessage.getRecipients()),
                 deletedMessage.getSubject(),
@@ -109,6 +94,10 @@ public class DeletedMessageWithStorageInformationDTO {
             return recipients.stream()
                 .map(MailAddress::asString)
                 .collect(Guavate.toImmutableList());
+        }
+
+        private static String serializeZonedDateTime(ZonedDateTime time) {
+            return time.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
         }
 
         private final String messageId;
@@ -184,37 +173,12 @@ public class DeletedMessageWithStorageInformationDTO {
         public long getSize() {
             return size;
         }
-
-        @Override
-        public final boolean equals(Object o) {
-            if (o instanceof DeletedMessageDTO) {
-                DeletedMessageDTO that = (DeletedMessageDTO) o;
-
-                return Objects.equals(this.hasAttachment, that.hasAttachment)
-                    && Objects.equals(this.messageId, that.messageId)
-                    && Objects.equals(this.originMailboxes, that.originMailboxes)
-                    && Objects.equals(this.owner, that.owner)
-                    && Objects.equals(this.deliveryDate, that.deliveryDate)
-                    && Objects.equals(this.deletionDate, that.deletionDate)
-                    && Objects.equals(this.sender, that.sender)
-                    && Objects.equals(this.recipients, that.recipients)
-                    && Objects.equals(this.subject, that.subject)
-                    && Objects.equals(this.size, that.size);
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(messageId, originMailboxes, owner, deliveryDate, deletionDate, sender, recipients,
-                subject, hasAttachment, size);
-        }
     }
 
-    public static DeletedMessageWithStorageInformationDTO from(DeletedMessageWithStorageInformation deletedMessageWithStorageInformation) {
+    public static DeletedMessageWithStorageInformationDTO toDTO(DeletedMessageWithStorageInformation deletedMessageWithStorageInformation) {
         return new DeletedMessageWithStorageInformationDTO(
-            DeletedMessageDTO.from(deletedMessageWithStorageInformation.getDeletedMessage()),
-            StorageInformationDTO.from(deletedMessageWithStorageInformation.getStorageInformation()));
+            DeletedMessageDTO.toDTO(deletedMessageWithStorageInformation.getDeletedMessage()),
+            StorageInformationDTO.toDTO(deletedMessageWithStorageInformation.getStorageInformation()));
     }
 
     private final DeletedMessageDTO deletedMessage;
@@ -234,22 +198,6 @@ public class DeletedMessageWithStorageInformationDTO {
 
     public StorageInformationDTO getStorageInformation() {
         return storageInformation;
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof DeletedMessageWithStorageInformationDTO) {
-            DeletedMessageWithStorageInformationDTO that = (DeletedMessageWithStorageInformationDTO) o;
-
-            return Objects.equals(this.storageInformation, that.storageInformation)
-                && Objects.equals(this.deletedMessage, that.deletedMessage);
-        }
-        return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(storageInformation, deletedMessage);
     }
 
     public String toString() {

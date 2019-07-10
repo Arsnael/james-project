@@ -53,13 +53,13 @@ public class DeletedMessageWithStorageInformationConverter {
         this.mailboxIdFactory = mailboxIdFactory;
     }
 
-    public StorageInformation toStorageInformation(DeletedMessageWithStorageInformationDTO.StorageInformationDTO storageInformationDTO) {
+    public StorageInformation toDomainObject(DeletedMessageWithStorageInformationDTO.StorageInformationDTO storageInformationDTO) {
         return StorageInformation.builder()
             .bucketName(BucketName.of(storageInformationDTO.getBucketName()))
             .blobId(blobFactory.from(storageInformationDTO.getBlobId()));
     }
 
-    public DeletedMessage toDeletedMessage(DeletedMessageWithStorageInformationDTO.DeletedMessageDTO deletedMessageDTO) {
+    public DeletedMessage toDomainObject(DeletedMessageWithStorageInformationDTO.DeletedMessageDTO deletedMessageDTO) {
         return DeletedMessage.builder()
             .messageId(messageIdFactory.fromString(deletedMessageDTO.getMessageId()))
             .originMailboxes(deserializeOriginMailboxes(deletedMessageDTO.getOriginMailboxes()))
@@ -74,10 +74,10 @@ public class DeletedMessageWithStorageInformationConverter {
             .build();
     }
 
-    public DeletedMessageWithStorageInformation toDeletedMessageWithStorageInformation(DeletedMessageWithStorageInformationDTO deletedMessageWithStorageInfoDTO) {
+    public DeletedMessageWithStorageInformation toDomainObject(DeletedMessageWithStorageInformationDTO deletedMessageWithStorageInfoDTO) {
         return new DeletedMessageWithStorageInformation(
-            toDeletedMessage(deletedMessageWithStorageInfoDTO.getDeletedMessage()),
-            toStorageInformation(deletedMessageWithStorageInfoDTO.getStorageInformation()));
+            toDomainObject(deletedMessageWithStorageInfoDTO.getDeletedMessage()),
+            toDomainObject(deletedMessageWithStorageInfoDTO.getStorageInformation()));
     }
 
     private ImmutableList<MailboxId> deserializeOriginMailboxes(List<String> originMailboxes) {
