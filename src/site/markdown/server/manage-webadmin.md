@@ -2826,7 +2826,7 @@ The requested Json body is made from a list of criterion objects which have the 
 {
   "fieldName": "supportedFieldName",
   "operator": "supportedOperator",
-  "value": "A plain string that represents the matching value of the corresponding field"
+  "value": "A plain string representing the matching value of the corresponding field"
 }
 ```
 
