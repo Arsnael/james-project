@@ -603,7 +603,6 @@
         <javamail.version>1.5.4</javamail.version>
         <javax-activation.version>1.1.1</javax-activation.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <servlet-api.version>2.4</servlet-api.version>
         <commons-logging.version>1.1.1</commons-logging.version>
 
         <dnsjava.version>2.1.8</dnsjava.version>
@@ -2126,10 +2125,6 @@
                         <groupId>log4j</groupId>
                         <artifactId>log4j</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -2231,11 +2226,6 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>4.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>${servlet-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.xml.bind</groupId>
