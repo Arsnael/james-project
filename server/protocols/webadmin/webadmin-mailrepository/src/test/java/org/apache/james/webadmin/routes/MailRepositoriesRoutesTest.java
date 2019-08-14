@@ -1201,7 +1201,8 @@ public class MailRepositoriesRoutesTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(mailRepository.list()).isEmpty();
+        assertThat(mailRepository.list()).toIterable()
+            .isEmpty();
     }
 
     @Test
@@ -1230,8 +1231,10 @@ public class MailRepositoriesRoutesTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(mailRepository1.list()).isEmpty();
-        assertThat(mailRepository2.list()).isEmpty();
+        assertThat(mailRepository1.list()).toIterable()
+            .isEmpty();
+        assertThat(mailRepository2.list()).toIterable()
+            .isEmpty();
     }
 
     @Test
@@ -1255,6 +1258,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(spoolQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
             .containsOnly(NAME_1, NAME_2);
@@ -1282,6 +1286,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(spoolQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
             .containsOnly(NAME_1, NAME_2);
@@ -1312,6 +1317,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(spoolQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getState)
             .containsOnly(state1, state2);
@@ -1344,6 +1350,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(spoolQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getState)
             .containsOnly(transport, transport);
@@ -1371,6 +1378,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(customQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
             .containsOnly(NAME_1, NAME_2);
@@ -1555,7 +1563,7 @@ public class MailRepositoriesRoutesTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(mailRepository.list())
+        assertThat(mailRepository.list()).toIterable()
             .containsOnly(new MailKey(NAME_2));
     }
 
@@ -1580,6 +1588,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(spoolQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
             .containsOnly(NAME_1);
@@ -1610,6 +1619,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(spoolQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getState)
             .containsOnly(state1);
@@ -1642,6 +1652,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(spoolQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getState)
             .containsOnly(transport);
@@ -1669,6 +1680,7 @@ public class MailRepositoriesRoutesTest {
             .get(taskId + "/await");
 
         assertThat(customQueue.browse())
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
             .containsOnly(NAME_1);
@@ -1695,7 +1707,7 @@ public class MailRepositoriesRoutesTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(customQueue.browse())
+        assertThat(customQueue.browse()).toIterable()
             .isEmpty();
     }
 
