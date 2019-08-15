@@ -208,8 +208,7 @@ public class MailboxEventAnalyserTest {
 
         testee.event(update);
 
-       assertThat(testee.flagUpdateUids().iterator())
-           .toIterable()
+       assertThat(testee.flagUpdateUids())
            .containsExactly(UID);
     }
 
@@ -244,7 +243,7 @@ public class MailboxEventAnalyserTest {
         testee.setSilentFlagChanges(true);
         testee.event(update);
 
-        assertThat(testee.flagUpdateUids().iterator()).toIterable()
+        assertThat(testee.flagUpdateUids())
             .containsExactly(UID);
     }
 
@@ -261,7 +260,7 @@ public class MailboxEventAnalyserTest {
         testee.setSilentFlagChanges(true);
         testee.event(update);
 
-        assertThat(testee.flagUpdateUids().iterator()).toIterable()
+        assertThat(testee.flagUpdateUids())
             .isEmpty();
     }
 
@@ -276,7 +275,7 @@ public class MailboxEventAnalyserTest {
 
         testee.event(update);
 
-        assertThat(testee.flagUpdateUids().iterator()).toIterable()
+        assertThat(testee.flagUpdateUids())
             .isEmpty();
     }
 }
