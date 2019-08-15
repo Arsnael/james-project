@@ -257,7 +257,10 @@ interface ErrorHandlingContract extends EventBusContract {
         eventBus().register(eventCollector, GROUP_A);
         eventBus().dispatch(EVENT, NO_KEYS).block();
 
-        WAIT_CONDITION.until(() -> deadLetterContainsOnlyAnEvent());
+        WAIT_CONDITION.untilAsserted(() -> assertThat(deadLetter().failedIds(GROUP_A)
+                .flatMap(insertionId -> deadLetter().failedEvent(GROUP_A, insertionId))
+                .toIterable())
+            .containsOnly(EVENT));
         assertThat(eventCollector.getEvents())
             .isEmpty();
     }
@@ -276,7 +279,10 @@ interface ErrorHandlingContract extends EventBusContract {
         eventBus().register(eventCollector, GROUP_A);
         eventBus().reDeliver(GROUP_A, EVENT).block();
 
-        WAIT_CONDITION.until(() -> deadLetterContainsOnlyAnEvent());
+        WAIT_CONDITION.untilAsserted(() -> assertThat(deadLetter().failedIds(GROUP_A)
+                .flatMap(insertionId -> deadLetter().failedEvent(GROUP_A, insertionId))
+                .toIterable())
+            .containsOnly(EVENT));
         assertThat(eventCollector.getEvents())
             .isEmpty();
     }
@@ -293,17 +299,5 @@ interface ErrorHandlingContract extends EventBusContract {
         WAIT_CONDITION
             .until(() -> eventCollector.getEvents().size() == 1);
         assertThat(eventCollector2.getEvents()).isEmpty();
-    }
-
-    default boolean deadLetterContainsOnlyAnEvent() {
-        List events = deadLetter().failedIds(GROUP_A)
-            .flatMap(insertionId -> deadLetter().failedEvent(GROUP_A, insertionId))
-            .collectList()
-            .block();
-
-        if(events.size() == 1 && events.get(0).equals(EVENT)) {
-            return true;
-        }
-        return false;
     }
 }
