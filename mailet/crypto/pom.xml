@@ -77,7 +77,7 @@
             </plugin>
             <plugin>
                 <groupId>${james.groupId}</groupId>
-                <artifactId>maven-mailetdocs-plugin</artifactId>
+                <artifactId>mailetdocs-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
