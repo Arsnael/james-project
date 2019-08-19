@@ -117,7 +117,8 @@ public interface ManageableMailQueueContract extends MailQueueContract {
     default void browseShouldReturnEmptyByDefault() throws Exception {
         ManageableMailQueue.MailQueueIterator items = getManageableMailQueue().browse();
 
-        assertThat(items).toIterable()
+        assertThat(items)
+            .toIterable()
             .isEmpty();
     }
 
@@ -129,7 +130,8 @@ public interface ManageableMailQueueContract extends MailQueueContract {
 
         ManageableMailQueue.MailQueueIterator items = getManageableMailQueue().browse();
 
-        assertThat(items).toIterable()
+        assertThat(items)
+            .toIterable()
             .extracting(ManageableMailQueue.MailQueueItemView::getMail)
             .extracting(Mail::getName)
             .containsExactly("name");

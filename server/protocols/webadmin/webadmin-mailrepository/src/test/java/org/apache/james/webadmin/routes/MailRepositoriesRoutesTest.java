@@ -1201,7 +1201,8 @@ public class MailRepositoriesRoutesTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(mailRepository.list()).toIterable()
+        assertThat(mailRepository.list())
+            .toIterable()
             .isEmpty();
     }
 
@@ -1563,7 +1564,8 @@ public class MailRepositoriesRoutesTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(mailRepository.list()).toIterable()
+        assertThat(mailRepository.list())
+            .toIterable()
             .containsOnly(new MailKey(NAME_2));
     }
 
@@ -1707,7 +1709,8 @@ public class MailRepositoriesRoutesTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(customQueue.browse()).toIterable()
+        assertThat(customQueue.browse())
+            .toIterable()
             .isEmpty();
     }
 
