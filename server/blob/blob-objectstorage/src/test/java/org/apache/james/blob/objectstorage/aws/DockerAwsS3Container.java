@@ -28,7 +28,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class DockerAwsS3Container {
 
-    private static final String AWS_S3_DOCKER_IMAGE = "linagora/cloudserver:8.1.17";
+    private static final String AWS_S3_DOCKER_IMAGE = "linagora/cloudserver:mem-8.1.17";
     private static final int AWS_S3_PORT = 8000;
     private static final int ONE_TIME = 1;
 
