@@ -19,28 +19,22 @@
 
 package org.apache.james.blob.objectstorage;
 
-import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.HashBlobId;
-import org.apache.james.blob.api.MetricableBlobStore;
-import org.apache.james.blob.api.MetricableBlobStoreContract;
 import org.apache.james.blob.objectstorage.aws.AwsS3AuthConfiguration;
 import org.apache.james.blob.objectstorage.aws.AwsS3ObjectStorage;
 import org.apache.james.blob.objectstorage.aws.DockerAwsS3Container;
 import org.apache.james.blob.objectstorage.aws.DockerAwsS3Extension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DockerAwsS3Extension.class)
-public class ObjectStorageBlobsDAOAWSTest implements MetricableBlobStoreContract {
-
+public class ObjectStorageBlobsDAOAWSTest implements ReadPartiallyContract {
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
 
-    private ObjectStorageBlobsDAO objectStorageBlobsDAO;
     private AwsS3ObjectStorage awsS3ObjectStorage;
-    private BlobStore testee;
+    private ObjectStorageBlobsDAO testee;
 
     @BeforeEach
     void setUp(DockerAwsS3Container dockerAwsS3) {
@@ -56,36 +50,18 @@ public class ObjectStorageBlobsDAOAWSTest implements MetricableBlobStoreContract
             .blobIdFactory(BLOB_ID_FACTORY)
             .blobPutter(awsS3ObjectStorage.putBlob(configuration));
 
-        objectStorageBlobsDAO = builder.build();
-        testee = new MetricableBlobStore(metricsTestExtension.getMetricFactory(), objectStorageBlobsDAO);
+        testee = builder.build();
     }
 
     @AfterEach
     void tearDown() {
-        objectStorageBlobsDAO.deleteAllBuckets().block();
-        objectStorageBlobsDAO.close();
+        testee.deleteAllBuckets().block();
+        testee.close();
         awsS3ObjectStorage.tearDown();
     }
 
     @Override
     public BlobStore testee() {
         return testee;
-    }
-
-    @Override
-    public BlobId.Factory blobIdFactory() {
-        return BLOB_ID_FACTORY;
-    }
-
-    @Override
-    @Disabled("JAMES-2829 Unstable with scality/S3 impl")
-    public void readShouldNotReadPartiallyWhenDeletingConcurrentlyBigBlob() {
-
-    }
-
-    @Override
-    @Disabled("JAMES-2838 Unstable with scality/S3 impl")
-    public void readBytesShouldNotReadPartiallyWhenDeletingConcurrentlyBigBlob() {
-
     }
 }
