@@ -5,13 +5,13 @@ This is our custom made Mock SMTP server that we use for some of our tests in Ja
 
 == Dockerized Mock SMTP server
 
-Start by compiling and packaging the module:
+Compile and build the docker image with maven:
 
-    $ mvn package
+    $ mvn compile jib:dockerBuild
 
 *Note* : You can add the option '-DskipTests' if you want to skip tests
 
-Jib would have created normally a mock-smtp-server image that you can run like this:
+After Jib created the image, you can run it with:
 
     $ docker run --rm -p 25:25 -p 8000:8000 james/mock-smtp-server
 
