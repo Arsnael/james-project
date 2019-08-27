@@ -128,7 +128,7 @@
                 <version>1.5.0</version>
                 <configuration>
                     <to>
-                        <image>james/mock-smtp-server</image>
+                        <image>linagora/mock-smtp-server</image>
                         <tags>
                             <tag>0.1</tag>
                             <tag>latest</tag>
