@@ -44,20 +44,16 @@ import com.github.steveash.guavate.Guavate;
 
 public class HTTPConfigurationServer {
     static class SMTPBehaviorsServlet extends HttpServlet {
-        private final ObjectMapper objectMapper;
         private final SMTPBehaviorRepository smtpBehaviorRepository;
 
         SMTPBehaviorsServlet(SMTPBehaviorRepository smtpBehaviorRepository) {
-            this.objectMapper = new ObjectMapper()
-                .registerModule(new Jdk8Module())
-                .registerModule(new GuavaModule());
             this.smtpBehaviorRepository = smtpBehaviorRepository;
         }
 
         @Override
         protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
             try {
-                MockSmtpBehaviors behaviors = objectMapper.readValue(req.getInputStream(), MockSmtpBehaviors.class);
+                MockSmtpBehaviors behaviors = OBJECT_MAPPER.readValue(req.getInputStream(), MockSmtpBehaviors.class);
                 smtpBehaviorRepository.setBehaviors(behaviors);
                 resp.setStatus(SC_NO_CONTENT);
             } catch (IOException e) {
@@ -73,7 +69,7 @@ public class HTTPConfigurationServer {
 
             resp.setStatus(SC_OK);
             resp.setContentType("application/json");
-            objectMapper.writeValue(resp.getOutputStream(), mockSmtpBehaviors);
+            OBJECT_MAPPER.writeValue(resp.getOutputStream(), mockSmtpBehaviors);
         }
 
         @Override
@@ -84,14 +80,9 @@ public class HTTPConfigurationServer {
     }
 
     static class SMTPMailsServlet extends HttpServlet {
-        private final ObjectMapper objectMapper;
         private final ReceivedMailRepository receivedMailRepository;
 
         SMTPMailsServlet(ReceivedMailRepository receivedMailRepository) {
-            this.objectMapper = new ObjectMapper()
-                .registerModule(new Jdk8Module())
-                .registerModule(new GuavaModule())
-                .registerModule(new MailAddressModule().asJacksonModule());
             this.receivedMailRepository = receivedMailRepository;
         }
 
@@ -100,12 +91,17 @@ public class HTTPConfigurationServer {
             Mails mails = new Mails(receivedMailRepository.list());
             resp.setStatus(SC_OK);
             resp.setContentType("application/json");
-            objectMapper.writeValue(resp.getOutputStream(), mails);
+            OBJECT_MAPPER.writeValue(resp.getOutputStream(), mails);
         }
     }
 
     private static final String SMTP_BEHAVIORS = "/smtpBehaviors";
     private static final String SMTP_MAILS = "/smtpMails";
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+        .registerModule(new Jdk8Module())
+        .registerModule(new GuavaModule())
+        .registerModule(new MailAddressModule().asJacksonModule());
 
     public static HTTPConfigurationServer onRandomPort(SMTPBehaviorRepository smtpBehaviorRepository, ReceivedMailRepository receivedMailRepository) {
         return new HTTPConfigurationServer(smtpBehaviorRepository,
