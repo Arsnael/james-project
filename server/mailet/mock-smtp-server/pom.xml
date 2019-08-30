@@ -127,6 +127,9 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>1.5.0</version>
                 <configuration>
+                    <from>
+                        <image>openjdk:8u222-jre</image>
+                    </from>
                     <to>
                         <image>linagora/mock-smtp-server</image>
                         <tags>
@@ -135,9 +138,23 @@
                         </tags>
                     </to>
                     <container>
+                        <mainClass>org.apache.james.mock.smtp.server.MockSMTPServerMain</mainClass>
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                        <ports>
+                            <port>25</port>
+                            <port>8000</port>
+                        </ports>
                     </container>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>docker packaging</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>buildTar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
