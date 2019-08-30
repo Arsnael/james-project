@@ -209,7 +209,8 @@ class HTTPConfigurationServerTest {
             String response = when()
                 .get()
                 .then()
-                .extract().asString();
+                .extract()
+                .asString();
 
             assertThatJson(response)
                 .withOptions(new Options(Option.TREATING_NULL_AS_ABSENT, Option.IGNORING_ARRAY_ORDER))
