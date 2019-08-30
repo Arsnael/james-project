@@ -41,7 +41,7 @@ public interface Fixture {
     ObjectMapper OBJECT_MAPPER = new ObjectMapper()
         .registerModule(new Jdk8Module())
         .registerModule(new GuavaModule())
-        .registerModule(new MailAddressModule().asJacksonModule());
+        .registerModule(MailAddressModule.MODULE);
 
     Response RESPONSE = Response.serverAccept(Response.SMTPStatusCode.of(250), "message");
 
