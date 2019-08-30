@@ -101,7 +101,7 @@ public class HTTPConfigurationServer {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
         .registerModule(new Jdk8Module())
         .registerModule(new GuavaModule())
-        .registerModule(new MailAddressModule().asJacksonModule());
+        .registerModule(MailAddressModule.MODULE);
 
     public static HTTPConfigurationServer onRandomPort(SMTPBehaviorRepository smtpBehaviorRepository, ReceivedMailRepository receivedMailRepository) {
         return new HTTPConfigurationServer(smtpBehaviorRepository,
