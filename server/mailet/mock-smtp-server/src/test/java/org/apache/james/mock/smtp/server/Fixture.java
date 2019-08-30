@@ -97,4 +97,6 @@ public interface Fixture {
         "  {\"from\":\"bob@james.org\",\"recipients\":[\"alice@james.org\", \"jack@james.org\"],\"message\":\"bob to alice and jack\"}," +
         "  {\"from\":\"alice@james.org\",\"recipients\":[\"bob@james.org\"],\"message\":\"alice to bob\"}" +
         "]";
+
+    String JSON_MAIL = "[{\"from\":\"bob@james.org\",\"recipients\":[\"alice@james.org\", \"jack@james.org\"],\"message\":\"bob to alice and jack\"}]";
 }
