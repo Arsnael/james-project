@@ -137,7 +137,6 @@
                     </to>
                     <container>
                         <mainClass>org.apache.james.mock.smtp.server.MockSMTPServerMain</mainClass>
-                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         <ports>
                             <port>25</port>
                             <port>8000</port>
