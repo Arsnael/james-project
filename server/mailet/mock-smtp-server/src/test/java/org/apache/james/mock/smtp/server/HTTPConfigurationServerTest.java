@@ -80,6 +80,7 @@ class HTTPConfigurationServerTest {
             when()
                 .get()
             .then()
+                .contentType(ContentType.JSON)
                 .body(".", hasSize(0));
         }
 
@@ -88,9 +89,11 @@ class HTTPConfigurationServerTest {
             with().body(JSON_BEHAVIORS).put();
 
             String response = when()
-                .get()
-            .then()
-                .extract().asString();
+                    .get()
+                .then()
+                    .contentType(ContentType.JSON)
+                    .extract()
+                    .asString();
 
             assertThatJson(response)
                 .withOptions(new Options(Option.TREATING_NULL_AS_ABSENT, Option.IGNORING_ARRAY_ORDER))
@@ -106,6 +109,7 @@ class HTTPConfigurationServerTest {
             when()
                 .get()
             .then()
+                .contentType(ContentType.JSON)
                 .body(".", hasSize(0));
         }
 
@@ -184,6 +188,7 @@ class HTTPConfigurationServerTest {
             when()
                 .get()
             .then()
+                .contentType(ContentType.JSON)
                 .body(".", hasSize(0));
         }
 
@@ -192,9 +197,11 @@ class HTTPConfigurationServerTest {
             mailRepository.store(mail1);
 
             String response = when()
-                .get()
-            .then()
-                .extract().asString();
+                    .get()
+                .then()
+                    .contentType(ContentType.JSON)
+                    .extract()
+                    .asString();
 
             assertThatJson(response)
                 .withOptions(new Options(Option.TREATING_NULL_AS_ABSENT, Option.IGNORING_ARRAY_ORDER))
@@ -207,10 +214,11 @@ class HTTPConfigurationServerTest {
             mailRepository.store(mail2);
 
             String response = when()
-                .get()
+                    .get()
                 .then()
-                .extract()
-                .asString();
+                    .contentType(ContentType.JSON)
+                    .extract()
+                    .asString();
 
             assertThatJson(response)
                 .withOptions(new Options(Option.TREATING_NULL_AS_ABSENT, Option.IGNORING_ARRAY_ORDER))
@@ -226,6 +234,7 @@ class HTTPConfigurationServerTest {
             when()
                 .get()
             .then()
+                .contentType(ContentType.JSON)
                 .body(".", hasSize(0));
         }
     }
