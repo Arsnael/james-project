@@ -650,8 +650,6 @@
 
         <scala.base>2.12</scala.base>
         <scala.version>${scala.base}.8</scala.version>
-
-        <jib.version>1.5.1</jib.version>
     </properties>
 
     <dependencyManagement>
@@ -1904,11 +1902,6 @@
                 <version>${guavate.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>${jib.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
@@ -2664,6 +2657,11 @@
                             <version>${jaxb.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>com.google.cloud.tools</groupId>
+                    <artifactId>jib-maven-plugin</artifactId>
+                    <version>1.5.1</version>
                 </plugin>
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
