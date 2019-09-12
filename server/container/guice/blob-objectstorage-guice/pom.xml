@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
-            <artifactId>james-server-guice-common</artifactId>
+            <artifactId>james-server-guice-configuration</artifactId>
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
@@ -63,11 +63,6 @@
         <dependency>
             <groupId>${james.groupId}</groupId>
             <artifactId>james-server-testing</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>nl.jqno.equalsverifier</groupId>
-            <artifactId>equalsverifier</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -16,9 +16,8 @@
     <dependencies>
         <dependency>
             <groupId>${james.groupId}</groupId>
-            <artifactId>apache-mailet-base</artifactId>
+            <artifactId>apache-mailet-test</artifactId>
             <scope>test</scope>
-            <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>${james.groupId}</groupId>
@@ -31,17 +30,6 @@
         <dependency>
             <groupId>${james.groupId}</groupId>
             <artifactId>james-server-queue-api</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${james.groupId}</groupId>
-            <artifactId>james-server-testing</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${james.groupId}</groupId>
-            <artifactId>javax-mail-extension</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

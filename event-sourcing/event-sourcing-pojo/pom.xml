@@ -33,8 +33,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.steveash.guavate</groupId>
-            <artifactId>guavate</artifactId>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>
@@ -56,10 +56,5 @@
             <artifactId>junit-platform-launcher</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
     </dependencies>
-
 </project>
