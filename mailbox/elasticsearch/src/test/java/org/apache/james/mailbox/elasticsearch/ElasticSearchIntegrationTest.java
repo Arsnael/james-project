@@ -222,7 +222,7 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
 
     @Test
     @Ignore("JAMES-2078 issue with dynamic mapping")
-    public void headerSearchShouldIncludeMessageWhenDifferentTypesOnADynamicallyIndexedField() throws Exception {
+    public void headerSearchShouldIncludeMessageWhenDifferentTypesOnAnIndexedField() throws Exception {
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, INBOX);
         MailboxSession session = MailboxSessionUtil.create(USERNAME);
         MessageManager messageManager = storeMailboxManager.getMailbox(mailboxPath, session);
