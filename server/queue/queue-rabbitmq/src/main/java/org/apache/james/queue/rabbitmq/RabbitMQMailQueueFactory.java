@@ -19,8 +19,6 @@
 
 package org.apache.james.queue.rabbitmq;
 
-import static org.apache.james.queue.api.MailQueue.QUEUE_SIZE_METRIC_NAME_PREFIX;
-
 import java.time.Clock;
 import java.util.Optional;
 import java.util.Set;
@@ -96,7 +94,7 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
         }
 
         private void registerGaugeFor(RabbitMQMailQueue rabbitMQMailQueue) {
-            this.gaugeRegistry.register(QUEUE_SIZE_METRIC_NAME_PREFIX + rabbitMQMailQueue.getName(), rabbitMQMailQueue::getSize);
+            // this.gaugeRegistry.register(QUEUE_SIZE_METRIC_NAME_PREFIX + rabbitMQMailQueue.getName(), rabbitMQMailQueue::getSize);
         }
     }
 

@@ -52,7 +52,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class ObjectStorageBlobsDAO implements BlobStore {
-    private static final int BUFFERED_SIZE = 256 * 1024;
+    private static final int BUFFERED_SIZE = 1024 * 1024;
 
     private final BlobId.Factory blobIdFactory;
 
