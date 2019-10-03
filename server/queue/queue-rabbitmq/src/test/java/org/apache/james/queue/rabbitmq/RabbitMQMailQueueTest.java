@@ -30,12 +30,12 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.james.backends.rabbitmq.DockerRabbitMQ;
-import org.apache.james.backends.rabbitmq.RabbitMQExtension;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
+import org.apache.james.backends.rabbitmq.DockerRabbitMQ;
+import org.apache.james.backends.rabbitmq.RabbitMQExtension;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
@@ -47,6 +47,7 @@ import org.apache.james.queue.api.MailQueueMetricExtension;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.ManageableMailQueueContract;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
+import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueSizeConfiguration;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewModule;
 import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewTestFactory;
@@ -112,6 +113,10 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
                     .build(),
             mimeMessageStoreFactory);
 
+        RabbitMQMailQueueSizeConfiguration configuration = RabbitMQMailQueueSizeConfiguration.builder()
+            .sizeMetricsEnabled(true)
+            .build();
+
         RabbitClient rabbitClient = new RabbitClient(rabbitMQExtension.getRabbitChannelPool());
         RabbitMQMailQueueFactory.PrivateFactory factory = new RabbitMQMailQueueFactory.PrivateFactory(
             metricTestSystem.getMetricFactory(),
@@ -121,7 +126,8 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
             BLOB_ID_FACTORY,
             mailQueueViewFactory,
             clock,
-            new RawMailQueueItemDecoratorFactory());
+            new RawMailQueueItemDecoratorFactory(),
+            configuration);
         mqManagementApi = new RabbitMQMailQueueManagement(rabbitMQExtension.managementAPI());
         mailQueueFactory = new RabbitMQMailQueueFactory(rabbitClient, mqManagementApi, factory);
         mailQueue = mailQueueFactory.createQueue(SPOOL);
@@ -217,7 +223,7 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract, MailQ
     @Test
     void enQueueShouldNotThrowOnMailNameWithNegativeHash() {
         String negativehashedString = "this sting will have a negative hash"; //hash value: -1256871313
-        
+
         assertThatCode(() -> getMailQueue().enQueue(defaultMail().name(negativehashedString).build()))
             .doesNotThrowAnyException();
     }
