@@ -37,7 +37,7 @@ import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueFactoryContract;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
-import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueSizeConfiguration;
+import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueConfiguration;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.jupiter.api.AfterEach;
@@ -62,7 +62,7 @@ class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<RabbitMQM
         when(mailQueueViewFactory.create(any()))
             .thenReturn(mailQueueView);
 
-        RabbitMQMailQueueSizeConfiguration configuration = RabbitMQMailQueueSizeConfiguration.builder()
+        RabbitMQMailQueueConfiguration configuration = RabbitMQMailQueueConfiguration.builder()
             .sizeMetricsEnabled(true)
             .build();
 

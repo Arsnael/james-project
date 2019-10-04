@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import org.apache.commons.configuration2.Configuration;
 
-public class RabbitMQMailQueueSizeConfiguration {
+public class RabbitMQMailQueueConfiguration {
     private static final boolean DEFAULT_SIZE_METRICS_ENABLED = true;
 
     public static class Builder {
@@ -35,14 +35,10 @@ public class RabbitMQMailQueueSizeConfiguration {
             return this;
         }
 
-        public RabbitMQMailQueueSizeConfiguration build() {
-            return new RabbitMQMailQueueSizeConfiguration(sizeMetricsEnabled.orElse(DEFAULT_SIZE_METRICS_ENABLED));
+        public RabbitMQMailQueueConfiguration build() {
+            return new RabbitMQMailQueueConfiguration(sizeMetricsEnabled.orElse(DEFAULT_SIZE_METRICS_ENABLED));
         }
     }
-
-    public static final RabbitMQMailQueueSizeConfiguration DEFAULT = builder()
-        .sizeMetricsEnabled(DEFAULT_SIZE_METRICS_ENABLED)
-        .build();
 
     public static final String SIZE_METRICS_ENABLED_PROPERTY = "mailqueue.size.metricsEnabled";
 
@@ -50,15 +46,27 @@ public class RabbitMQMailQueueSizeConfiguration {
         return new Builder();
     }
 
-    public static RabbitMQMailQueueSizeConfiguration from(Configuration configuration) {
+    public static RabbitMQMailQueueConfiguration from(Configuration configuration) {
         return builder()
             .sizeMetricsEnabled(configuration.getBoolean(SIZE_METRICS_ENABLED_PROPERTY, DEFAULT_SIZE_METRICS_ENABLED))
             .build();
     }
 
+    public static RabbitMQMailQueueConfiguration sizeMetricsEnabled() {
+        return builder()
+            .sizeMetricsEnabled(true)
+            .build();
+    }
+
+    public static RabbitMQMailQueueConfiguration sizeMetricsDisabled() {
+        return builder()
+            .sizeMetricsEnabled(false)
+            .build();
+    }
+
     private final boolean sizeMetricsEnabled;
 
-    private RabbitMQMailQueueSizeConfiguration(boolean sizeMetricsEnabled) {
+    private RabbitMQMailQueueConfiguration(boolean sizeMetricsEnabled) {
         this.sizeMetricsEnabled = sizeMetricsEnabled;
     }
 
@@ -68,8 +76,8 @@ public class RabbitMQMailQueueSizeConfiguration {
 
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof RabbitMQMailQueueSizeConfiguration) {
-            RabbitMQMailQueueSizeConfiguration that = (RabbitMQMailQueueSizeConfiguration) o;
+        if (o instanceof RabbitMQMailQueueConfiguration) {
+            RabbitMQMailQueueConfiguration that = (RabbitMQMailQueueConfiguration) o;
 
             return Objects.equals(this.sizeMetricsEnabled, that.sizeMetricsEnabled);
         }

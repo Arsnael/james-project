@@ -34,7 +34,7 @@ import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.rabbitmq.RabbitMQMailQueueFactory;
-import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueSizeConfiguration;
+import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueConfiguration;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.james.queue.rabbitmq.view.cassandra.BrowseStartDAO;
 import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueBrowser;
@@ -123,7 +123,7 @@ public class RabbitMQModule extends AbstractModule {
 
     @Provides
     @Singleton
-    private RabbitMQMailQueueSizeConfiguration getMailQueueSizeConfiguration(@Named(RABBITMQ_CONFIGURATION_NAME) Configuration configuration) {
-        return RabbitMQMailQueueSizeConfiguration.from(configuration);
+    private RabbitMQMailQueueConfiguration getMailQueueSizeConfiguration(@Named(RABBITMQ_CONFIGURATION_NAME) Configuration configuration) {
+        return RabbitMQMailQueueConfiguration.from(configuration);
     }
 }

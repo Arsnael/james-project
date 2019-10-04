@@ -46,7 +46,7 @@ import org.apache.james.metrics.api.NoopMetricFactory;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
-import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueSizeConfiguration;
+import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueConfiguration;
 import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueView;
 import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewModule;
 import org.apache.james.queue.rabbitmq.view.cassandra.CassandraMailQueueViewTestFactory;
@@ -111,7 +111,7 @@ class RabbitMQMailQueueConfigurationChangeTest {
             mailQueueViewConfiguration,
             mimeMessageStoreFactory);
 
-        RabbitMQMailQueueSizeConfiguration mailQueueSizeConfiguration = RabbitMQMailQueueSizeConfiguration.builder()
+        RabbitMQMailQueueConfiguration mailQueueSizeConfiguration = RabbitMQMailQueueConfiguration.builder()
             .sizeMetricsEnabled(true)
             .build();
 

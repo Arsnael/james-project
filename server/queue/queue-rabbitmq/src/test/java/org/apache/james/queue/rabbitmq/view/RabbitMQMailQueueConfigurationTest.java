@@ -26,25 +26,25 @@ import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-class RabbitMQMailQueueSizeConfigurationTest {
+class RabbitMQMailQueueConfigurationTest {
     @Test
     void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(RabbitMQMailQueueSizeConfiguration.class).verify();
+        EqualsVerifier.forClass(RabbitMQMailQueueConfiguration.class).verify();
     }
 
     @Test
     void fromShouldReturnDefaultForEmptyConfiguration() {
-        RabbitMQMailQueueSizeConfiguration actual = RabbitMQMailQueueSizeConfiguration.from(new PropertiesConfiguration());
+        RabbitMQMailQueueConfiguration actual = RabbitMQMailQueueConfiguration.from(new PropertiesConfiguration());
 
         assertThat(actual)
-            .isEqualTo(RabbitMQMailQueueSizeConfiguration.DEFAULT);
+            .isEqualTo(RabbitMQMailQueueConfiguration.sizeMetricsEnabled());
     }
 
     @Test
     void fromShouldReturnConfiguredSizeMetricsEnabled() {
         PropertiesConfiguration configuration = new PropertiesConfiguration();
-        configuration.addProperty(RabbitMQMailQueueSizeConfiguration.SIZE_METRICS_ENABLED_PROPERTY, false);
-        RabbitMQMailQueueSizeConfiguration actual = RabbitMQMailQueueSizeConfiguration.from(configuration);
+        configuration.addProperty(RabbitMQMailQueueConfiguration.SIZE_METRICS_ENABLED_PROPERTY, false);
+        RabbitMQMailQueueConfiguration actual = RabbitMQMailQueueConfiguration.from(configuration);
 
         assertThat(actual.isSizeMetricsEnabled())
             .isEqualTo(false);

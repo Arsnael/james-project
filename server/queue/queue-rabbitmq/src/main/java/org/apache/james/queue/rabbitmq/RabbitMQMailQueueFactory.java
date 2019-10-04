@@ -38,7 +38,7 @@ import org.apache.james.metrics.api.GaugeRegistry;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
-import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueSizeConfiguration;
+import org.apache.james.queue.rabbitmq.view.RabbitMQMailQueueConfiguration;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 
 import com.github.fge.lambdas.Throwing;
@@ -57,7 +57,7 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
         private final MailQueueView.Factory mailQueueViewFactory;
         private final Clock clock;
         private final MailQueueItemDecoratorFactory decoratorFactory;
-        private final RabbitMQMailQueueSizeConfiguration configuration;
+        private final RabbitMQMailQueueConfiguration configuration;
 
         @Inject
         @VisibleForTesting PrivateFactory(MetricFactory metricFactory,
@@ -68,7 +68,7 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
                                           MailQueueView.Factory mailQueueViewFactory,
                                           Clock clock,
                                           MailQueueItemDecoratorFactory decoratorFactory,
-                                          RabbitMQMailQueueSizeConfiguration configuration) {
+                                          RabbitMQMailQueueConfiguration configuration) {
             this.metricFactory = metricFactory;
             this.gaugeRegistry = gaugeRegistry;
             this.rabbitClient = rabbitClient;
