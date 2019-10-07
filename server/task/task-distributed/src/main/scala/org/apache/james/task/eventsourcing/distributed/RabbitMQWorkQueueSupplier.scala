@@ -22,13 +22,14 @@ import java.time.Duration
 
 import com.google.common.annotations.VisibleForTesting
 import javax.inject.Inject
-import org.apache.james.backends.rabbitmq.SimpleConnectionPool
+import org.apache.james.backends.rabbitmq.ReactorRabbitMQChannelPool
 import org.apache.james.eventsourcing.EventSourcingSystem
 import org.apache.james.server.task.json.JsonTaskSerializer
 import org.apache.james.task.SerialTaskManagerWorker
 import org.apache.james.task.eventsourcing.{WorkQueueSupplier, WorkerStatusListener}
 
-class RabbitMQWorkQueueSupplier @Inject()(private val rabbitMQConnectionPool: SimpleConnectionPool,
+@Inject
+class RabbitMQWorkQueueSupplier(private val rabbitMQConnectionPool: ReactorRabbitMQChannelPool,
                                 private val jsonTaskSerializer: JsonTaskSerializer) extends WorkQueueSupplier {
 
   val DEFAULT_ADDITIONAL_INFORMATION_POLLING_INTERVAL =  Duration.ofSeconds(30)

@@ -29,6 +29,7 @@ import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.rabbitmq.RabbitMQChannelPool;
 import org.apache.james.backends.rabbitmq.RabbitMQConfiguration;
 import org.apache.james.backends.rabbitmq.RabbitMQHealthCheck;
+import org.apache.james.backends.rabbitmq.ReactorRabbitMQChannelPool;
 import org.apache.james.backends.rabbitmq.SimpleChannelPool;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
@@ -68,6 +69,7 @@ public class RabbitMQModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(ReactorRabbitMQChannelPool.class).in(Scopes.SINGLETON);
         bind(EnqueuedMailsDAO.class).in(Scopes.SINGLETON);
         bind(DeletedMailsDAO.class).in(Scopes.SINGLETON);
         bind(BrowseStartDAO.class).in(Scopes.SINGLETON);
@@ -86,7 +88,7 @@ public class RabbitMQModule extends AbstractModule {
         eventDTOModuleBinder.addBinding().toInstance(CassandraMailQueueViewConfigurationModule.MAIL_QUEUE_VIEW_CONFIGURATION);
 
         Multibinder.newSetBinder(binder(), HealthCheck.class).addBinding().to(RabbitMQHealthCheck.class);
-        Multibinder.newSetBinder(binder(), InitialisationOperation.class).addBinding().to(RabbitMQMailQueueFactoryInitialisationOperation.class);
+        Multibinder.newSetBinder(binder(), InitialisationOperation.class).addBinding().to(ReactorRabbitMQChannelPoolInitialisationOperation.class);
     }
 
     @Provides
@@ -132,22 +134,22 @@ public class RabbitMQModule extends AbstractModule {
     }
 
     @Singleton
-    public static class RabbitMQMailQueueFactoryInitialisationOperation implements InitialisationOperation {
-        private final RabbitMQMailQueueFactory rabbitMQMailQueueFactory;
+    public static class ReactorRabbitMQChannelPoolInitialisationOperation implements InitialisationOperation {
+        private final ReactorRabbitMQChannelPool rabbitMQChannelPool;
 
         @Inject
-        public RabbitMQMailQueueFactoryInitialisationOperation(RabbitMQMailQueueFactory rabbitMQMailQueueFactory) {
-            this.rabbitMQMailQueueFactory = rabbitMQMailQueueFactory;
+        public ReactorRabbitMQChannelPoolInitialisationOperation(ReactorRabbitMQChannelPool rabbitMQChannelPool) {
+            this.rabbitMQChannelPool = rabbitMQChannelPool;
         }
 
         @Override
         public void initModule() {
-            rabbitMQMailQueueFactory.start();
+            rabbitMQChannelPool.start();
         }
 
         @Override
         public Class<? extends Startable> forClass() {
-            return RabbitMQMailQueueFactory.class;
+            return ReactorRabbitMQChannelPool.class;
         }
     }
 }

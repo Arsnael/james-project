@@ -39,14 +39,17 @@ import org.apache.james.jmap.draft.model.MessagePreviewGenerator;
 import org.apache.james.jmap.draft.send.MailSpool;
 import org.apache.james.jmap.draft.utils.HeadersAuthenticationExtractor;
 import org.apache.james.lifecycle.api.StartUpCheck;
+import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.util.date.DefaultZonedDateTimeProvider;
 import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.apache.james.util.mime.MessageContentExtractor;
+import org.apache.james.utils.InitialisationOperation;
 import org.apache.mailet.base.AutomaticallySentMailDetector;
 import org.apache.mailet.base.AutomaticallySentMailDetectorImpl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
@@ -82,6 +85,9 @@ public class JMAPCommonModule extends AbstractModule {
 
         Multibinder.newSetBinder(binder(), StartUpCheck.class)
             .addBinding().to(JMAPConfigurationStartUpCheck.class);
+
+        Multibinder.newSetBinder(binder(), InitialisationOperation.class)
+            .addBinding().to(MailSpoolInitializer.class);
     }
 
     @Provides
@@ -95,5 +101,26 @@ public class JMAPCommonModule extends AbstractModule {
                 jwtAuthenticationStrategy,
                 accessTokenAuthenticationStrategy,
                 queryParameterAuthenticationStrategy);
+    }
+
+
+
+    static class MailSpoolInitializer implements InitialisationOperation {
+        private final MailSpool mailSpool;
+
+        @Inject
+        MailSpoolInitializer(MailSpool mailSpool) {
+            this.mailSpool = mailSpool;
+        }
+
+        @Override
+        public void initModule() {
+            mailSpool.start();
+        }
+
+        @Override
+        public Class<? extends Startable> forClass() {
+            return MailSpool.class;
+        }
     }
 }
