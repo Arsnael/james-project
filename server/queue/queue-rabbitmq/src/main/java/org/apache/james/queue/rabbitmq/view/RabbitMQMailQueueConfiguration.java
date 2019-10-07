@@ -35,6 +35,11 @@ public class RabbitMQMailQueueConfiguration {
             return this;
         }
 
+        public Builder sizeMetricsEnabled(Optional<Boolean> sizeMetricsEnabled) {
+            this.sizeMetricsEnabled = sizeMetricsEnabled;
+            return this;
+        }
+
         public RabbitMQMailQueueConfiguration build() {
             return new RabbitMQMailQueueConfiguration(sizeMetricsEnabled.orElse(DEFAULT_SIZE_METRICS_ENABLED));
         }
@@ -48,7 +53,7 @@ public class RabbitMQMailQueueConfiguration {
 
     public static RabbitMQMailQueueConfiguration from(Configuration configuration) {
         return builder()
-            .sizeMetricsEnabled(configuration.getBoolean(SIZE_METRICS_ENABLED_PROPERTY, DEFAULT_SIZE_METRICS_ENABLED))
+            .sizeMetricsEnabled(Optional.ofNullable(configuration.getBoolean(SIZE_METRICS_ENABLED_PROPERTY, null)))
             .build();
     }
 
