@@ -52,6 +52,8 @@ public class NodeMappingFactory {
     public static final String SEARCH_ANALYZER = "search_analyzer";
     public static final String SNOWBALL = "snowball";
     public static final String IGNORE_ABOVE = "ignore_above";
+    public static final String SOURCE = "_source";
+    public static final String ENABLED = "enabled";
 
     public static RestHighLevelClient applyMapping(RestHighLevelClient client, IndexName indexName, XContentBuilder mappingsSources) throws IOException {
         if (!mappingAlreadyExist(client, indexName)) {

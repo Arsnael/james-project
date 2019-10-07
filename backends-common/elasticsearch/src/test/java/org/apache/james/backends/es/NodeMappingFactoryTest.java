@@ -19,6 +19,8 @@
 
 package org.apache.james.backends.es;
 
+import static org.apache.james.backends.es.NodeMappingFactory.ENABLED;
+import static org.apache.james.backends.es.NodeMappingFactory.SOURCE;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -81,6 +83,9 @@ public class NodeMappingFactoryTest {
     private XContentBuilder getMappingsSources() throws Exception {
         return jsonBuilder()
             .startObject()
+                .startObject(SOURCE)
+                    .field(ENABLED, false)
+                .endObject()
                 .startObject(NodeMappingFactory.PROPERTIES)
                     .startObject(MESSAGE)
                         .field(NodeMappingFactory.TYPE, NodeMappingFactory.TEXT)
@@ -92,6 +97,9 @@ public class NodeMappingFactoryTest {
     private XContentBuilder getOtherMappingsSources() throws Exception {
         return jsonBuilder()
             .startObject()
+                .startObject(SOURCE)
+                    .field(ENABLED, false)
+                .endObject()
                 .startObject(NodeMappingFactory.PROPERTIES)
                     .startObject(MESSAGE)
                         .field(NodeMappingFactory.TYPE, NodeMappingFactory.TEXT)

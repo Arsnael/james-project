@@ -24,6 +24,7 @@ import static org.apache.james.backends.es.IndexCreationFactory.KEEP_MAIL_AND_UR
 import static org.apache.james.backends.es.IndexCreationFactory.SNOWBALL_KEEP_MAIL_AND_URL;
 import static org.apache.james.backends.es.NodeMappingFactory.ANALYZER;
 import static org.apache.james.backends.es.NodeMappingFactory.BOOLEAN;
+import static org.apache.james.backends.es.NodeMappingFactory.ENABLED;
 import static org.apache.james.backends.es.NodeMappingFactory.FIELDS;
 import static org.apache.james.backends.es.NodeMappingFactory.FORMAT;
 import static org.apache.james.backends.es.NodeMappingFactory.IGNORE_ABOVE;
@@ -35,6 +36,7 @@ import static org.apache.james.backends.es.NodeMappingFactory.PROPERTIES;
 import static org.apache.james.backends.es.NodeMappingFactory.RAW;
 import static org.apache.james.backends.es.NodeMappingFactory.SEARCH_ANALYZER;
 import static org.apache.james.backends.es.NodeMappingFactory.SNOWBALL;
+import static org.apache.james.backends.es.NodeMappingFactory.SOURCE;
 import static org.apache.james.backends.es.NodeMappingFactory.SPLIT_EMAIL;
 import static org.apache.james.backends.es.NodeMappingFactory.TYPE;
 import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.BCC;
@@ -82,6 +84,10 @@ public class MailboxMappingFactory {
         try {
             return jsonBuilder()
                 .startObject()
+
+                    .startObject(SOURCE)
+                        .field(ENABLED, false)
+                    .endObject()
 
                     .startObject(PROPERTIES)
 

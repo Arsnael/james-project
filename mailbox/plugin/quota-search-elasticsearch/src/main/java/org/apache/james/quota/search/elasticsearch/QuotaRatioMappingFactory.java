@@ -20,8 +20,10 @@
 package org.apache.james.quota.search.elasticsearch;
 
 import static org.apache.james.backends.es.NodeMappingFactory.DOUBLE;
+import static org.apache.james.backends.es.NodeMappingFactory.ENABLED;
 import static org.apache.james.backends.es.NodeMappingFactory.KEYWORD;
 import static org.apache.james.backends.es.NodeMappingFactory.PROPERTIES;
+import static org.apache.james.backends.es.NodeMappingFactory.SOURCE;
 import static org.apache.james.backends.es.NodeMappingFactory.TYPE;
 import static org.apache.james.quota.search.elasticsearch.json.JsonMessageConstants.DOMAIN;
 import static org.apache.james.quota.search.elasticsearch.json.JsonMessageConstants.QUOTA_RATIO;
@@ -38,6 +40,11 @@ class QuotaRatioMappingFactory {
         try {
             return jsonBuilder()
                 .startObject()
+
+                    .startObject(SOURCE)
+                        .field(ENABLED, false)
+                    .endObject()
+
                     .startObject(PROPERTIES)
 
                         .startObject(USER)
