@@ -74,6 +74,16 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
             (MailboxEvent) event);
     }
 
+    public Stream<MailboxMessage> retrieveMailboxMessages(MailboxSession session, Mailbox mailbox, MessageRange range) {
+        try {
+            return Iterators.toStream(factory.getMessageMapper(session)
+                .findInMailbox(mailbox, range, FetchType.Full, UNLIMITED));
+        } catch (Exception e) {
+            LOGGER.error("Could not retrieve message {} in mailbox {}", range.toString(), mailbox.getMailboxId().serialize(), e);
+            return Stream.empty();
+        }
+    }
+
     private void handleMailboxEvent(Event event, MailboxSession session, MailboxEvent mailboxEvent) throws Exception {
         MailboxId mailboxId = mailboxEvent.getMailboxId();
 
@@ -87,7 +97,7 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
         } else if (event instanceof FlagsUpdated) {
             Mailbox mailbox = factory.getMailboxMapper(session).findMailboxById(mailboxId);
             FlagsUpdated flagsUpdated = (FlagsUpdated) event;
-            handleFlagsUpdated(session, mailbox, flagsUpdated.getUpdatedFlags());
+            update(session, mailbox, flagsUpdated.getUpdatedFlags());
         } else if (event instanceof MailboxDeletion) {
             deleteAll(session, mailboxId);
         }
@@ -98,28 +108,6 @@ public abstract class ListeningMessageSearchIndex implements MessageSearchIndex,
             .stream()
             .flatMap(range -> retrieveMailboxMessages(session, mailbox, range))
             .forEach(Throwing.<MailboxMessage>consumer(mailboxMessage -> add(session, mailbox, mailboxMessage)).sneakyThrow());
-    }
-
-    private Stream<MailboxMessage> retrieveMailboxMessages(MailboxSession session, Mailbox mailbox, MessageRange range) {
-        try {
-            return Iterators.toStream(factory.getMessageMapper(session)
-                .findInMailbox(mailbox, range, FetchType.Full, UNLIMITED));
-        } catch (Exception e) {
-            LOGGER.error("Could not retrieve message {} in mailbox {}", range.toString(), mailbox.getMailboxId().serialize(), e);
-            return Stream.empty();
-        }
-    }
-
-    private void handleFlagsUpdated(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) {
-        updatedFlagsList.stream()
-            .flatMap(updatedFlags -> retrieveMailboxMessages(session, mailbox, MessageRange.one(updatedFlags.getUid()))
-                .map(mailboxMessage -> updateMailboxMessageFlags(mailboxMessage, updatedFlags)))
-            .forEach(Throwing.<MailboxMessage>consumer(mailboxMessage -> add(session, mailbox, mailboxMessage)).sneakyThrow());
-    }
-
-    private MailboxMessage updateMailboxMessageFlags(MailboxMessage message, UpdatedFlags updatedFlags) {
-        message.setFlags(updatedFlags.getNewFlags());
-        return message;
     }
 
     /**

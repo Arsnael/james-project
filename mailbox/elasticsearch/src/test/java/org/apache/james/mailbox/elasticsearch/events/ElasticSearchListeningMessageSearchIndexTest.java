@@ -21,22 +21,23 @@ package org.apache.james.mailbox.elasticsearch.events;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
 import org.apache.james.backends.es.ElasticSearchIndexer;
-import org.apache.james.backends.es.UpdatedRepresentation;
 import org.apache.james.core.User;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSessionUtil;
@@ -45,6 +46,7 @@ import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
 import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.model.Mailbox;
+import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -77,18 +79,19 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     private MailboxSession session;
     private List<User> users;
     private Mailbox mailbox;
+    private MailboxSessionMapperFactory mapperFactory;
 
     @Before
     public void setup() {
-        MailboxSessionMapperFactory mapperFactory = mock(MailboxSessionMapperFactory.class);
+        mapperFactory = mock(MailboxSessionMapperFactory.class);
         messageToElasticSearchJson = mock(MessageToElasticSearchJson.class);
         ElasticSearchSearcher elasticSearchSearcher = mock(ElasticSearchSearcher.class);
         SessionProvider mockSessionProvider = mock(SessionProvider.class);
 
         elasticSearchIndexer = mock(ElasticSearchIndexer.class);
         
-        testee = new ElasticSearchListeningMessageSearchIndex(mapperFactory, elasticSearchIndexer, elasticSearchSearcher,
-            messageToElasticSearchJson, mockSessionProvider);
+        testee = spy(new ElasticSearchListeningMessageSearchIndex(mapperFactory, elasticSearchIndexer, elasticSearchSearcher,
+            messageToElasticSearchJson, mockSessionProvider));
         session = MailboxSessionUtil.create(USERNAME);
         users = ImmutableList.of(User.fromUsername(USERNAME));
 
@@ -217,15 +220,20 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .newFlags(flags)
             .build();
 
-        when(messageToElasticSearchJson.getUpdatedJsonMessagePart(any(Flags.class), any(Long.class)))
-            .thenReturn("json updated content");
+        MailboxMessage message = mockedMessage(MESSAGE_UID);
+
+        doReturn(Stream.of(message))
+            .when(testee)
+            .retrieveMailboxMessages(any(MailboxSession.class), any(Mailbox.class), any(MessageRange.class));
+
+        when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
+            .thenReturn(EXPECTED_JSON_CONTENT);
         
         //When
         testee.update(session, mailbox, Lists.newArrayList(updatedFlags));
         
         //Then
-        ImmutableList<UpdatedRepresentation> expectedUpdatedRepresentations = ImmutableList.of(new UpdatedRepresentation(ELASTIC_SEARCH_ID, "json updated content"));
-        verify(elasticSearchIndexer).update(expectedUpdatedRepresentations);
+        verify(elasticSearchIndexer).index(eq(ELASTIC_SEARCH_ID), eq(EXPECTED_JSON_CONTENT));
     }
 
     @Test
@@ -238,13 +246,23 @@ public class ElasticSearchListeningMessageSearchIndexTest {
             .oldFlags(flags)
             .newFlags(flags)
             .build();
-        when(messageToElasticSearchJson.getUpdatedJsonMessagePart(any(), anyLong())).thenReturn("update doc");
+
+        MailboxMessage message = mockedMessage(MESSAGE_UID);
+
+        doReturn(Stream.of(message))
+            .when(testee)
+            .retrieveMailboxMessages(any(MailboxSession.class), any(Mailbox.class), any(MessageRange.class));
+
+        when(messageToElasticSearchJson.convertToJson(eq(message), eq(users)))
+            .thenThrow(JsonProcessingException.class);
 
         //When
-        when(elasticSearchIndexer.update(any())).thenThrow(new ElasticsearchException(""));
+        JsonGenerator jsonGenerator = null;
+        when(messageToElasticSearchJson.convertToJsonWithoutAttachment(eq(message), eq(users)))
+            .thenThrow(new JsonGenerationException("expected error", jsonGenerator));
         
         //Then
-        assertThatThrownBy(() -> testee.update(session, mailbox, Lists.newArrayList(updatedFlags))).isInstanceOf(ElasticsearchException.class);
+        assertThatThrownBy(() -> testee.update(session, mailbox, Lists.newArrayList(updatedFlags))).isInstanceOf(JsonGenerationException.class);
     }
 
     @Test

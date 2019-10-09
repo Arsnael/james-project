@@ -31,7 +31,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.james.backends.es.ElasticSearchIndexer;
-import org.apache.james.backends.es.UpdatedRepresentation;
 import org.apache.james.mailbox.MailboxManager.MessageCapabilities;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
 import org.apache.james.mailbox.MailboxSession;
@@ -44,6 +43,7 @@ import org.apache.james.mailbox.events.Group;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -174,19 +174,9 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
 
     @Override
     public void update(MailboxSession session, Mailbox mailbox, List<UpdatedFlags> updatedFlagsList) throws IOException {
-            elasticSearchIndexer
-                .update(updatedFlagsList.stream()
-                    .map(Throwing.<UpdatedFlags, UpdatedRepresentation>function(
-                            updatedFlags -> createUpdatedDocumentPartFromUpdatedFlags(mailbox, updatedFlags))
-                        .sneakyThrow())
-                    .collect(Guavate.toImmutableList()));
-    }
-
-    private UpdatedRepresentation createUpdatedDocumentPartFromUpdatedFlags(Mailbox mailbox, UpdatedFlags updatedFlags) throws JsonProcessingException {
-            return new UpdatedRepresentation(
-                indexIdFor(mailbox, updatedFlags.getUid()),
-                messageToElasticSearchJson
-                    .getUpdatedJsonMessagePart(updatedFlags.getNewFlags(), updatedFlags.getModSeq()));
+        updatedFlagsList.stream()
+            .flatMap(updatedFlags -> retrieveMailboxMessages(session, mailbox, MessageRange.one(updatedFlags.getUid())))
+            .forEach(Throwing.<MailboxMessage>consumer(mailboxMessage -> add(session, mailbox, mailboxMessage)).sneakyThrow());
     }
 
     private String indexIdFor(Mailbox mailbox, MessageUid uid) {
