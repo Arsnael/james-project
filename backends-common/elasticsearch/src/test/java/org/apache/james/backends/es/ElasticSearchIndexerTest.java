@@ -93,55 +93,6 @@ public class ElasticSearchIndexerTest {
         assertThatThrownBy(() -> testee.index("1", null))
             .isInstanceOf(IllegalArgumentException.class);
     }
-    
-    @Test
-    public void updateMessages() throws Exception {
-        String messageId = "1";
-        String content = "{\"message\": \"trying out Elasticsearch\",\"field\":\"Should be unchanged\"}";
-
-        testee.index(messageId, content);
-        elasticSearch.awaitForElasticSearch();
-
-        testee.update(ImmutableList.of(new UpdatedRepresentation(messageId, "{\"message\": \"mastering out Elasticsearch\"}")));
-        elasticSearch.awaitForElasticSearch();
-
-
-        SearchResponse searchResponse = client.search(
-            new SearchRequest(INDEX_NAME.getValue())
-                .source(new SearchSourceBuilder().query(QueryBuilders.matchQuery("message", "mastering"))),
-            RequestOptions.DEFAULT);
-        assertThat(searchResponse.getHits().getTotalHits()).isEqualTo(1);
-
-        SearchResponse searchResponse2 = client.search(
-            new SearchRequest(INDEX_NAME.getValue())
-                .source(new SearchSourceBuilder().query(QueryBuilders.matchQuery("field", "unchanged"))),
-            RequestOptions.DEFAULT);
-        assertThat(searchResponse2.getHits().getTotalHits()).isEqualTo(1);
-    }
-
-    @Test
-    public void updateMessageShouldThrowWhenJsonIsNull() {
-        assertThatThrownBy(() -> testee.update(ImmutableList.of(new UpdatedRepresentation("1", null))))
-            .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    public void updateMessageShouldThrowWhenIdIsNull() {
-        assertThatThrownBy(() -> testee.update(ImmutableList.of(new UpdatedRepresentation(null, "{\"message\": \"mastering out Elasticsearch\"}"))))
-            .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    public void updateMessageShouldThrowWhenJsonIsEmpty() {
-        assertThatThrownBy(() -> testee.update(ImmutableList.of(new UpdatedRepresentation("1", ""))))
-            .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    public void updateMessageShouldThrowWhenIdIsEmpty() {
-        assertThatThrownBy(() -> testee.update(ImmutableList.of(new UpdatedRepresentation("", "{\"message\": \"mastering out Elasticsearch\"}"))))
-            .isInstanceOf(IllegalArgumentException.class);
-    }
 
     @Test
     public void deleteByQueryShouldWorkOnSingleMessage() throws Exception {
@@ -235,11 +186,6 @@ public class ElasticSearchIndexerTest {
                 .source(new SearchSourceBuilder().query(QueryBuilders.matchAllQuery())),
             RequestOptions.DEFAULT);
         assertThat(searchResponse.getHits().getTotalHits()).isEqualTo(1);
-    }
-    
-    @Test
-    public void updateMessagesShouldNotThrowWhenEmptyList() throws Exception {
-        testee.update(ImmutableList.of());
     }
     
     @Test
