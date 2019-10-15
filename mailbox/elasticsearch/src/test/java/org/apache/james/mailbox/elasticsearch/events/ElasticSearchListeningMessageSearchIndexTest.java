@@ -85,8 +85,10 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     private static final String USERNAME = "user";
     private static final MessageUid MESSAGE_UID_1 = MessageUid.of(25);
     private static final MessageUid MESSAGE_UID_2 = MessageUid.of(26);
+    private static final MessageUid MESSAGE_UID_3 = MessageUid.of(27);
     private static final MessageId MESSAGE_ID_1 = TestMessageId.of(18L);
     private static final MessageId MESSAGE_ID_2 = TestMessageId.of(19L);
+    private static final MessageId MESSAGE_ID_3 = TestMessageId.of(20L);
 
     private static final SimpleMailboxMessage.Builder MESSAGE_BUILDER = SimpleMailboxMessage.builder()
         .mailboxId(MAILBOX_ID)
@@ -115,8 +117,8 @@ public class ElasticSearchListeningMessageSearchIndexTest {
         .isInline(false)
         .build();
 
-    private static final SimpleMailboxMessage MESSAGE_WITH_ATTACHMENT = MESSAGE_BUILDER.messageId(MESSAGE_ID_1)
-        .uid(MESSAGE_UID_1)
+    private static final SimpleMailboxMessage MESSAGE_WITH_ATTACHMENT = MESSAGE_BUILDER.messageId(MESSAGE_ID_3)
+        .uid(MESSAGE_UID_3)
         .addAttachments(ImmutableList.of(MESSAGE_ATTACHMENT))
         .build();
 
@@ -144,7 +146,7 @@ public class ElasticSearchListeningMessageSearchIndexTest {
 
         MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
             new DefaultTextExtractor(),
-            ZoneId.of("Europe/Paris"),
+            ZoneId.of("UTC"),
             IndexAttachments.YES);
 
         InMemoryMessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
@@ -256,7 +258,7 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     }
 
     @Test
-    public void deleteShoulRemoveIndex() throws IOException {
+    public void deleteShouldRemoveIndex() throws IOException {
         testee.add(session, mailbox, MESSAGE_1);
         elasticSearch.awaitForElasticSearch();
 
@@ -266,6 +268,21 @@ public class ElasticSearchListeningMessageSearchIndexTest {
         SearchQuery query = new SearchQuery(SearchQuery.all());
         assertThat(testee.search(session, mailbox, query))
             .isEmpty();
+    }
+
+    @Test
+    public void deleteShouldOnlyRemoveIndexesPassedAsArguments() throws IOException {
+        testee.add(session, mailbox, MESSAGE_1);
+        testee.add(session, mailbox, MESSAGE_2);
+
+        elasticSearch.awaitForElasticSearch();
+
+        testee.delete(session, mailbox, Lists.newArrayList(MESSAGE_UID_1));
+        elasticSearch.awaitForElasticSearch();
+
+        SearchQuery query = new SearchQuery(SearchQuery.all());
+        assertThat(testee.search(session, mailbox, query))
+            .containsExactly(MESSAGE_2.getUid());
     }
 
     @Test
@@ -295,6 +312,12 @@ public class ElasticSearchListeningMessageSearchIndexTest {
         SearchQuery query = new SearchQuery(SearchQuery.all());
         assertThat(testee.search(session, mailbox, query))
             .isEmpty();
+    }
+
+    @Test
+    public void deleteShouldNotThrowOnUnknownMessageUid() throws Exception {
+        assertThatCode(() -> testee.delete(session, mailbox, Lists.newArrayList(MESSAGE_UID_1)))
+            .doesNotThrowAnyException();
     }
 
     @Test
