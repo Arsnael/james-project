@@ -49,7 +49,7 @@ import org.apache.james.queue.rabbitmq.view.cassandra.EnqueuedMailsDAO;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfiguration;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.CassandraMailQueueViewConfigurationModule;
 import org.apache.james.queue.rabbitmq.view.cassandra.configuration.EventsourcingConfigurationManagement;
-import org.apache.james.utils.InitialisationOperation;
+import org.apache.james.utils.InitializationOperation;
 import org.apache.james.utils.PropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +88,7 @@ public class RabbitMQModule extends AbstractModule {
         eventDTOModuleBinder.addBinding().toInstance(CassandraMailQueueViewConfigurationModule.MAIL_QUEUE_VIEW_CONFIGURATION);
 
         Multibinder.newSetBinder(binder(), HealthCheck.class).addBinding().to(RabbitMQHealthCheck.class);
-        Multibinder.newSetBinder(binder(), InitialisationOperation.class).addBinding().to(ReactorRabbitMQChannelPoolInitialisationOperation.class);
+        Multibinder.newSetBinder(binder(), InitializationOperation.class).addBinding().to(ReactorRabbitMQChannelPoolInitialisationOperation.class);
     }
 
     @Provides
@@ -134,7 +134,7 @@ public class RabbitMQModule extends AbstractModule {
     }
 
     @Singleton
-    public static class ReactorRabbitMQChannelPoolInitialisationOperation implements InitialisationOperation {
+    public static class ReactorRabbitMQChannelPoolInitialisationOperation implements InitializationOperation {
         private final ReactorRabbitMQChannelPool rabbitMQChannelPool;
 
         @Inject
