@@ -43,7 +43,7 @@ import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.util.date.DefaultZonedDateTimeProvider;
 import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.apache.james.util.mime.MessageContentExtractor;
-import org.apache.james.utils.InitialisationOperation;
+import org.apache.james.utils.InitializationOperation;
 import org.apache.mailet.base.AutomaticallySentMailDetector;
 import org.apache.mailet.base.AutomaticallySentMailDetectorImpl;
 
@@ -86,7 +86,7 @@ public class JMAPCommonModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), StartUpCheck.class)
             .addBinding().to(JMAPConfigurationStartUpCheck.class);
 
-        Multibinder.newSetBinder(binder(), InitialisationOperation.class)
+        Multibinder.newSetBinder(binder(), InitializationOperation.class)
             .addBinding().to(MailSpoolInitializer.class);
     }
 
@@ -105,7 +105,7 @@ public class JMAPCommonModule extends AbstractModule {
 
 
 
-    static class MailSpoolInitializer implements InitialisationOperation {
+    static class MailSpoolInitializer implements InitializationOperation {
         private final MailSpool mailSpool;
 
         @Inject
