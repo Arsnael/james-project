@@ -28,8 +28,7 @@ import org.apache.james.server.task.json.JsonTaskSerializer
 import org.apache.james.task.SerialTaskManagerWorker
 import org.apache.james.task.eventsourcing.{WorkQueueSupplier, WorkerStatusListener}
 
-@Inject
-class RabbitMQWorkQueueSupplier(private val rabbitMQConnectionPool: ReactorRabbitMQChannelPool,
+class RabbitMQWorkQueueSupplier @Inject()(private val rabbitMQConnectionPool: ReactorRabbitMQChannelPool,
                                 private val jsonTaskSerializer: JsonTaskSerializer) extends WorkQueueSupplier {
 
   val DEFAULT_ADDITIONAL_INFORMATION_POLLING_INTERVAL =  Duration.ofSeconds(30)
