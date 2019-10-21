@@ -91,6 +91,7 @@ public class RabbitMQWorkQueue implements WorkQueue, Startable {
     }
 
     private void startWorkqueue() {
+        channelPool.start();
         channelPool.getSender().declareExchange(ExchangeSpecification.exchange(EXCHANGE_NAME)).block();
         channelPool.getSender().declare(QueueSpecification.queue(QUEUE_NAME).durable(true)).block();
         channelPool.getSender().bind(BindingSpecification.binding(EXCHANGE_NAME, ROUTING_KEY, QUEUE_NAME)).block();
