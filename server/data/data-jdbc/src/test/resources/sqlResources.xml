@@ -1,27 +1,27 @@
 <!--
-  Licensed to the Apache Software Foundation (ASF) under one   
-  or more contributor license agreements.  See the NOTICE file 
-  distributed with this work for additional information        
-  regarding copyright ownership.  The ASF licenses this file   
-  to you under the Apache License, Version 2.0 (the            
-  "License"); you may not use this file except in compliance   
-  with the License.  You may obtain a copy of the License at   
-                                                               
-    http://www.apache.org/licenses/LICENSE-2.0                 
-                                                               
-  Unless required by applicable law or agreed to in writing,   
-  software distributed under the License is distributed on an  
-  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       
-  KIND, either express or implied.  See the License for the    
-  specific language governing permissions and limitations      
-  under the License.                                           
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
  -->
 
 <!--
    This template file can be used as example for James Server configuration
    DO NOT USE IT AS SUCH AND ADAPT IT TO YOUR NEEDS
 -->
- 
+
 <!-- See http://james.apache.org/server/3/config.html for usage -->
 
 <sqlResources>
@@ -56,14 +56,14 @@
 <!--
     With the following section it is possible to associate several name/value pairs
         of options to a database product, identified by the "db" XML attribute name.
-    
+
     An element without a "db" attribute, if used for an option name, will become a default value for such option.
     Each option may have a "default default", i.e. a default that applies if no element with an empty
         "db" attribute (default element) exists as said above;
         such default default must be documented for such option below.
-    
+
     The order of the XML elements is meaningless.
-    
+
     Here only "getBody" and "getAttributes" option names are set, but others could be used in the future.
     Option names:
         "getBody" - a string (case insensitive) telling which JDBC ResultSet method will be used to
@@ -166,10 +166,10 @@
             recipients text NOT NULL ,
             remote_host varchar (255) NOT NULL ,
             remote_addr varchar (20) NOT NULL ,
-            message_body longblob NOT NULL ,
-            message_attributes longblob NULL ,
             per_recipient_headers longblob NULL ,
             last_updated datetime NOT NULL,
+            message_body longblob NOT NULL ,
+            message_attributes longblob NULL ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -183,10 +183,10 @@
             recipients varchar NOT NULL ,
             remote_host varchar (255) NOT NULL ,
             remote_addr varchar (20) NOT NULL ,
-            message_body varchar NOT NULL ,
-            message_attributes varchar NULL ,
             per_recipient_headers varchar NULL ,
             last_updated timestamp NOT NULL,
+            message_body varchar NOT NULL ,
+            message_attributes varchar NULL ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -200,10 +200,10 @@
             recipients varchar NOT NULL ,
             remote_host varchar (255) NOT NULL ,
             remote_addr varchar (20) NOT NULL ,
-            message_body varchar NOT NULL ,
-            message_attributes varchar NULL ,
             per_recipient_headers varchar NULL ,
             last_updated timestamp NOT NULL,
+            message_body varchar NOT NULL ,
+            message_attributes varchar NULL ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -217,10 +217,10 @@
             [recipients] [text] NOT NULL ,
             [remote_host] [varchar] (255) NOT NULL ,
             [remote_addr] [varchar] (20) NOT NULL ,
-            [message_body] [image] NOT NULL ,
-            [message_attributes] [image] NULL ,
             [per_recipient_headers] [image] NULL ,
             [last_updated] [datetime] NOT NULL,
+            [message_body] [image] NOT NULL ,
+            [message_attributes] [image] NULL ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -234,10 +234,10 @@
             recipients varchar2(1000) NOT NULL ,
             remote_host varchar2(100) NOT NULL ,
             remote_addr varchar2(20) NOT NULL ,
-            message_body blob NOT NULL ,
-            message_attributes blob NULL ,
             per_recipient_headers blob NULL ,
             last_updated date NOT NULL ,
+            message_body blob NOT NULL ,
+            message_attributes blob NULL ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -251,10 +251,10 @@
             recipients text NOT NULL ,
             remote_host varchar (255) NOT NULL ,
             remote_addr varchar (20) NOT NULL ,
+            per_recipient_headers oid NULL ,
+            last_updated timestamp NOT NULL,
             message_body bytea NOT NULL ,
             message_attributes bytea NULL ,
-            per_recipient_headers bytea NULL ,
-            last_updated timestamp NOT NULL,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -268,10 +268,10 @@
             recipients long NOT NULL ,
             remote_host varchar (100) NOT NULL ,
             remote_addr varchar (20) NOT NULL ,
-            message_body long byte NOT NULL ,
-            message_attributes long byte NULL ,
             per_recipient_headers long byte NULL ,
             last_updated date NOT NULL,
+            message_body long byte NOT NULL ,
+            message_attributes long byte NULL ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -285,10 +285,10 @@
             recipients varchar(1000) NOT NULL ,
             remote_host varchar(100) NOT NULL ,
             remote_addr varchar(20) NOT NULL ,
-            message_body blob NOT NULL ,
-            message_attributes blob ,
             per_recipient_headers blob ,
             last_updated timestamp NOT NULL ,
+            message_body blob NOT NULL ,
+            message_attributes blob ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
@@ -302,10 +302,10 @@
             recipients LONG VARCHAR NOT NULL ,
             remote_host varchar (255) NOT NULL ,
             remote_addr varchar (20) NOT NULL ,
-            message_body LONG BYTE NOT NULL ,
-            message_attributes LONG BYTE ,
             per_recipient_headers LONG BYTE ,
             last_updated DATE NOT NULL
+            message_body LONG BYTE NOT NULL ,
+            message_attributes LONG BYTE ,
         )
     </sql>
     <sql name="createTable" db="derby">
@@ -318,10 +318,10 @@
             recipients long varchar NOT NULL ,
             remote_host varchar (255) NOT NULL ,
             remote_addr varchar (20) NOT NULL ,
-            message_body blob NOT NULL ,
-            message_attributes blob ,
             per_recipient_headers blob ,
             last_updated timestamp NOT NULL,
+            message_body blob NOT NULL ,
+            message_attributes blob ,
             PRIMARY KEY (repository_name, message_name)
         )
     </sql>
