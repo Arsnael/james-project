@@ -103,13 +103,13 @@ class MailAddressTest {
     }
 
     @Test
-    void testGoodMailAddressStringString() {
+    void testGoodMailAddressWithLocalPartAndDomain() {
         assertThatCode(() -> new MailAddress("local-part", "domain"))
             .doesNotThrowAnyException();
     }
 
     @Test
-    void testBadMailAddressStringString() {
+    void testBadMailAddressWithLocalPartAndDomain() {
         Assertions.assertThatThrownBy(() -> new MailAddress("local-part", "-domain"))
             .isInstanceOf(AddressException.class);
     }
