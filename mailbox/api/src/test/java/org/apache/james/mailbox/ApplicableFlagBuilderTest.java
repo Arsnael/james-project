@@ -22,25 +22,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.mail.Flags;
 
-import org.assertj.core.api.JUnitSoftAssertions;
-import org.junit.Rule;
-import org.junit.Test;
+import org.assertj.core.api.JUnitJupiterSoftAssertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.google.common.collect.ImmutableList;
 
-public class ApplicableFlagBuilderTest {
+class ApplicableFlagBuilderTest {
 
-    @Rule
-    public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
+    @RegisterExtension
+    public final JUnitJupiterSoftAssertions softly = new JUnitJupiterSoftAssertions();
 
     @Test
-    public void shouldAtLeastContainAllDefaultApplicativeFlag() {
+    void shouldAtLeastContainAllDefaultApplicativeFlag() {
         assertThat(ApplicableFlagBuilder.builder().build())
             .isEqualTo(ApplicableFlagBuilder.DEFAULT_APPLICABLE_FLAGS);
     }
 
     @Test
-    public void shouldNeverRetainRecentAndUserFlag() {
+    void shouldNeverRetainRecentAndUserFlag() {
         Flags result = ApplicableFlagBuilder.builder()
             .add(new Flags(Flags.Flag.RECENT))
             .add(new Flags(Flags.Flag.USER))
@@ -51,7 +51,7 @@ public class ApplicableFlagBuilderTest {
     }
 
     @Test
-    public void shouldAddCustomUserFlagIfProvidedToDefaultFlag() {
+    void shouldAddCustomUserFlagIfProvidedToDefaultFlag() {
         Flags result = ApplicableFlagBuilder.builder()
             .add("yolo", "vibe")
             .build();
@@ -62,7 +62,7 @@ public class ApplicableFlagBuilderTest {
     }
 
     @Test
-    public void shouldAcceptUserCustomFlagInsideFlags() {
+    void shouldAcceptUserCustomFlagInsideFlags() {
         Flags result = ApplicableFlagBuilder.builder()
             .add(new Flags("yolo"))
             .build();
@@ -71,7 +71,7 @@ public class ApplicableFlagBuilderTest {
     }
 
     @Test
-    public void shouldAcceptFlagsThatContainMultipleFlag() {
+    void shouldAcceptFlagsThatContainMultipleFlag() {
         Flags flags = FlagsBuilder.builder()
             .add("yolo", "vibes")
             .build();
@@ -85,7 +85,7 @@ public class ApplicableFlagBuilderTest {
     }
 
     @Test
-    public void addShouldAddMultipleFlagsAtOnce() {
+    void addShouldAddMultipleFlagsAtOnce() {
         Flags flags = new Flags("cartman");
         Flags flags2 = new Flags("butters");
         Flags result = ApplicableFlagBuilder.builder()
@@ -97,7 +97,7 @@ public class ApplicableFlagBuilderTest {
     }
 
     @Test
-    public void shouldAcceptMultipleFlagAtOnce() {
+    void shouldAcceptMultipleFlagAtOnce() {
         Flags result = ApplicableFlagBuilder.builder()
             .add("cartman", "butters")
             .add("chef", "randy")
@@ -110,7 +110,7 @@ public class ApplicableFlagBuilderTest {
     }
 
     @Test
-    public void shouldAcceptListOfFlags() throws Exception {
+    void shouldAcceptListOfFlags() throws Exception {
         Flags result = ApplicableFlagBuilder.builder()
             .add(ImmutableList.of(new Flags("cartman"), new Flags("chef")))
             .build();
