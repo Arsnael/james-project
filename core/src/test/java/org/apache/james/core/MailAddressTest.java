@@ -44,48 +44,48 @@ class MailAddressTest {
 
     private static Stream<Arguments> goodAddresses() {
         return Stream.of(
-            Arguments.of(GOOD_ADDRESS),
-            Arguments.of(GOOD_QUOTED_LOCAL_PART),
-            Arguments.of("server-dev@james-apache.org"),
-            Arguments.of("server-dev@[127.0.0.1]"),
-            Arguments.of("server-dev@#123"),
-            Arguments.of("server-dev@#123.apache.org"),
-            Arguments.of("server.dev@james.apache.org"),
-            Arguments.of("\\.server-dev@james.apache.org"),
-            Arguments.of("server-dev\\.@james.apache.org")
-        );
+                GOOD_ADDRESS,
+                GOOD_QUOTED_LOCAL_PART,
+                "server-dev@james-apache.org",
+                "server-dev@[127.0.0.1]",
+                "server-dev@#123",
+                "server-dev@#123.apache.org",
+                "server.dev@james.apache.org",
+                "\\.server-dev@james.apache.org",
+                "server-dev\\.@james.apache.org")
+            .map(Arguments::of);
     };
 
     private static Stream<Arguments> badAddresses() {
         return Stream.of(
-            Arguments.of(""),
-            Arguments.of("server-dev"),
-            Arguments.of("server-dev@"),
-            Arguments.of("[]"),
-            Arguments.of("server-dev@[]"),
-            Arguments.of("server-dev@#"),
-            Arguments.of("quoted local-part@james.apache.org"),
-            Arguments.of("quoted@local-part@james.apache.org"),
-            Arguments.of("local-part.@james.apache.org"),
-            Arguments.of(".local-part@james.apache.org"),
-            Arguments.of("local-part@.james.apache.org"),
-            Arguments.of("local-part@james.apache.org."),
-            Arguments.of("local-part@james.apache..org"),
-            Arguments.of("server-dev@-james.apache.org"),
-            Arguments.of("server-dev@james.apache.org-"),
-            Arguments.of("server-dev@#james.apache.org"),
-            Arguments.of("server-dev@#123james.apache.org"),
-            Arguments.of("server-dev@#-123.james.apache.org"),
-            Arguments.of("server-dev@james. apache.org"),
-            Arguments.of("server-dev@james\\.apache.org"),
-            Arguments.of("server-dev@[300.0.0.1]"),
-            Arguments.of("server-dev@[127.0.1]"),
-            Arguments.of("server-dev@[0127.0.0.1]"),
-            Arguments.of("server-dev@[127.0.1.1a]"),
-            Arguments.of("server-dev@[127\\.0.1.1]"),
-            Arguments.of("server-dev@[127.0.1.1.1]"),
-            Arguments.of("server-dev@[127.0.1.-1]")
-        );
+                "",
+                "server-dev",
+                "server-dev@",
+                "[]",
+                "server-dev@[]",
+                "server-dev@#",
+                "quoted local-part@james.apache.org",
+                "quoted@local-part@james.apache.org",
+                "local-part.@james.apache.org",
+                ".local-part@james.apache.org",
+                "local-part@.james.apache.org",
+                "local-part@james.apache.org.",
+                "local-part@james.apache..org",
+                "server-dev@-james.apache.org",
+                "server-dev@james.apache.org-",
+                "server-dev@#james.apache.org",
+                "server-dev@#123james.apache.org",
+                "server-dev@#-123.james.apache.org",
+                "server-dev@james. apache.org",
+                "server-dev@james\\.apache.org",
+                "server-dev@[300.0.0.1]",
+                "server-dev@[127.0.1]",
+                "server-dev@[0127.0.0.1]",
+                "server-dev@[127.0.1.1a]",
+                "server-dev@[127\\.0.1.1]",
+                "server-dev@[127.0.1.1.1]",
+                "server-dev@[127.0.1.-1]")
+            .map(Arguments::of);
     }
 
     @ParameterizedTest
