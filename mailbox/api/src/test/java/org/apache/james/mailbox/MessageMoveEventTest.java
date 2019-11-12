@@ -26,16 +26,12 @@ import org.apache.james.mailbox.events.MessageMoveEvent;
 import org.apache.james.mailbox.model.MessageMoves;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
-import org.assertj.core.api.JUnitJupiterSoftAssertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class MessageMoveEventTest {
-
-    @RegisterExtension
-    public JUnitJupiterSoftAssertions softly = new JUnitJupiterSoftAssertions();
 
     @Test
     void shouldRespectBeanContract() {
@@ -102,9 +98,11 @@ class MessageMoveEventTest {
             .messageId(messageId)
             .build();
 
-        softly.assertThat(event.getUsername()).isEqualTo(Username.of(username));
-        softly.assertThat(event.getMessageMoves()).isEqualTo(messageMoves);
-        softly.assertThat(event.getMessageIds()).containsExactly(messageId);
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(event.getUsername()).isEqualTo(Username.of(username));
+            softly.assertThat(event.getMessageMoves()).isEqualTo(messageMoves);
+            softly.assertThat(event.getMessageIds()).containsExactly(messageId);
+        });
     }
 
     @Test

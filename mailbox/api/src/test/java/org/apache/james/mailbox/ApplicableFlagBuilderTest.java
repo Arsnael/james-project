@@ -22,16 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.mail.Flags;
 
-import org.assertj.core.api.JUnitJupiterSoftAssertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.google.common.collect.ImmutableList;
 
 class ApplicableFlagBuilderTest {
-
-    @RegisterExtension
-    public final JUnitJupiterSoftAssertions softly = new JUnitJupiterSoftAssertions();
 
     @Test
     void shouldAtLeastContainAllDefaultApplicativeFlag() {
@@ -46,8 +42,10 @@ class ApplicableFlagBuilderTest {
             .add(new Flags(Flags.Flag.USER))
             .build();
 
-        softly.assertThat(result.contains(Flags.Flag.RECENT)).isFalse();
-        softly.assertThat(result.contains(Flags.Flag.USER)).isFalse();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(result.contains(Flags.Flag.RECENT)).isFalse();
+            softly.assertThat(result.contains(Flags.Flag.USER)).isFalse();
+        });
     }
 
     @Test
@@ -56,9 +54,11 @@ class ApplicableFlagBuilderTest {
             .add("yolo", "vibe")
             .build();
 
-        softly.assertThat(result.contains(ApplicableFlagBuilder.DEFAULT_APPLICABLE_FLAGS)).isTrue();
-        softly.assertThat(result.contains("yolo")).isTrue();
-        softly.assertThat(result.contains("vibe")).isTrue();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(result.contains(ApplicableFlagBuilder.DEFAULT_APPLICABLE_FLAGS)).isTrue();
+            softly.assertThat(result.contains("yolo")).isTrue();
+            softly.assertThat(result.contains("vibe")).isTrue();
+        });
     }
 
     @Test
@@ -80,8 +80,10 @@ class ApplicableFlagBuilderTest {
             .add(flags)
             .build();
 
-        softly.assertThat(result.contains("yolo")).isTrue();
-        softly.assertThat(result.contains("vibes")).isTrue();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(result.contains("yolo")).isTrue();
+            softly.assertThat(result.contains("vibes")).isTrue();
+        });
     }
 
     @Test
@@ -92,8 +94,10 @@ class ApplicableFlagBuilderTest {
                 .add(flags, flags2)
                 .build();
 
-        softly.assertThat(result.contains(flags)).isTrue();
-        softly.assertThat(result.contains(flags2)).isTrue();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(result.contains(flags)).isTrue();
+            softly.assertThat(result.contains(flags2)).isTrue();
+        });
     }
 
     @Test
@@ -103,10 +107,12 @@ class ApplicableFlagBuilderTest {
             .add("chef", "randy")
             .build();
 
-        softly.assertThat(result.contains("cartman")).isTrue();
-        softly.assertThat(result.contains("butters")).isTrue();
-        softly.assertThat(result.contains("chef")).isTrue();
-        softly.assertThat(result.contains("randy")).isTrue();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(result.contains("cartman")).isTrue();
+            softly.assertThat(result.contains("butters")).isTrue();
+            softly.assertThat(result.contains("chef")).isTrue();
+            softly.assertThat(result.contains("randy")).isTrue();
+        });
     }
 
     @Test
@@ -115,7 +121,9 @@ class ApplicableFlagBuilderTest {
             .add(ImmutableList.of(new Flags("cartman"), new Flags("chef")))
             .build();
 
-        softly.assertThat(result.contains("cartman")).isTrue();
-        softly.assertThat(result.contains("chef")).isTrue();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(result.contains("cartman")).isTrue();
+            softly.assertThat(result.contains("chef")).isTrue();
+        });
     }
 }
