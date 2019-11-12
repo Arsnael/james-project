@@ -2,7 +2,7 @@
 #
 # VERSION	1.0
 
-FROM linagora/james-jpa-guice
+FROM james-debug-jpa
 
 # Install git
 RUN apt-get update
