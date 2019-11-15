@@ -46,8 +46,6 @@ import org.apache.james.mailbox.cassandra.mail.CassandraModSeqProvider;
 import org.apache.james.mailbox.cassandra.mail.CassandraUidProvider;
 import org.apache.james.mailbox.cassandra.mail.CassandraUserMailboxRightsDAO;
 import org.apache.james.mailbox.cassandra.modules.CassandraSubscriptionModule;
-import org.apache.james.mailbox.exception.SubscriptionException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -59,11 +57,6 @@ class CassandraSubscriptionManagerTest extends AbstractSubscriptionManagerTest {
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraSubscriptionModule.MODULE);
-
-    @AfterEach
-    void close() throws SubscriptionException {
-        super.teardown();
-    }
 
     @Override
     protected SubscriptionManager createSubscriptionManager() {

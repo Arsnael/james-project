@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.exception.SubscriptionException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,8 +47,9 @@ public abstract class AbstractSubscriptionManagerTest {
         session = MailboxSessionUtil.create(USER1);
         manager.startProcessingRequest(session);
     }
-    
-    protected void teardown() throws SubscriptionException {
+
+    @AfterEach
+    void teardown() throws SubscriptionException {
         manager.unsubscribe(session, MAILBOX1);
         manager.unsubscribe(session, MAILBOX2);
         manager.endProcessingRequest(session);
