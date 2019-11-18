@@ -22,26 +22,36 @@ package org.apache.james.mailbox.jpa;
 import java.util.Optional;
 
 import org.apache.james.backends.jpa.JpaTestCluster;
-import org.apache.james.mailbox.MailboxManagerStressTest;
+import org.apache.james.mailbox.MailboxManagerStressContract;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.jpa.openjpa.OpenJPAMailboxManager;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-class JpaMailboxManagerStressTest extends MailboxManagerStressTest<OpenJPAMailboxManager> {
+class JpaMailboxManagerStressTest implements MailboxManagerStressContract<OpenJPAMailboxManager> {
 
     private static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(JPAMailboxFixture.MAILBOX_PERSISTANCE_CLASSES);
     private Optional<OpenJPAMailboxManager> openJPAMailboxManager = Optional.empty();
-    
+
     @Override
-    protected OpenJPAMailboxManager provideManager() {
-        if (!openJPAMailboxManager.isPresent()) {
-            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER));
-        }
+    public OpenJPAMailboxManager getManager() {
         return openJPAMailboxManager.get();
     }
 
+    @BeforeEach
+    void setUp() {
+        this.openJPAMailboxManager = provideManager();
+    }
+
+    private Optional<OpenJPAMailboxManager> provideManager() {
+        if (!openJPAMailboxManager.isPresent()) {
+            openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER));
+        }
+        return openJPAMailboxManager;
+    }
+
     @Override
-    protected EventBus retrieveEventBus(OpenJPAMailboxManager mailboxManager) {
+    public EventBus retrieveEventBus(OpenJPAMailboxManager mailboxManager) {
         return mailboxManager.getEventBus();
     }
 

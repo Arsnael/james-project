@@ -19,19 +19,31 @@
 
 package org.apache.james.mailbox.inmemory;
 
-import org.apache.james.mailbox.MailboxManagerStressTest;
+import org.apache.james.mailbox.MailboxManagerStressContract;
 import org.apache.james.mailbox.events.EventBus;
 import org.apache.james.mailbox.extension.PreDeletionHook;
+import org.junit.jupiter.api.BeforeEach;
 
-class MemoryMailboxManagerStressTest extends MailboxManagerStressTest<InMemoryMailboxManager> {
-    
+class MemoryMailboxManagerStressTest implements MailboxManagerStressContract<InMemoryMailboxManager> {
+
+    private InMemoryMailboxManager mailboxManager;
+
     @Override
-    protected InMemoryMailboxManager provideManager() {
+    public InMemoryMailboxManager getManager() {
+        return mailboxManager;
+    }
+
+    @BeforeEach
+    void setUp() {
+        this.mailboxManager = provideManager();
+    }
+
+    private InMemoryMailboxManager provideManager() {
         return MemoryMailboxManagerProvider.provideMailboxManager(PreDeletionHook.NO_PRE_DELETION_HOOK);
     }
 
     @Override
-    protected EventBus retrieveEventBus(InMemoryMailboxManager mailboxManager) {
+    public EventBus retrieveEventBus(InMemoryMailboxManager mailboxManager) {
         return mailboxManager.getEventBus();
     }
 }
