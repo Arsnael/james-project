@@ -19,8 +19,10 @@
 package org.apache.james.mailbox.inmemory.manager;
 
 import org.apache.james.mailbox.manager.IntegrationResources;
-import org.apache.james.mailbox.manager.QuotaMessageManagerTest;
+import org.apache.james.mailbox.manager.ManagerTestProvisionner;
+import org.apache.james.mailbox.manager.QuotaMessageManagerContract;
 import org.apache.james.mailbox.store.StoreMailboxManager;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Test for quota support upon basic MailboxMessage manager operation.
@@ -28,10 +30,30 @@ import org.apache.james.mailbox.store.StoreMailboxManager;
  * Tests are performed with sufficient rights to ensure all underlying functions behave well.
  * Quota are adjusted and we check that exceptions are well thrown.
  */
-public class InMemoryQuotaMailboxMessageManagerTest extends QuotaMessageManagerTest<StoreMailboxManager> {
+class InMemoryQuotaMailboxMessageManagerTest implements QuotaMessageManagerContract<StoreMailboxManager> {
+
+    private ManagerTestProvisionner provisionner;
+
+    private  IntegrationResources<StoreMailboxManager> resources;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        this.resources = createResources();
+        this.provisionner = new ManagerTestProvisionner(resources);
+        this.provisionner.createMailboxes();
+    }
 
     @Override
-    protected IntegrationResources<StoreMailboxManager> createResources() {
+    public IntegrationResources<StoreMailboxManager> getResources() {
+        return resources;
+    }
+
+    @Override
+    public ManagerTestProvisionner getProvisionner() {
+        return provisionner;
+    }
+
+    private IntegrationResources<StoreMailboxManager> createResources() {
         return InMemoryIntegrationResources.defaultResources();
     }
 
