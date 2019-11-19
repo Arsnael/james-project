@@ -41,13 +41,10 @@ class MaildirSubscriptionManagerTest implements SubscriptionManagerContract {
 
     @BeforeEach
     void setUp() {
-        subscriptionManager = createSubscriptionManager();
-    }
-
-    private SubscriptionManager createSubscriptionManager() {
         MaildirStore store = new MaildirStore(tmpFolder + "/Maildir/%domain/%user", new JVMMailboxPathLocker());
         MaildirMailboxSessionMapperFactory factory = new MaildirMailboxSessionMapperFactory(store);
-        return new StoreSubscriptionManager(factory);
+
+        subscriptionManager = new StoreSubscriptionManager(factory);
     }
 
 }

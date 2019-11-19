@@ -69,10 +69,6 @@ class CassandraSubscriptionManagerTest implements SubscriptionManagerContract {
 
     @BeforeEach
     void setUp() {
-        subscriptionManager = createSubscriptionManager();
-    }
-
-    private SubscriptionManager createSubscriptionManager() {
         CassandraMessageIdToImapUidDAO imapUidDAO = null;
         CassandraMessageDAO messageDAO = null;
         CassandraMessageIdDAO messageIdDAO = null;
@@ -93,7 +89,8 @@ class CassandraSubscriptionManagerTest implements SubscriptionManagerContract {
         BlobStore blobStore = null;
         CassandraUidProvider uidProvider = null;
         CassandraModSeqProvider modSeqProvider = null;
-        return new StoreSubscriptionManager(
+
+        subscriptionManager = new StoreSubscriptionManager(
             new CassandraMailboxSessionMapperFactory(
                 uidProvider,
                 modSeqProvider,

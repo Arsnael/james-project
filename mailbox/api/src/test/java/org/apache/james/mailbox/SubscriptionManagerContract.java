@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.exception.SubscriptionException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 public interface SubscriptionManagerContract {
@@ -33,12 +32,6 @@ public interface SubscriptionManagerContract {
     MailboxSession SESSION = MailboxSessionUtil.create(USER1);
 
     SubscriptionManager getSubscriptionManager();
-
-    @AfterEach
-    default void teardown() throws SubscriptionException {
-        getSubscriptionManager().unsubscribe(SESSION, MAILBOX1);
-        getSubscriptionManager().unsubscribe(SESSION, MAILBOX2);
-    }
     
     @Test
     default void user1ShouldNotHaveAnySubscriptionByDefault() throws SubscriptionException {

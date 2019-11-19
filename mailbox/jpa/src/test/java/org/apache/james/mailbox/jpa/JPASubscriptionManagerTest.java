@@ -42,23 +42,19 @@ class JPASubscriptionManagerTest implements SubscriptionManagerContract {
 
     @BeforeEach
     void setUp() {
-        subscriptionManager = createSubscriptionManager();
+        JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
+
+        EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
+        JPAMailboxSessionMapperFactory mapperFactory = new JPAMailboxSessionMapperFactory(entityManagerFactory,
+            new JPAUidProvider(locker, entityManagerFactory),
+            new JPAModSeqProvider(locker, entityManagerFactory));
+
+        subscriptionManager = new JPASubscriptionManager(mapperFactory);
     }
 
     @AfterEach
     void close() {
         JPA_TEST_CLUSTER.clear(JPAMailboxFixture.MAILBOX_TABLE_NAMES);
-    }
-
-    private SubscriptionManager createSubscriptionManager() {
-        JVMMailboxPathLocker locker = new JVMMailboxPathLocker();
-
-        EntityManagerFactory entityManagerFactory = JPA_TEST_CLUSTER.getEntityManagerFactory();
-        JPAMailboxSessionMapperFactory mf = new JPAMailboxSessionMapperFactory(entityManagerFactory,
-            new JPAUidProvider(locker, entityManagerFactory),
-            new JPAModSeqProvider(locker, entityManagerFactory));
-
-        return new JPASubscriptionManager(mf);
     }
 
 }
