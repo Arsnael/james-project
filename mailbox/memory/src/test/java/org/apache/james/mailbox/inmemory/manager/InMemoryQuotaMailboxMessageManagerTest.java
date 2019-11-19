@@ -38,7 +38,7 @@ class InMemoryQuotaMailboxMessageManagerTest implements QuotaMessageManagerContr
 
     @BeforeEach
     void setUp() throws Exception {
-        this.resources = createResources();
+        this.resources = InMemoryIntegrationResources.defaultResources();
         this.provisionner = new ManagerTestProvisionner(resources);
         this.provisionner.createMailboxes();
     }
@@ -52,9 +52,4 @@ class InMemoryQuotaMailboxMessageManagerTest implements QuotaMessageManagerContr
     public ManagerTestProvisionner getProvisionner() {
         return provisionner;
     }
-
-    private IntegrationResources<StoreMailboxManager> createResources() {
-        return InMemoryIntegrationResources.defaultResources();
-    }
-
 }
