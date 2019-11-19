@@ -33,17 +33,13 @@ class MemoryMailboxManagerStressTest implements MailboxManagerStressContract<InM
         return mailboxManager;
     }
 
+    @Override
+    public EventBus retrieveEventBus() {
+        return mailboxManager.getEventBus();
+    }
+
     @BeforeEach
     void setUp() {
-        this.mailboxManager = provideManager();
-    }
-
-    private InMemoryMailboxManager provideManager() {
-        return MemoryMailboxManagerProvider.provideMailboxManager(PreDeletionHook.NO_PRE_DELETION_HOOK);
-    }
-
-    @Override
-    public EventBus retrieveEventBus(InMemoryMailboxManager mailboxManager) {
-        return mailboxManager.getEventBus();
+        this.mailboxManager = MemoryMailboxManagerProvider.provideMailboxManager(PreDeletionHook.NO_PRE_DELETION_HOOK);
     }
 }

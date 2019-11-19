@@ -51,7 +51,7 @@ public interface MailboxManagerStressContract<T extends MailboxManager> {
 
     T getManager();
 
-    EventBus retrieveEventBus(T mailboxManager);
+    EventBus retrieveEventBus();
 
     @Test
     default void testStressTest() throws InterruptedException, MailboxException {
@@ -65,7 +65,7 @@ public interface MailboxManagerStressContract<T extends MailboxManager> {
         getManager().startProcessingRequest(session);
         MailboxPath path = MailboxPath.forUser(username, "INBOX");
         MailboxId mailboxId = getManager().createMailbox(path, session).get();
-        retrieveEventBus(getManager()).register(
+        retrieveEventBus().register(
             event -> {
                 MessageUid u = ((MailboxListener.Added) event).getUids().iterator().next();
                 uList.add(u);

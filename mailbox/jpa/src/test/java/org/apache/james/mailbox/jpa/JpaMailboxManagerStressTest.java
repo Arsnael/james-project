@@ -38,21 +38,16 @@ class JpaMailboxManagerStressTest implements MailboxManagerStressContract<OpenJP
         return openJPAMailboxManager.get();
     }
 
-    @BeforeEach
-    void setUp() {
-        this.openJPAMailboxManager = provideManager();
+    @Override
+    public EventBus retrieveEventBus() {
+        return getManager().getEventBus();
     }
 
-    private Optional<OpenJPAMailboxManager> provideManager() {
+    @BeforeEach
+    void setUp() {
         if (!openJPAMailboxManager.isPresent()) {
             openJPAMailboxManager = Optional.of(JpaMailboxManagerProvider.provideMailboxManager(JPA_TEST_CLUSTER));
         }
-        return openJPAMailboxManager;
-    }
-
-    @Override
-    public EventBus retrieveEventBus(OpenJPAMailboxManager mailboxManager) {
-        return mailboxManager.getEventBus();
     }
 
     @AfterEach

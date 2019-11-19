@@ -23,6 +23,7 @@ import java.io.File;
 
 import org.apache.james.mailbox.MailboxManagerStressContract;
 import org.apache.james.mailbox.events.EventBus;
+import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
@@ -38,21 +39,13 @@ class UserMaildirMailboxManagerStressTest implements MailboxManagerStressContrac
         return mailboxManager;
     }
 
-    @BeforeEach
-    void setUp() {
-        this.mailboxManager = provideManager();
-    }
-
-    private StoreMailboxManager provideManager() {
-        try {
-            return MaildirMailboxManagerProvider.createMailboxManager("/%user", tmpFolder);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
-    public EventBus retrieveEventBus(StoreMailboxManager mailboxManager) {
+    public EventBus retrieveEventBus() {
         return mailboxManager.getEventBus();
+    }
+
+    @BeforeEach
+    void setUp() throws MailboxException {
+        this.mailboxManager = MaildirMailboxManagerProvider.createMailboxManager("/%user", tmpFolder);
     }
 }

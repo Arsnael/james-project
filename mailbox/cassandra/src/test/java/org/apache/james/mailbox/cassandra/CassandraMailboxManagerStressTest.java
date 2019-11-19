@@ -42,18 +42,15 @@ class CassandraMailboxManagerStressTest implements MailboxManagerStressContract<
         return mailboxManager;
     }
 
-    @BeforeEach
-    void setUp() {
-        this.mailboxManager = provideManager();
-    }
-
     @Override
-    public EventBus retrieveEventBus(CassandraMailboxManager mailboxManager) {
+    public EventBus retrieveEventBus() {
         return mailboxManager.getEventBus();
     }
 
-    private CassandraMailboxManager provideManager() {
-        return CassandraMailboxManagerProvider.provideMailboxManager(cassandra.getCassandraCluster().getConf(),
+    @BeforeEach
+    void setUp() {
+        this.mailboxManager = CassandraMailboxManagerProvider.provideMailboxManager(
+            cassandra.getCassandraCluster().getConf(),
             cassandra.getCassandraCluster().getTypesProvider(),
             PreDeletionHooks.NO_PRE_DELETION_HOOK);
     }
