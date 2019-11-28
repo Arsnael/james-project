@@ -40,6 +40,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.MessageResult;
+import org.apache.james.util.ClassLoaderUtils;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,6 +89,7 @@ class MessageMetadataViewFactoryTest {
            softly.assertThat(actual.getSize()).isEqualTo(Number.fromLong(21));
            softly.assertThat(actual.getKeywords()).isEqualTo(Keywords.strictFactory().from(Keyword.SEEN).asMap());
            softly.assertThat(actual.getBlobId()).isEqualTo(BlobId.of(message1.getMessageId().serialize()));
+           softly.assertThat(actual.isHasAttachment()).isEqualTo(false);
         });
     }
 
@@ -106,4 +108,20 @@ class MessageMetadataViewFactoryTest {
         });
     }
 
+    @Test
+    void fromMessageResultsShouldHaveHasAttachmentForMessageWithAttachment() throws Exception {
+        ComposedMessageId messageWithAttachment = bobInbox.appendMessage(MessageManager.AppendCommand.builder()
+                .withFlags(new Flags(Flags.Flag.SEEN))
+                .build(ClassLoaderUtils.getSystemResourceAsSharedStream("fullMessage.eml")),
+            session);
+
+        List<MessageResult> messages = messageIdManager
+            .getMessages(ImmutableList.of(messageWithAttachment.getMessageId()), FetchGroup.MINIMAL, session);
+
+        MessageMetadataView actual = testee.fromMessageResults(messages);
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actual.getId()).isEqualTo(messageWithAttachment.getMessageId());
+            softly.assertThat(actual.isHasAttachment()).isEqualTo(true);
+        });
+    }
 }

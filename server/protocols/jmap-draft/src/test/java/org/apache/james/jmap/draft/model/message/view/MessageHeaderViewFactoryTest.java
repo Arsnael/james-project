@@ -104,6 +104,7 @@ class MessageHeaderViewFactoryTest {
             softly.assertThat(actual.getReplyTo()).isEqualTo(ImmutableList.of(ALICE_EMAIL));
             softly.assertThat(actual.getSubject()).isEqualTo("Full message");
             softly.assertThat(actual.getDate()).isEqualTo("2016-06-07T14:23:37Z");
+            softly.assertThat(actual.isHasAttachment()).isEqualTo(true);
         });
     }
 

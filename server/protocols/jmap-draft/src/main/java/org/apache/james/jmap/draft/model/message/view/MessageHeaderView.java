@@ -113,7 +113,7 @@ public class MessageHeaderView extends MessageMetadataView {
             return new MessageHeaderView(id, blobId, threadId, mailboxIds, Optional.ofNullable(inReplyToMessageId),
                 headers, Optional.ofNullable(from),
                 to.build(), cc.build(), bcc.build(), replyTo.build(), subject, date, size,
-                keywords.orElse(Keywords.DEFAULT_VALUE));
+                keywords.orElse(Keywords.DEFAULT_VALUE), hasAttachment);
         }
 
         @Override
@@ -150,8 +150,9 @@ public class MessageHeaderView extends MessageMetadataView {
                       String subject,
                       Instant date,
                       Number size,
-                      Keywords keywords) {
-        super(id, blobId, threadId, mailboxIds, size, keywords);
+                      Keywords keywords,
+                      boolean hasAttachment) {
+        super(id, blobId, threadId, mailboxIds, size, keywords, hasAttachment);
         this.inReplyToMessageId = inReplyToMessageId;
         this.headers = headers;
         this.from = from;

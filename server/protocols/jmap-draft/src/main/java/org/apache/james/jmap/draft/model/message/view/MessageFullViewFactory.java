@@ -80,6 +80,7 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
         Optional<String> mainTextContent = mainTextContent(messageContent);
         Optional<String> textBody = computeTextBodyIfNeeded(messageContent, mainTextContent);
         String preview = messagePreview.compute(mainTextContent);
+        List<Attachment> attachments = getAttachments(message.getAttachments());
         return MessageFullView.builder()
                 .id(message.getMessageId())
                 .blobId(BlobId.of(blobManager.toBlobId(message.getMessageId())))
@@ -99,7 +100,8 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
                 .textBody(textBody)
                 .htmlBody(htmlBody)
                 .preview(preview)
-                .attachments(getAttachments(message.getAttachments()))
+                .attachments(attachments)
+                .hasAttachment(hasAttachment(attachments))
                 .build();
     }
 
@@ -172,6 +174,11 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
                     .cid(attachment.getCid().map(Cid::getValue))
                     .isInline(attachment.isInline())
                     .build();
+    }
+
+    private boolean hasAttachment(List<Attachment> attachments) {
+        return attachments.stream()
+            .anyMatch(attachment -> !attachment.isInlinedWithCid());
     }
 
     public static class MetaDataWithContent {

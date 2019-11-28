@@ -289,6 +289,7 @@ class MessageFullViewTest {
             .htmlBody(Optional.of("htmlBody"))
             .attachments(attachments)
             .attachedMessages(attachedMessages)
+            .hasAttachment(true)
             .build();
 
         assertThat(tested).isEqualToComparingFieldByField(expected);
@@ -338,129 +339,5 @@ class MessageFullViewTest {
                     .date(Instant.now())
                     .build()))
             .build();
-    }
-
-    @Test
-    void hasAttachmentShouldReturnFalseWhenNoAttachment() {
-        MessageFullView message = MessageFullView.builder()
-            .id(TestMessageId.of(1))
-            .blobId(BlobId.of("blobId"))
-            .threadId("threadId")
-            .mailboxId(InMemoryId.of(456))
-            .headers(ImmutableMap.of("key", "value"))
-            .subject("subject")
-            .size(1)
-            .date(Instant.now())
-            .preview("preview")
-            .attachments(ImmutableList.of())
-            .build();
-
-        assertThat(message.isHasAttachment()).isFalse();
-    }
-
-    @Test
-    void hasAttachmentShouldReturnFalseWhenAllAttachmentsAreInline() {
-        MessageFullView message = MessageFullView.builder()
-            .id(TestMessageId.of(1))
-            .blobId(BlobId.of("blobId"))
-            .threadId("threadId")
-            .mailboxId(InMemoryId.of(456))
-            .headers(ImmutableMap.of("key", "value"))
-            .subject("subject")
-            .size(1)
-            .date(Instant.now())
-            .preview("preview")
-            .attachments(ImmutableList.of(
-                    Attachment.builder()
-                        .blobId(BlobId.of("key"))
-                        .size(1)
-                        .type("type")
-                        .cid("cid1")
-                        .isInline(true)
-                        .build(),
-                    Attachment.builder()
-                        .blobId(BlobId.of("key2"))
-                        .size(2)
-                        .type("type2")
-                        .cid("cid2")
-                        .isInline(true)
-                        .build()))
-            .build();
-
-        assertThat(message.isHasAttachment()).isFalse();
-    }
-
-    @Test
-    void hasAttachmentShouldReturnTrueWhenOneAttachmentIsNotInline() {
-        MessageFullView message = MessageFullView.builder()
-            .id(TestMessageId.of(1))
-            .blobId(BlobId.of("blobId"))
-            .threadId("threadId")
-            .mailboxId(InMemoryId.of(456))
-            .headers(ImmutableMap.of("key", "value"))
-            .subject("subject")
-            .size(1)
-            .date(Instant.now())
-            .preview("preview")
-            .attachments(ImmutableList.of(
-                    Attachment.builder()
-                        .blobId(BlobId.of("key"))
-                        .size(1)
-                        .type("type")
-                        .cid("cid1")
-                        .isInline(true)
-                        .build(),
-                    Attachment.builder()
-                        .blobId(BlobId.of("key2"))
-                        .size(2)
-                        .type("type2")
-                        .isInline(false)
-                        .build(),
-                    Attachment.builder()
-                        .blobId(BlobId.of("key3"))
-                        .size(3)
-                        .type("type3")
-                        .cid("c")
-                        .isInline(true)
-                        .build()))
-            .build();
-
-        assertThat(message.isHasAttachment()).isTrue();
-    }
-
-    @Test
-    void hasAttachmentShouldReturnTrueWhenAllAttachmentsAreNotInline() {
-        MessageFullView message = MessageFullView.builder()
-            .id(TestMessageId.of(1))
-            .blobId(BlobId.of("blobId"))
-            .threadId("threadId")
-            .mailboxId(InMemoryId.of(456))
-            .headers(ImmutableMap.of("key", "value"))
-            .subject("subject")
-            .size(1)
-            .date(Instant.now())
-            .preview("preview")
-            .attachments(ImmutableList.of(
-                    Attachment.builder()
-                        .blobId(BlobId.of("key"))
-                        .size(1)
-                        .type("type")
-                        .isInline(false)
-                        .build(),
-                    Attachment.builder()
-                        .blobId(BlobId.of("key2"))
-                        .size(2)
-                        .type("type2")
-                        .isInline(false)
-                        .build(),
-                    Attachment.builder()
-                        .blobId(BlobId.of("key3"))
-                        .size(3)
-                        .type("type3")
-                        .isInline(false)
-                        .build()))
-            .build();
-
-        assertThat(message.isHasAttachment()).isTrue();
     }
 }

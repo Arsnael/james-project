@@ -49,6 +49,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
@@ -492,6 +493,140 @@ class MessageFullViewFactoryTest {
 
         assertThat(testee.getAttachments()).hasSize(1);
         assertThat(testee.getAttachments().get(0)).isEqualToComparingFieldByField(expectedAttachment);
+    }
+
+    @Test
+    void hasAttachmentShouldReturnFalseWhenNoAttachment() throws MailboxException {
+        MetaDataWithContent testMail = MetaDataWithContent.builder()
+            .uid(MessageUid.of(2))
+            .keywords(Keywords.strictFactory().from(Keyword.SEEN))
+            .size(0)
+            .internalDate(INTERNAL_DATE)
+            .content(ClassLoader.getSystemResourceAsStream("spamMail.eml"))
+            .attachments(ImmutableList.of())
+            .mailboxId(MAILBOX_ID)
+            .messageId(TestMessageId.of(2))
+            .build();
+
+        MessageFullView testee = messageFullViewFactory.fromMetaDataWithContent(testMail);
+        assertThat(testee.isHasAttachment()).isFalse();
+    }
+
+    @Test
+    void hasAttachmentShouldReturnFalseWhenAllAttachmentsAreInline() throws MailboxException {
+        String payload = "payload";
+        BlobId blobId1 = BlobId.of("id1");
+        BlobId blobId2 = BlobId.of("id2");
+        String type = "content";
+
+        MetaDataWithContent testMail = MetaDataWithContent.builder()
+            .uid(MessageUid.of(2))
+            .keywords(Keywords.strictFactory().from(Keyword.SEEN))
+            .size(0)
+            .internalDate(INTERNAL_DATE)
+            .content(ClassLoader.getSystemResourceAsStream("spamMail.eml"))
+            .attachments(ImmutableList.of(MessageAttachment.builder()
+                .attachment(org.apache.james.mailbox.model.Attachment.builder()
+                    .attachmentId(AttachmentId.from(blobId1.getRawValue()))
+                    .bytes(payload.getBytes())
+                    .type(type)
+                    .build())
+                .cid(Cid.from("cid"))
+                .isInline(true)
+                .build(),
+                MessageAttachment.builder()
+                    .attachment(org.apache.james.mailbox.model.Attachment.builder()
+                        .attachmentId(AttachmentId.from(blobId2.getRawValue()))
+                        .bytes(payload.getBytes())
+                        .type(type)
+                        .build())
+                    .cid(Cid.from("cid"))
+                    .isInline(true)
+                    .build()))
+            .mailboxId(MAILBOX_ID)
+            .messageId(TestMessageId.of(2))
+            .build();
+
+        MessageFullView testee = messageFullViewFactory.fromMetaDataWithContent(testMail);
+
+        assertThat(testee.isHasAttachment()).isFalse();
+    }
+
+    @Test
+    void hasAttachmentShouldReturnTrueWhenOneAttachmentIsNotInline() throws Exception {
+        String payload = "payload";
+        BlobId blobId1 = BlobId.of("id1");
+        BlobId blobId2 = BlobId.of("id2");
+        String type = "content";
+
+        MetaDataWithContent testMail = MetaDataWithContent.builder()
+            .uid(MessageUid.of(2))
+            .keywords(Keywords.strictFactory().from(Keyword.SEEN))
+            .size(0)
+            .internalDate(INTERNAL_DATE)
+            .content(ClassLoader.getSystemResourceAsStream("spamMail.eml"))
+            .attachments(ImmutableList.of(MessageAttachment.builder()
+                    .attachment(org.apache.james.mailbox.model.Attachment.builder()
+                        .attachmentId(AttachmentId.from(blobId1.getRawValue()))
+                        .bytes(payload.getBytes())
+                        .type(type)
+                        .build())
+                    .cid(Cid.from("cid"))
+                    .isInline(true)
+                    .build(),
+                MessageAttachment.builder()
+                    .attachment(org.apache.james.mailbox.model.Attachment.builder()
+                        .attachmentId(AttachmentId.from(blobId2.getRawValue()))
+                        .bytes(payload.getBytes())
+                        .type(type)
+                        .build())
+                    .isInline(false)
+                    .build()))
+            .mailboxId(MAILBOX_ID)
+            .messageId(TestMessageId.of(2))
+            .build();
+
+        MessageFullView testee = messageFullViewFactory.fromMetaDataWithContent(testMail);
+
+        assertThat(testee.isHasAttachment()).isTrue();
+    }
+
+    @Test
+    void hasAttachmentShouldReturnTrueWhenAllAttachmentsAreNotInline() throws Exception {
+        String payload = "payload";
+        BlobId blobId1 = BlobId.of("id1");
+        BlobId blobId2 = BlobId.of("id2");
+        String type = "content";
+
+        MetaDataWithContent testMail = MetaDataWithContent.builder()
+            .uid(MessageUid.of(2))
+            .keywords(Keywords.strictFactory().from(Keyword.SEEN))
+            .size(0)
+            .internalDate(INTERNAL_DATE)
+            .content(ClassLoader.getSystemResourceAsStream("spamMail.eml"))
+            .attachments(ImmutableList.of(MessageAttachment.builder()
+                    .attachment(org.apache.james.mailbox.model.Attachment.builder()
+                        .attachmentId(AttachmentId.from(blobId1.getRawValue()))
+                        .bytes(payload.getBytes())
+                        .type(type)
+                        .build())
+                    .isInline(false)
+                    .build(),
+                MessageAttachment.builder()
+                    .attachment(org.apache.james.mailbox.model.Attachment.builder()
+                        .attachmentId(AttachmentId.from(blobId2.getRawValue()))
+                        .bytes(payload.getBytes())
+                        .type(type)
+                        .build())
+                    .isInline(false)
+                    .build()))
+            .mailboxId(MAILBOX_ID)
+            .messageId(TestMessageId.of(2))
+            .build();
+
+        MessageFullView testee = messageFullViewFactory.fromMetaDataWithContent(testMail);
+
+        assertThat(testee.isHasAttachment()).isTrue();
     }
 
     @Test

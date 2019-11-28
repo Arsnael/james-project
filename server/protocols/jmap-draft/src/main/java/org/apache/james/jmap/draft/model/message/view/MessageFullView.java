@@ -94,7 +94,6 @@ public class MessageFullView extends MessageHeaderView {
             ImmutableList<Attachment> attachments = this.attachments.build();
             ImmutableMap<BlobId, SubMessage> attachedMessages = this.attachedMessages.build();
             checkState(attachments, attachedMessages);
-            boolean hasAttachment = hasAttachment(attachments);
 
             return new MessageFullView(id, blobId, threadId, mailboxIds, Optional.ofNullable(inReplyToMessageId),
                 hasAttachment, headers, Optional.ofNullable(from),
@@ -120,12 +119,6 @@ public class MessageFullView extends MessageHeaderView {
             .anyMatch(blobId -> blobId.equals(key));
     }
 
-    private static boolean hasAttachment(List<Attachment> attachments) {
-        return attachments.stream()
-                .anyMatch(attachment -> !attachment.isInlinedWithCid());
-    }
-
-    private final boolean hasAttachment;
     private final String preview;
     private final Optional<String> textBody;
     private final Optional<String> htmlBody;
@@ -154,17 +147,12 @@ public class MessageFullView extends MessageHeaderView {
                     ImmutableList<Attachment> attachments,
                     ImmutableMap<BlobId, SubMessage> attachedMessages,
                     Keywords keywords) {
-        super(id, blobId, threadId, mailboxIds, inReplyToMessageId, headers, from, to, cc, bcc, replyTo, subject, date, size, keywords);
-        this.hasAttachment = hasAttachment;
+        super(id, blobId, threadId, mailboxIds, inReplyToMessageId, headers, from, to, cc, bcc, replyTo, subject, date, size, keywords, hasAttachment);
         this.preview = preview;
         this.textBody = textBody;
         this.htmlBody = htmlBody;
         this.attachments = attachments;
         this.attachedMessages = attachedMessages;
-    }
-
-    public boolean isHasAttachment() {
-        return hasAttachment;
     }
 
     public String getPreview() {

@@ -64,6 +64,7 @@ public class MessageHeaderViewFactory implements MessageViewFactory<MessageHeade
             .threadId(firstMessageResult.getMessageId().serialize())
             .keywords(getKeywords(messageResults))
             .size(firstMessageResult.getSize())
+            .hasAttachment(firstMessageResult.hasAttachments())
             .inReplyToMessageId(getHeader(mimeMessage, "in-reply-to"))
             .subject(Strings.nullToEmpty(mimeMessage.getSubject()).trim())
             .headers(toMap(mimeMessage.getHeader().getFields()))

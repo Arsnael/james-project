@@ -55,6 +55,7 @@ public class MessageMetadataViewFactory implements MessageViewFactory<MessageMet
             .threadId(firstMessageResult.getMessageId().serialize())
             .keywords(getKeywords(messageResults))
             .size(firstMessageResult.getSize())
+            .hasAttachment(firstMessageResult.hasAttachments())
             .build();
     }
 }

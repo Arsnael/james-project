@@ -50,6 +50,7 @@ public class MessageMetadataView implements MessageView {
         protected ImmutableList<MailboxId> mailboxIds;
         protected Number size;
         protected Optional<Keywords> keywords = Optional.empty();
+        protected boolean hasAttachment;
 
         public S id(MessageId id) {
             this.id = id;
@@ -91,10 +92,16 @@ public class MessageMetadataView implements MessageView {
             return (S) this;
         }
 
+        public S hasAttachment(boolean hasAttachment) {
+            this.hasAttachment = hasAttachment;
+            return (S) this;
+        }
+
         public MessageMetadataView build() {
             checkState();
 
-            return new MessageMetadataView(id, blobId, threadId, mailboxIds, size, keywords.orElse(Keywords.DEFAULT_VALUE));
+            return new MessageMetadataView(id, blobId, threadId, mailboxIds, size,
+                keywords.orElse(Keywords.DEFAULT_VALUE), hasAttachment);
         }
 
         protected void checkState() {
@@ -112,15 +119,18 @@ public class MessageMetadataView implements MessageView {
     private final ImmutableList<MailboxId> mailboxIds;
     private final Number size;
     private final Keywords keywords;
+    private final boolean hasAttachment;
 
     @VisibleForTesting
-    MessageMetadataView(MessageId id, BlobId blobId, String threadId, ImmutableList<MailboxId> mailboxIds, Number size, Keywords keywords) {
+    MessageMetadataView(MessageId id, BlobId blobId, String threadId, ImmutableList<MailboxId> mailboxIds, Number size,
+                        Keywords keywords, boolean hasAttachment) {
         this.id = id;
         this.blobId = blobId;
         this.threadId = threadId;
         this.mailboxIds = mailboxIds;
         this.size = size;
         this.keywords = keywords;
+        this.hasAttachment = hasAttachment;
     }
 
     public MessageId getId() {
@@ -165,5 +175,9 @@ public class MessageMetadataView implements MessageView {
 
     public ImmutableMap<String, Boolean> getKeywords() {
         return keywords.asMap();
+    }
+
+    public boolean isHasAttachment() {
+        return hasAttachment;
     }
 }
