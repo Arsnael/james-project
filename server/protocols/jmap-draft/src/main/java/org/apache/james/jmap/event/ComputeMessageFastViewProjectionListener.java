@@ -83,7 +83,7 @@ public class ComputeMessageFastViewProjectionListener implements MailboxListener
     }
 
     private void handleAddedEvent(Added addedEvent, MailboxSession session) throws MailboxException {
-        Flux.fromIterable(messageIdManager.getMessages(addedEvent.getMessageIds().asList(), FetchGroup.BODY_CONTENT, session))
+        Flux.fromIterable(messageIdManager.getMessages(addedEvent.getMessageIds(), FetchGroup.BODY_CONTENT, session))
             .publishOn(Schedulers.boundedElastic())
             .flatMap(Throwing.function(messageResult -> Mono.fromCallable(
                 () -> Pair.of(messageResult.getMessageId(), computeFastViewPrecomputedProperties(messageResult)))
