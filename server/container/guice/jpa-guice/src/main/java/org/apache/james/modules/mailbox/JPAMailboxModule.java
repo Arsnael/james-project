@@ -45,6 +45,7 @@ import org.apache.james.mailbox.store.Authorizator;
 import org.apache.james.mailbox.store.JVMMailboxPathLocker;
 import org.apache.james.mailbox.store.MailboxManagerConfiguration;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
+import org.apache.james.mailbox.store.SessionProviderImpl;
 import org.apache.james.mailbox.store.StoreMailboxManager;
 import org.apache.james.mailbox.store.StoreSubscriptionManager;
 import org.apache.james.mailbox.store.event.MailboxAnnotationListener;
@@ -85,6 +86,7 @@ public class JPAMailboxModule extends AbstractModule {
         bind(UnionMailboxACLResolver.class).in(Scopes.SINGLETON);
         bind(DefaultMessageId.Factory.class).in(Scopes.SINGLETON);
         bind(ReIndexerImpl.class).in(Scopes.SINGLETON);
+        bind(SessionProviderImpl.class).in(Scopes.SINGLETON);
 
         bind(SubscriptionMapperFactory.class).to(JPAMailboxSessionMapperFactory.class);
         bind(MessageMapperFactory.class).to(JPAMailboxSessionMapperFactory.class);
@@ -99,6 +101,7 @@ public class JPAMailboxModule extends AbstractModule {
         bind(Authenticator.class).to(UserRepositoryAuthenticator.class);
         bind(MailboxManager.class).to(OpenJPAMailboxManager.class);
         bind(StoreMailboxManager.class).to(OpenJPAMailboxManager.class);
+        bind(SessionProviderImpl.class).in(Scopes.SINGLETON);
         bind(Authorizator.class).to(UserRepositoryAuthorizator.class);
         bind(MailboxId.Factory.class).to(JPAId.Factory.class);
         bind(GroupMembershipResolver.class).to(SimpleGroupMembershipResolver.class);
