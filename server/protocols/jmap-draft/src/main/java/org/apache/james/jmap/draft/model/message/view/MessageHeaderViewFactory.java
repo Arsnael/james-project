@@ -49,7 +49,7 @@ public class MessageHeaderViewFactory implements MessageViewFactory<MessageHeade
     }
 
     @Override
-    public MessageHeaderView fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException {
+    public MessageHeaderView fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException, IOException {
         assertOneMessageId(messageResults);
 
         MessageResult firstMessageResult = messageResults.iterator().next();
@@ -76,16 +76,11 @@ public class MessageHeaderViewFactory implements MessageViewFactory<MessageHeade
             .build();
     }
 
-    private Message parse(MessageResult message) throws MailboxException {
-        try {
-            return Message.Builder
-                .of()
-                .use(MimeConfig.PERMISSIVE)
-                .parse(message.getFullContent().getInputStream())
-                .build();
-        } catch (IOException e) {
-            throw new MailboxException("Unable to parse message: " + e.getMessage(), e);
-        }
+    private Message parse(MessageResult message) throws MailboxException, IOException {
+        return Message.Builder.of()
+            .use(MimeConfig.PERMISSIVE)
+            .parse(message.getFullContent().getInputStream())
+            .build();
     }
 
     private Instant getDateFromHeaderOrInternalDateOtherwise(Message mimeMessage, MessageResult message) {

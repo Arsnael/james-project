@@ -34,7 +34,6 @@ import org.apache.james.jmap.api.model.Preview;
 import org.apache.james.jmap.draft.model.Attachment;
 import org.apache.james.jmap.draft.model.BlobId;
 import org.apache.james.jmap.draft.model.Keywords;
-import org.apache.james.jmap.draft.utils.HtmlTextExtractor;
 import org.apache.james.mailbox.BlobManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -45,6 +44,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mime4j.dom.Message;
 import org.apache.james.mime4j.stream.MimeConfig;
+import org.apache.james.util.html.HtmlTextExtractor;
 import org.apache.james.util.mime.MessageContentExtractor;
 import org.apache.james.util.mime.MessageContentExtractor.MessageContent;
 
@@ -59,23 +59,22 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
     private final HtmlTextExtractor htmlTextExtractor;
 
     @Inject
-    public MessageFullViewFactory(BlobManager blobManager, MessageContentExtractor messageContentExtractor,
-                                  HtmlTextExtractor htmlTextExtractor) {
+    public MessageFullViewFactory(BlobManager blobManager, MessageContentExtractor messageContentExtractor, HtmlTextExtractor htmlTextExtractor) {
         this.blobManager = blobManager;
         this.messageContentExtractor = messageContentExtractor;
         this.htmlTextExtractor = htmlTextExtractor;
     }
 
     @Override
-    public MessageFullView fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException {
+    public MessageFullView fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException, IOException {
         return fromMetaDataWithContent(toMetaDataWithContent(messageResults));
     }
 
-    public MessageFullView fromMetaDataWithContent(MetaDataWithContent message) throws MailboxException {
+    public MessageFullView fromMetaDataWithContent(MetaDataWithContent message) throws IOException {
         Message mimeMessage = parse(message);
-        MessageContent messageContent = extractContent(mimeMessage);
+        MessageContent messageContent = messageContentExtractor.extract(mimeMessage);
         Optional<String> htmlBody = messageContent.getHtmlBody();
-        Optional<String> mainTextContent = mainTextContent(messageContent);
+        Optional<String> mainTextContent = messageContent.extractMainTextContent(htmlTextExtractor);
         Optional<String> textBody = computeTextBodyIfNeeded(messageContent, mainTextContent);
 
         Optional<Preview> preview = mainTextContent.map(Preview::compute);
@@ -129,32 +128,11 @@ public class MessageFullViewFactory implements MessageViewFactory<MessageFullVie
             .orElse(mainTextContent);
     }
 
-    private Optional<String> mainTextContent(MessageContent messageContent) {
-        return messageContent.getHtmlBody()
-            .map(htmlTextExtractor::toPlainText)
-            .filter(s -> !Strings.isNullOrEmpty(s))
-            .map(Optional::of)
-            .orElse(messageContent.getTextBody());
-    }
-
-    private Message parse(MetaDataWithContent message) throws MailboxException {
-        try {
-            return Message.Builder
-                    .of()
-                    .use(MimeConfig.PERMISSIVE)
-                    .parse(message.getContent())
-                    .build();
-        } catch (IOException e) {
-            throw new MailboxException("Unable to parse message: " + e.getMessage(), e);
-        }
-    }
-
-    private MessageContent extractContent(Message mimeMessage) throws MailboxException {
-        try {
-            return messageContentExtractor.extract(mimeMessage);
-        } catch (IOException e) {
-            throw new MailboxException("Unable to extract content: " + e.getMessage(), e);
-        }
+    private Message parse(MetaDataWithContent message) throws IOException {
+        return Message.Builder.of()
+            .use(MimeConfig.PERMISSIVE)
+            .parse(message.getContent())
+            .build();
     }
     
     private List<Attachment> getAttachments(List<MessageAttachment> attachments) {

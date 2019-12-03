@@ -19,6 +19,7 @@
 
 package org.apache.james.jmap.draft.model.message.view;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public interface MessageViewFactory<T extends MessageView> {
     Keywords.KeywordsFactory KEYWORDS_FACTORY = Keywords.lenientFactory();
     String JMAP_MULTIVALUED_FIELD_DELIMITER = "\n";
 
-    T fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException;
+    T fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException, IOException;
 
     default void assertOneMessageId(Collection<MessageResult> messageResults) {
         Preconditions.checkArgument(!messageResults.isEmpty(), "MessageResults cannot be empty");

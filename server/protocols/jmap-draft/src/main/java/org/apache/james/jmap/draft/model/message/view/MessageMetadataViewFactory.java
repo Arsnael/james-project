@@ -26,7 +26,6 @@ import javax.inject.Inject;
 
 import org.apache.james.jmap.draft.model.BlobId;
 import org.apache.james.mailbox.BlobManager;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageResult;
 
@@ -42,7 +41,7 @@ public class MessageMetadataViewFactory implements MessageViewFactory<MessageMet
     }
 
     @Override
-    public MessageMetadataView fromMessageResults(Collection<MessageResult> messageResults) throws MailboxException {
+    public MessageMetadataView fromMessageResults(Collection<MessageResult> messageResults) {
         assertOneMessageId(messageResults);
 
         MessageResult firstMessageResult = messageResults.iterator().next();
