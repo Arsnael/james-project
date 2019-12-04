@@ -20,7 +20,6 @@
 package org.apache.james.mailbox;
 
 import org.apache.james.core.Username;
-import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 
 public interface SessionProvider {
@@ -40,10 +39,6 @@ public interface SessionProvider {
      * @param userName
      *            the name of the user whose session is being created
      * @return <code>MailboxSession</code>, not null
-     * @throws BadCredentialsException
-     *            when system access is not allowed for the given user
-     * @throws MailboxException
-     *            when the creation fails for other reasons
      */
     MailboxSession createSystemSession(Username userName);
 
@@ -57,8 +52,6 @@ public interface SessionProvider {
      *            password supplied
      * @return a <code>MailboxSession</code> when the user is authenticated and
      *            authorized to access
-     * @throws BadCredentialsException
-     *            when system access is denied for the given user
      * @throws MailboxException
      *            when the creation fails for other reasons
      */
@@ -77,8 +70,6 @@ public interface SessionProvider {
      *            user name of the real user
      * @return a <code>MailboxSession</code> for the real user
      *            when the admin is authenticated and authorized to access
-     * @throws BadCredentialsException
-     *            when system access is denied for the given user
      * @throws MailboxException
      *             when the creation fails for other reasons
      */
@@ -102,8 +93,6 @@ public interface SessionProvider {
      *
      * @param session
      *            not null
-     * @throws MailboxException
-     *             when logout fails
      */
     void logout(MailboxSession session);
 }
