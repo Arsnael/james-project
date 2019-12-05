@@ -26,6 +26,7 @@ import org.apache.james.adapter.mailbox.store.UserRepositoryAuthenticator;
 import org.apache.james.adapter.mailbox.store.UserRepositoryAuthorizator;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxPathLocker;
+import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.acl.GroupMembershipResolver;
 import org.apache.james.mailbox.acl.MailboxACLResolver;
@@ -101,7 +102,7 @@ public class JPAMailboxModule extends AbstractModule {
         bind(Authenticator.class).to(UserRepositoryAuthenticator.class);
         bind(MailboxManager.class).to(OpenJPAMailboxManager.class);
         bind(StoreMailboxManager.class).to(OpenJPAMailboxManager.class);
-        bind(SessionProviderImpl.class).in(Scopes.SINGLETON);
+        bind(SessionProvider.class).to(SessionProviderImpl.class);
         bind(Authorizator.class).to(UserRepositoryAuthorizator.class);
         bind(MailboxId.Factory.class).to(JPAId.Factory.class);
         bind(GroupMembershipResolver.class).to(SimpleGroupMembershipResolver.class);
