@@ -31,11 +31,11 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-public class ListMailboxAssert {
+class ListMailboxAssert {
 
     private final List<Mailbox> actual;
 
-    private final List<InnerMailbox> mailboxtoInnerMailbox(List<Mailbox> mailboxes) {
+    private List<InnerMailbox> mailboxtoInnerMailbox(List<Mailbox> mailboxes) {
         return mailboxes.stream()
             .map(mailbox ->
                 new InnerMailbox(mailbox.getMailboxId(), mailbox.getUser(), mailbox.getName(), mailbox.getNamespace()))
