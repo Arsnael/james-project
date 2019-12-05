@@ -28,14 +28,14 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
 
 
-public class ListMessagePropertiesAssert {
-    private final List<InnerProperty> propertiesToInnerProperties(List<Property> properties) {
+class ListMessagePropertiesAssert {
+    private List<InnerProperty> propertiesToInnerProperties(List<Property> properties) {
         return properties.stream()
             .map(propertyToInnerProperty())
             .collect(Guavate.toImmutableList());
     }
 
-    private final Function<Property, InnerProperty> propertyToInnerProperty() {
+    private Function<Property, InnerProperty> propertyToInnerProperty() {
         return property -> new InnerProperty(property.getNamespace(), property.getLocalName(), property.getValue());
     }
 
