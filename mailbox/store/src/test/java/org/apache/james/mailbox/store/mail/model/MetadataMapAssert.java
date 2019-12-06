@@ -25,7 +25,7 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.assertj.core.api.AbstractAssert;
 
-class MetadataMapAssert extends AbstractAssert<MetadataMapAssert, Map<MessageUid, MessageMetaData>> {
+public class MetadataMapAssert extends AbstractAssert<MetadataMapAssert, Map<MessageUid, MessageMetaData>> {
 
     public MetadataMapAssert(Map<MessageUid, MessageMetaData> actual) {
         super(actual, MetadataMapAssert.class);
