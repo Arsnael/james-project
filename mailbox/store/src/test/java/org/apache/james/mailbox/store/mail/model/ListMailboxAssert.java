@@ -31,7 +31,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-class ListMailboxAssert {
+public class ListMailboxAssert {
 
     private final List<Mailbox> actual;
 
