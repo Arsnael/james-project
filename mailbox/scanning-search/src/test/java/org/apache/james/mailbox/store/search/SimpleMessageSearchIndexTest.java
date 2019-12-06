@@ -21,9 +21,9 @@ package org.apache.james.mailbox.store.search;
 
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-public class SimpleMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
+class SimpleMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
 
     @Override
     protected void await() {
@@ -54,192 +54,192 @@ public class SimpleMessageSearchIndexTest extends AbstractMessageSearchIndexTest
      * 32 tests out of 54 are failing
      */
 
-    @Ignore
+    @Disabled
     @Override
     public void flagIsSetShouldReturnUidOfMessageMarkedAsRecentWhenUsedWithFlagRecent() throws MailboxException {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void uidShouldreturnEveryThing() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnCcShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnFromShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void addressShouldReturnUidHavingRightRecipientWhenBccIsSpecified() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void orShouldReturnResultsMatchinganyRequests() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void headerContainsShouldReturnUidsOfMessageHavingThisHeaderWithTheSpecifiedValue() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void internalDateAfterShouldReturnMessagesAfterAGivenDate() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void headerExistsShouldReturnUidsOfMessageHavingThisHeader() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void addressShouldReturnUidHavingRightRecipientWhenCcIsSpecified() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void andShouldReturnResultsMatchingBothRequests() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnDisplayToShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void flagIsUnSetShouldReturnUidOfMessageNotMarkedAsRecentWhenUsedWithFlagRecent() throws MailboxException {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() throws MailboxException {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void headerDateBeforeShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnSentDateShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void addressShouldReturnUidHavingRightRecipientWhenToIsSpecified() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnToShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnDisplayFromShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void revertSortingShouldReturnElementsInAReversedOrder() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void headerDateAfterShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnSubjectShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void notShouldReturnResultsThatDoNotMatchAQuery() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void headerDateOnShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnSizeShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortShouldOrderMessages() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void multimailboxSearchShouldReturnUidOfMessageWithExpectedFromInTwoMailboxes() throws MailboxException {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void searchWithTextShouldReturnMailsWhenTextBodyMatchesAndNonContinuousWords() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void searchWithTextShouldReturnMailsWhenHtmlBodyMatchesAndNonContinuousWords() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void searchWithTextShouldReturnMailsWhenTextBodyWithExtraUnindexedWords() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void searchWithTextShouldReturnMailsWhenHtmlBodyMatchesWithStemming() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void headerWithDotsShouldBeIndexed() throws MailboxException {
     }

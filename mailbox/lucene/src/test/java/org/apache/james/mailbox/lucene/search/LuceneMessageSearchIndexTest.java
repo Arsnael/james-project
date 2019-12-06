@@ -25,11 +25,11 @@ import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.store.search.AbstractMessageSearchIndexTest;
 import org.apache.lucene.store.RAMDirectory;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 import com.github.fge.lambdas.Throwing;
 
-public class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
+class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
 
     @Override
     protected void await() {
@@ -56,92 +56,92 @@ public class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest
         messageSearchIndex = resources.getSearchIndex();
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void uidShouldreturnEveryThing() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnCcShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnFromShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void orShouldReturnResultsMatchinganyRequests() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void internalDateAfterShouldReturnMessagesAfterAGivenDate() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void andShouldReturnResultsMatchingBothRequests() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() throws MailboxException {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void sortOnDisplayFromShouldWork() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void modSeqEqualsShouldReturnUidsOfMessageHavingAGivenModSeq() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInTwoMailboxes() throws MailboxException {
     }
 
-    @Ignore
+    @Disabled
     @Override
     public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInAllMailboxes() throws MailboxException {
     }
 
-    @Ignore("Lucene implementation is not handling mail addresses with names")
+    @Disabled("Lucene implementation is not handling mail addresses with names")
     @Override
     public void sortOnToShouldWork() {
     }
