@@ -35,7 +35,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-class ListMessageAssert {
+public class ListMessageAssert {
     private final List<MailboxMessage> actual;
 
     private List<InnerMessage> messageToInnerMessage(List<MailboxMessage> messages) {
