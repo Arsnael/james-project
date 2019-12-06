@@ -28,7 +28,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
 
 
-class ListMessagePropertiesAssert {
+public class ListMessagePropertiesAssert {
     private List<InnerProperty> propertiesToInnerProperties(List<Property> properties) {
         return properties.stream()
             .map(propertyToInnerProperty())
