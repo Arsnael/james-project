@@ -55,92 +55,92 @@ class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
         messageSearchIndex = resources.getSearchIndex();
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void uidShouldreturnEveryThing() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void sortOnCcShouldWork() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void sortOnFromShouldWork() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void orShouldReturnResultsMatchinganyRequests() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void internalDateAfterShouldReturnMessagesAfterAGivenDate() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void andShouldReturnResultsMatchingBothRequests() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void sortOnDisplayFromShouldWork() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled("JAMES-1799")
+    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
     @Override
     public void modSeqEqualsShouldReturnUidsOfMessageHavingAGivenModSeq() {
     }
 
-    @Disabled("MAILBOX-273")
+    @Disabled("MAILBOX-273: failing test on Lucene (intended for ES)")
     @Override
     public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInTwoMailboxes() {
     }
 
-    @Disabled("MAILBOX-273")
+    @Disabled("MAILBOX-273: failing test on Lucene (intended for ES)")
     @Override
     public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInAllMailboxes() {
     }
 
-    @Disabled("JAMES-2590 Lucene implementation is not handling mail addresses with names")
+    @Disabled("JAMES-2590: Lucene implementation is not handling mail addresses with names")
     @Override
     public void sortOnToShouldWork() {
     }
