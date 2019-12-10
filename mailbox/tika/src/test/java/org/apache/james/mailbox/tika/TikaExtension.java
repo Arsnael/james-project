@@ -19,25 +19,13 @@
 
 package org.apache.james.mailbox.tika;
 
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-public class TikaExtension implements AfterAllCallback, BeforeAllCallback, ParameterResolver {
+public class TikaExtension implements ParameterResolver {
     private final TikaContainer tika = TikaContainerSingleton.INSTANCE;
-
-    @Override
-    public void beforeAll(ExtensionContext extensionContext) {
-        tika.start();
-    }
-
-    @Override
-    public void afterAll(ExtensionContext extensionContext) {
-        tika.stop();
-    }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
