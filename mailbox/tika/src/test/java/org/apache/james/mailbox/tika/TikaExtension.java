@@ -27,11 +27,7 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
 public class TikaExtension implements AfterAllCallback, BeforeAllCallback, ParameterResolver {
-    private final TikaContainer tika;
-
-    public TikaExtension() {
-        this.tika = new TikaContainer();
-    }
+    private final TikaContainer tika = TikaContainerSingleton.INSTANCE;
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) {
