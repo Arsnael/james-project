@@ -55,77 +55,77 @@ class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
         messageSearchIndex = resources.getSearchIndex();
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void uidShouldreturnEveryThing() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void sortOnCcShouldWork() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void sortOnFromShouldWork() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void orShouldReturnResultsMatchinganyRequests() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void internalDateAfterShouldReturnMessagesAfterAGivenDate() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void andShouldReturnResultsMatchingBothRequests() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void sortOnDisplayFromShouldWork() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled("JAMES-1799: ignoring failing test after port of ES tests to Lucene")
+    @Disabled("JAMES-1799: ignoring failing test after generalizing ElasticSearch test suite to other mailbox search backends")
     @Override
     public void modSeqEqualsShouldReturnUidsOfMessageHavingAGivenModSeq() {
     }
