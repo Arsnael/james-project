@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.lucene.search;
 
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
@@ -56,92 +55,92 @@ class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
         messageSearchIndex = resources.getSearchIndex();
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void uidShouldreturnEveryThing() throws Exception {
+    public void uidShouldreturnEveryThing() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnCcShouldWork() throws Exception {
+    public void sortOnCcShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnFromShouldWork() throws Exception {
+    public void sortOnFromShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void orShouldReturnResultsMatchinganyRequests() throws Exception {
+    public void orShouldReturnResultsMatchinganyRequests() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() throws Exception {
+    public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void internalDateAfterShouldReturnMessagesAfterAGivenDate() throws Exception {
+    public void internalDateAfterShouldReturnMessagesAfterAGivenDate() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() throws Exception {
+    public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
+    public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void andShouldReturnResultsMatchingBothRequests() throws Exception {
+    public void andShouldReturnResultsMatchingBothRequests() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() throws Exception {
+    public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() throws MailboxException {
+    public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnDisplayFromShouldWork() throws Exception {
+    public void sortOnDisplayFromShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() throws Exception {
+    public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
+    public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void modSeqEqualsShouldReturnUidsOfMessageHavingAGivenModSeq() throws Exception {
+    public void modSeqEqualsShouldReturnUidsOfMessageHavingAGivenModSeq() {
     }
 
-    @Disabled
+    @Disabled("MAILBOX-273")
     @Override
-    public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInTwoMailboxes() throws MailboxException {
+    public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInTwoMailboxes() {
     }
 
-    @Disabled
+    @Disabled("MAILBOX-273")
     @Override
-    public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInAllMailboxes() throws MailboxException {
+    public void multimailboxSearchShouldReturnUidOfMessageMarkedAsSeenInAllMailboxes() {
     }
 
-    @Disabled("Lucene implementation is not handling mail addresses with names")
+    @Disabled("JAMES-2590 Lucene implementation is not handling mail addresses with names")
     @Override
     public void sortOnToShouldWork() {
     }

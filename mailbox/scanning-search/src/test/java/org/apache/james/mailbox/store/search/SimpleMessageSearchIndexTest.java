@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.store.search;
 
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.junit.jupiter.api.Disabled;
 
@@ -50,197 +49,193 @@ class SimpleMessageSearchIndexTest extends AbstractMessageSearchIndexTest {
         messageSearchIndex = resources.getSearchIndex();
     }
 
-    /**
-     * 32 tests out of 54 are failing
-     */
-
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void flagIsSetShouldReturnUidOfMessageMarkedAsRecentWhenUsedWithFlagRecent() throws MailboxException {
+    public void flagIsSetShouldReturnUidOfMessageMarkedAsRecentWhenUsedWithFlagRecent() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void uidShouldreturnEveryThing() throws Exception {
+    public void uidShouldreturnEveryThing() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnCcShouldWork() throws Exception {
+    public void sortOnCcShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnFromShouldWork() throws Exception {
+    public void sortOnFromShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void addressShouldReturnUidHavingRightRecipientWhenBccIsSpecified() throws Exception {
+    public void addressShouldReturnUidHavingRightRecipientWhenBccIsSpecified() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void orShouldReturnResultsMatchinganyRequests() throws Exception {
+    public void orShouldReturnResultsMatchinganyRequests() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() throws Exception {
+    public void internalDateBeforeShouldReturnMessagesBeforeAGivenDate() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void headerContainsShouldReturnUidsOfMessageHavingThisHeaderWithTheSpecifiedValue() throws Exception {
+    public void headerContainsShouldReturnUidsOfMessageHavingThisHeaderWithTheSpecifiedValue() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void internalDateAfterShouldReturnMessagesAfterAGivenDate() throws Exception {
+    public void internalDateAfterShouldReturnMessagesAfterAGivenDate() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() throws Exception {
+    public void youShouldBeAbleToSpecifySeveralCriterionOnASingleQuery() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void headerExistsShouldReturnUidsOfMessageHavingThisHeader() throws Exception {
+    public void headerExistsShouldReturnUidsOfMessageHavingThisHeader() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
+    public void modSeqLessThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void addressShouldReturnUidHavingRightRecipientWhenCcIsSpecified() throws Exception {
+    public void addressShouldReturnUidHavingRightRecipientWhenCcIsSpecified() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void andShouldReturnResultsMatchingBothRequests() throws Exception {
+    public void andShouldReturnResultsMatchingBothRequests() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() throws Exception {
+    public void addressShouldReturnUidHavingRightExpeditorWhenFromIsSpecified() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnDisplayToShouldWork() throws Exception {
+    public void sortOnDisplayToShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void flagIsUnSetShouldReturnUidOfMessageNotMarkedAsRecentWhenUsedWithFlagRecent() throws MailboxException {
+    public void flagIsUnSetShouldReturnUidOfMessageNotMarkedAsRecentWhenUsedWithFlagRecent() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() throws MailboxException {
+    public void bodyContainsShouldReturnUidOfMessageContainingTheApproximativeText() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void headerDateBeforeShouldWork() throws Exception {
+    public void headerDateBeforeShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnSentDateShouldWork() throws Exception {
+    public void sortOnSentDateShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void addressShouldReturnUidHavingRightRecipientWhenToIsSpecified() throws Exception {
+    public void addressShouldReturnUidHavingRightRecipientWhenToIsSpecified() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnToShouldWork() throws Exception {
+    public void sortOnToShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnDisplayFromShouldWork() throws Exception {
+    public void sortOnDisplayFromShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void revertSortingShouldReturnElementsInAReversedOrder() throws Exception {
+    public void revertSortingShouldReturnElementsInAReversedOrder() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void headerDateAfterShouldWork() throws Exception {
+    public void headerDateAfterShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() throws Exception {
+    public void mailsContainsShouldIncludeMailHavingAttachmentsMatchingTheRequest() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnSubjectShouldWork() throws Exception {
+    public void sortOnSubjectShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() throws Exception {
+    public void modSeqGreaterThanShouldReturnUidsOfMessageHavingAGreaterModSeq() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void notShouldReturnResultsThatDoNotMatchAQuery() throws Exception {
+    public void notShouldReturnResultsThatDoNotMatchAQuery() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void headerDateOnShouldWork() throws Exception {
+    public void headerDateOnShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortOnSizeShouldWork() throws Exception {
+    public void sortOnSizeShouldWork() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1799")
     @Override
-    public void sortShouldOrderMessages() throws Exception {
+    public void sortShouldOrderMessages() {
     }
 
-    @Disabled
+    @Disabled("MAILBOX-273")
     @Override
-    public void multimailboxSearchShouldReturnUidOfMessageWithExpectedFromInTwoMailboxes() throws MailboxException {
+    public void multimailboxSearchShouldReturnUidOfMessageWithExpectedFromInTwoMailboxes() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1804")
     @Override
-    public void searchWithTextShouldReturnMailsWhenTextBodyMatchesAndNonContinuousWords() throws Exception {
+    public void searchWithTextShouldReturnMailsWhenTextBodyMatchesAndNonContinuousWords() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1804")
     @Override
-    public void searchWithTextShouldReturnMailsWhenHtmlBodyMatchesAndNonContinuousWords() throws Exception {
+    public void searchWithTextShouldReturnMailsWhenHtmlBodyMatchesAndNonContinuousWords() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1804")
     @Override
-    public void searchWithTextShouldReturnMailsWhenTextBodyWithExtraUnindexedWords() throws Exception {
+    public void searchWithTextShouldReturnMailsWhenTextBodyWithExtraUnindexedWords() {
     }
 
-    @Disabled
+    @Disabled("JAMES-1804")
     @Override
-    public void searchWithTextShouldReturnMailsWhenHtmlBodyMatchesWithStemming() throws Exception {
+    public void searchWithTextShouldReturnMailsWhenHtmlBodyMatchesWithStemming() {
     }
 
-    @Disabled
+    @Disabled("JAMES-2241")
     @Override
-    public void headerWithDotsShouldBeIndexed() throws MailboxException {
+    public void headerWithDotsShouldBeIndexed() {
     }
 }
