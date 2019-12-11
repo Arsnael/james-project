@@ -142,6 +142,24 @@ public class AliasMappingTest {
     }
 
     @Test
+    public void messageShouldRedirectToUserWhenSentToHisAliasWithUpperCase() throws Exception {
+        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
+
+        messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+            .sendMessage(FakeMail.builder()
+                .name("name")
+                .mimeMessage(message)
+                .sender(ALICE_ADDRESS)
+                .recipient("BOB-ALIAS@domain.tld"));
+
+        imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
+            .login(BOB_ADDRESS, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitMessage(awaitAtMostOneMinute);
+        assertThat(imapMessageReader.readFirstMessage()).contains(MESSAGE_CONTENT);
+    }
+
+    @Test
     public void messageShouldRedirectToForwardOfUserWhenSentToHisAlias() throws Exception {
         webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
         webAdminApi.put(ForwardRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/targets/" + CEDRIC_ADDRESS);
