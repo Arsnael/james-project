@@ -34,6 +34,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.james.blob.api.BlobId;
+import org.apache.james.blob.objectstorage.BlobExistenceTester;
 import org.apache.james.blob.objectstorage.BlobPutter;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStoreBuilder;
 import org.apache.james.blob.objectstorage.ObjectStorageBucketName;
@@ -83,12 +84,14 @@ public class AwsS3ObjectStorage {
         }
     }
 
+    private final BlobExistenceTester blobExistenceTester;
     private final ExecutorService executorService;
 
     @Inject
     @VisibleForTesting
-    public AwsS3ObjectStorage() {
-        executorService = Executors.newFixedThreadPool(MAX_THREADS, NamedThreadFactory.withClassName(AwsS3ObjectStorage.class));
+    public AwsS3ObjectStorage(BlobExistenceTester blobExistenceTester) {
+        this.blobExistenceTester = blobExistenceTester;
+        this.executorService = Executors.newFixedThreadPool(MAX_THREADS, NamedThreadFactory.withClassName(AwsS3ObjectStorage.class));
     }
 
     @PreDestroy
@@ -101,7 +104,7 @@ public class AwsS3ObjectStorage {
     }
 
     public Optional<BlobPutter> putBlob(AwsS3AuthConfiguration configuration) {
-        return Optional.of(new AwsS3BlobPutter(configuration, executorService));
+        return Optional.of(new AwsS3BlobPutter(configuration, executorService, blobExistenceTester));
     }
 
     private static class BlobStoreBuilder implements Supplier<BlobStore> {
@@ -138,10 +141,12 @@ public class AwsS3ObjectStorage {
 
         private final AwsS3AuthConfiguration configuration;
         private final ExecutorService executorService;
+        private final BlobExistenceTester blobExistenceTester;
 
-        AwsS3BlobPutter(AwsS3AuthConfiguration configuration, ExecutorService executorService) {
+        AwsS3BlobPutter(AwsS3AuthConfiguration configuration, ExecutorService executorService, BlobExistenceTester blobExistenceTester) {
             this.configuration = configuration;
             this.executorService = executorService;
+            this.blobExistenceTester = blobExistenceTester;
         }
 
         @Override
@@ -152,8 +157,15 @@ public class AwsS3ObjectStorage {
         @Override
         public Mono<BlobId> putAndComputeId(ObjectStorageBucketName bucketName, Blob initialBlob, Supplier<BlobId> blobIdSupplier) {
             Function<File, Mono<Void>> putChangedBlob = file -> {
-                initialBlob.getMetadata().setName(blobIdSupplier.get().asString());
-                return putWithRetry(bucketName, configuration, initialBlob, file);
+                BlobId blobId = blobIdSupplier.get();
+                initialBlob.getMetadata().setName(blobId.asString());
+                return blobExistenceTester.exists(bucketName, blobId)
+                    .flatMap(exists -> {
+                        if (exists) {
+                            return Mono.empty();
+                        }
+                        return putWithRetry(bucketName, configuration, initialBlob, file);
+                    });
             };
             return writeFileAndAct(initialBlob, putChangedBlob)
                 .then(Mono.fromCallable(blobIdSupplier::get));

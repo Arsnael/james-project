@@ -41,6 +41,8 @@ import org.apache.james.blob.objectstorage.swift.SwiftTempAuthObjectStorage;
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.jclouds.blobstore.domain.StorageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -53,6 +55,7 @@ import reactor.core.scheduler.Schedulers;
 
 public class ObjectStorageBlobStore implements BlobStore {
     private static final int BUFFERED_SIZE = 256 * 1024;
+    public static final Logger LOGGER = LoggerFactory.getLogger(ObjectStorageBlobStore.class);
 
     private final BlobId.Factory blobIdFactory;
 
@@ -61,17 +64,19 @@ public class ObjectStorageBlobStore implements BlobStore {
     private final BlobPutter blobPutter;
     private final PayloadCodec payloadCodec;
     private final ObjectStorageBucketNameResolver bucketNameResolver;
+    private final BlobExistenceTester blobExistenceTester;
 
     ObjectStorageBlobStore(BucketName defaultBucketName, BlobId.Factory blobIdFactory,
                            org.jclouds.blobstore.BlobStore blobStore,
                            BlobPutter blobPutter,
-                           PayloadCodec payloadCodec, ObjectStorageBucketNameResolver bucketNameResolver) {
+                           PayloadCodec payloadCodec, ObjectStorageBucketNameResolver bucketNameResolver, BlobExistenceTester blobExistenceTester) {
         this.blobIdFactory = blobIdFactory;
         this.defaultBucketName = defaultBucketName;
         this.blobStore = blobStore;
         this.blobPutter = blobPutter;
         this.payloadCodec = payloadCodec;
         this.bucketNameResolver = bucketNameResolver;
+        this.blobExistenceTester = blobExistenceTester;
     }
 
     public static ObjectStorageBlobStoreBuilder.RequireBlobIdFactory builder(SwiftTempAuthObjectStorage.Configuration testConfig) {
@@ -101,17 +106,26 @@ public class ObjectStorageBlobStore implements BlobStore {
         ObjectStorageBucketName resolvedBucketName = bucketNameResolver.resolve(bucketName);
 
         return Mono.fromCallable(() -> blobIdFactory.forPayload(data))
-            .flatMap(blobId -> {
-                Payload payload = payloadCodec.write(data);
+            .flatMap(blobId -> blobExistenceTester.exists(resolvedBucketName, blobId)
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.just(blobId);
+                    }
+                    return save(resolvedBucketName, blobId, data);
+                }));
+    }
 
-                Blob blob = blobStore.blobBuilder(blobId.asString())
-                    .payload(payload.getPayload())
-                    .contentLength(payload.getLength().orElse(Long.valueOf(data.length)))
-                    .build();
+    private Mono<BlobId> save(ObjectStorageBucketName resolvedBucketName, BlobId blobId, byte[] data) {
+        Payload payload = payloadCodec.write(data);
 
-                return blobPutter.putDirectly(resolvedBucketName, blob)
-                    .thenReturn(blobId);
-            });
+        Blob blob = blobStore.blobBuilder(blobId.asString())
+            .payload(payload.getPayload())
+            .contentLength(payload.getLength().orElse(Long.valueOf(data.length)))
+            .build();
+
+        return blobPutter.putDirectly(resolvedBucketName, blob)
+            .flatMap(any -> blobExistenceTester.persist(resolvedBucketName, blobId))
+            .thenReturn(blobId);
     }
 
     @Override
@@ -154,7 +168,9 @@ public class ObjectStorageBlobStore implements BlobStore {
                     .build();
 
                 Supplier<BlobId> blobIdSupplier = () -> blobIdFactory.from(hashingInputStream.hash().toString());
-                return blobPutter.putAndComputeId(resolvedBucketName, blob, blobIdSupplier);
+                return blobPutter.putAndComputeId(resolvedBucketName, blob, blobIdSupplier)
+                    .flatMap(blobId -> blobExistenceTester.persist(resolvedBucketName, blobId)
+                        .thenReturn(blobId));
             });
     }
 

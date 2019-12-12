@@ -28,6 +28,7 @@ import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.objectstorage.DockerSwift;
 import org.apache.james.blob.objectstorage.DockerSwiftExtension;
+import org.apache.james.blob.objectstorage.FakeBlobExistenceTester;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStoreBuilder;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStoreContract;
@@ -99,6 +100,7 @@ class SwiftKeystone3ObjectStorageBlobStoreBuilderTest implements ObjectStorageBl
         ObjectStorageBlobStoreBuilder.ReadyToBuild builder = ObjectStorageBlobStore
             .builder(testConfig)
             .blobIdFactory(null)
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .namespace(defaultBucketName);
 
         assertThatThrownBy(builder::build).isInstanceOf(IllegalStateException.class);
@@ -112,6 +114,7 @@ class SwiftKeystone3ObjectStorageBlobStoreBuilderTest implements ObjectStorageBl
         ObjectStorageBlobStoreBuilder.ReadyToBuild builder = ObjectStorageBlobStore
             .builder(config)
             .blobIdFactory(new HashBlobId.Factory())
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .namespace(defaultBucketName);
 
         assertBlobStoreCanStoreAndRetrieve(builder);

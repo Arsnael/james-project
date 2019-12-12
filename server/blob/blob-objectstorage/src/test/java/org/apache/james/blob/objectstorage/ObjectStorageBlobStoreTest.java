@@ -88,6 +88,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
         ObjectStorageBlobStoreBuilder.ReadyToBuild blobStoreBuilder = ObjectStorageBlobStore
             .builder(testConfig)
             .blobIdFactory(blobIdFactory)
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .namespace(defaultBucketName);
         blobStore = blobStoreBuilder.getSupplier().get();
         objectStorageBlobStore = blobStoreBuilder.build();
@@ -115,6 +116,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
         ObjectStorageBlobStore encryptedBlobStore = ObjectStorageBlobStore
             .builder(testConfig)
             .blobIdFactory(blobIdFactory())
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .payloadCodec(new AESPayloadCodec(CRYPTO_CONFIG))
             .namespace(defaultBucketName)
             .build();
@@ -131,6 +133,7 @@ public class ObjectStorageBlobStoreTest implements MetricableBlobStoreContract {
         ObjectStorageBlobStore encryptedBlobStore = ObjectStorageBlobStore
             .builder(testConfig)
             .blobIdFactory(blobIdFactory())
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .payloadCodec(new AESPayloadCodec(CRYPTO_CONFIG))
             .namespace(defaultBucketName)
             .build();

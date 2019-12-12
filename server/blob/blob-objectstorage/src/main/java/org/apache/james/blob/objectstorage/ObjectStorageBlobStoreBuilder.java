@@ -32,25 +32,32 @@ import com.google.common.base.Preconditions;
 public class ObjectStorageBlobStoreBuilder {
 
     public static RequireBlobIdFactory forBlobStore(Supplier<BlobStore> supplier) {
-        return blobIdFactory -> new ReadyToBuild(supplier, blobIdFactory);
+        return blobIdFactory -> blobExistenceTester -> new ReadyToBuild(supplier, blobIdFactory, blobExistenceTester);
     }
 
     @FunctionalInterface
     public interface RequireBlobIdFactory {
-        ReadyToBuild blobIdFactory(BlobId.Factory blobIdFactory);
+        RequireBlobExistenceTester blobIdFactory(BlobId.Factory blobIdFactory);
+    }
+
+    @FunctionalInterface
+    public interface RequireBlobExistenceTester {
+        ReadyToBuild blobExistenceTester(BlobExistenceTester blobExistenceTester);
     }
 
     public static class ReadyToBuild {
 
         private final Supplier<BlobStore> supplier;
         private final BlobId.Factory blobIdFactory;
+        private final BlobExistenceTester blobExistenceTester;
         private Optional<PayloadCodec> payloadCodec;
         private Optional<BlobPutter> blobPutter;
         private Optional<BucketName> namespace;
         private Optional<String> bucketPrefix;
 
-        public ReadyToBuild(Supplier<BlobStore> supplier, BlobId.Factory blobIdFactory) {
+        public ReadyToBuild(Supplier<BlobStore> supplier, BlobId.Factory blobIdFactory, BlobExistenceTester blobExistenceTester) {
             this.blobIdFactory = blobIdFactory;
+            this.blobExistenceTester = blobExistenceTester;
             this.payloadCodec = Optional.empty();
             this.supplier = supplier;
             this.blobPutter = Optional.empty();
@@ -108,11 +115,11 @@ public class ObjectStorageBlobStoreBuilder {
                 blobStore,
                 blobPutter.orElseGet(() -> defaultPutBlob(blobStore)),
                 payloadCodec.orElse(PayloadCodec.DEFAULT_CODEC),
-                bucketNameResolver);
+                bucketNameResolver, blobExistenceTester);
         }
 
         private BlobPutter defaultPutBlob(BlobStore blobStore) {
-            return new StreamCompatibleBlobPutter(blobStore);
+            return new StreamCompatibleBlobPutter(blobStore, blobExistenceTester);
         }
 
         @VisibleForTesting

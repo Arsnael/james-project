@@ -43,7 +43,7 @@ public class ObjectStorageBlobStoreAWSPrefixTest implements MetricableBlobStoreC
 
     @BeforeEach
     void setUp(DockerAwsS3Container dockerAwsS3) {
-        awsS3ObjectStorage = new AwsS3ObjectStorage();
+        awsS3ObjectStorage = new AwsS3ObjectStorage(new FakeBlobExistenceTester());
         AwsS3AuthConfiguration configuration = AwsS3AuthConfiguration.builder()
             .endpoint(dockerAwsS3.getEndpoint())
             .accessKeyId(DockerAwsS3Container.ACCESS_KEY_ID)
@@ -53,6 +53,7 @@ public class ObjectStorageBlobStoreAWSPrefixTest implements MetricableBlobStoreC
         ObjectStorageBlobStoreBuilder.ReadyToBuild builder = ObjectStorageBlobStore
             .builder(configuration)
             .blobIdFactory(BLOB_ID_FACTORY)
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .bucketPrefix("prefix")
             .blobPutter(awsS3ObjectStorage.putBlob(configuration));
 

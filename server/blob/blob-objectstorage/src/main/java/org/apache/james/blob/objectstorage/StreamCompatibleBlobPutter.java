@@ -44,9 +44,11 @@ public class StreamCompatibleBlobPutter implements BlobPutter {
     private static final long RETRY_ONE_LAST_TIME_ON_CONCURRENT_SAVING = 1;
 
     private final BlobStore blobStore;
+    private final BlobExistenceTester blobExistenceTester;
 
-    public StreamCompatibleBlobPutter(BlobStore blobStore) {
+    public StreamCompatibleBlobPutter(BlobStore blobStore, BlobExistenceTester blobExistenceTester) {
         this.blobStore = blobStore;
+        this.blobExistenceTester = blobExistenceTester;
     }
 
     @Override
@@ -69,14 +71,18 @@ public class StreamCompatibleBlobPutter implements BlobPutter {
     public Mono<BlobId> putAndComputeId(ObjectStorageBucketName bucketName, Blob initialBlob, Supplier<BlobId> blobIdSupplier) {
         return putDirectly(bucketName, initialBlob)
             .then(Mono.fromCallable(blobIdSupplier::get))
-            .map(blobId -> updateBlobId(bucketName, initialBlob.getMetadata().getName(), blobId));
+            .flatMap(blobId -> updateBlobId(bucketName, initialBlob.getMetadata().getName(), blobId));
     }
 
-    private BlobId updateBlobId(ObjectStorageBucketName bucketName, String from, BlobId to) {
-        String bucketNameAsString = bucketName.asString();
-        blobStore.copyBlob(bucketNameAsString, from, bucketNameAsString, to.asString(), CopyOptions.NONE);
-        blobStore.removeBlob(bucketNameAsString, from);
-        return to;
+    private Mono<BlobId> updateBlobId(ObjectStorageBucketName bucketName, String from, BlobId to) {
+        return blobExistenceTester.exists(bucketName, to)
+            .map(exists -> {
+                if (!exists) {
+                    blobStore.copyBlob(bucketName.asString(), from, bucketName.asString(), to.asString(), CopyOptions.NONE);
+                }
+                blobStore.removeBlob(bucketName.asString(), from);
+                return to;
+            });
     }
 
     private boolean needToCreateBucket(Throwable throwable, ObjectStorageBucketName bucketName) {

@@ -29,7 +29,9 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.HashBlobId;
+import org.apache.james.blob.objectstorage.BlobExistenceTester;
 import org.apache.james.blob.objectstorage.BlobPutter;
+import org.apache.james.blob.objectstorage.FakeBlobExistenceTester;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStoreBuilder;
 import org.apache.james.blob.objectstorage.aws.AwsS3AuthConfiguration;
@@ -47,6 +49,7 @@ public class ObjectStorageDependenciesModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(BlobId.Factory.class).to(HashBlobId.Factory.class).in(Scopes.SINGLETON);
+        bind(BlobExistenceTester.class).to(FakeBlobExistenceTester.class).in(Scopes.SINGLETON);
     }
 
     @Provides
@@ -62,9 +65,13 @@ public class ObjectStorageDependenciesModule extends AbstractModule {
 
     @Provides
     @Singleton
-    private ObjectStorageBlobStore buildObjectStore(ObjectStorageBlobConfiguration configuration, BlobId.Factory blobIdFactory, Provider<AwsS3ObjectStorage> awsS3ObjectStorageProvider) {
+    private ObjectStorageBlobStore buildObjectStore(ObjectStorageBlobConfiguration configuration,
+                                                    BlobId.Factory blobIdFactory,
+                                                    Provider<AwsS3ObjectStorage> awsS3ObjectStorageProvider,
+                                                    BlobExistenceTester blobExistenceTester) {
         ObjectStorageBlobStore blobStore = selectBlobStoreBuilder(configuration)
             .blobIdFactory(blobIdFactory)
+            .blobExistenceTester(blobExistenceTester)
             .payloadCodec(configuration.getPayloadCodec())
             .blobPutter(putBlob(blobIdFactory, configuration, awsS3ObjectStorageProvider))
             .namespace(configuration.getNamespace())

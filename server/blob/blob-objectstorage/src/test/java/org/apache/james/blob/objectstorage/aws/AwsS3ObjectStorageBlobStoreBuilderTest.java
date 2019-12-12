@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
+import org.apache.james.blob.objectstorage.FakeBlobExistenceTester;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStoreBuilder;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStoreContract;
@@ -40,7 +41,7 @@ class AwsS3ObjectStorageBlobStoreBuilderTest implements ObjectStorageBlobStoreCo
 
     @BeforeEach
     void setUp(DockerAwsS3Container dockerAwsS3Container) {
-        awsS3ObjectStorage = new AwsS3ObjectStorage();
+        awsS3ObjectStorage = new AwsS3ObjectStorage(new FakeBlobExistenceTester());
         defaultBucketName = BucketName.of("d1953ef8-cfe8-460b-bc29-3977f5b6656f");
         configuration = AwsS3AuthConfiguration.builder()
             .endpoint(dockerAwsS3Container.getEndpoint())
@@ -64,6 +65,7 @@ class AwsS3ObjectStorageBlobStoreBuilderTest implements ObjectStorageBlobStoreCo
         ObjectStorageBlobStoreBuilder.ReadyToBuild builder = ObjectStorageBlobStore
             .builder(configuration)
             .blobIdFactory(null)
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .namespace(defaultBucketName);
 
         assertThatThrownBy(builder::build).isInstanceOf(IllegalStateException.class);
@@ -74,6 +76,7 @@ class AwsS3ObjectStorageBlobStoreBuilderTest implements ObjectStorageBlobStoreCo
         ObjectStorageBlobStoreBuilder.ReadyToBuild builder = ObjectStorageBlobStore
             .builder(configuration)
             .blobIdFactory(new HashBlobId.Factory())
+            .blobExistenceTester(new FakeBlobExistenceTester())
             .namespace(defaultBucketName)
             .blobPutter(awsS3ObjectStorage.putBlob(configuration));
 
