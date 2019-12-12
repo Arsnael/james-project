@@ -60,10 +60,12 @@ public class AliasMappingTest {
     private static final String DOMAIN = "domain.tld";
 
     private static final String BOB_USER = "bob";
+    private static final String UPPER_CASE_USER = "USER";
     private static final String ALICE_USER = "alice";
     private static final String CEDRIC_USER = "cedric";
 
     private static final String BOB_ADDRESS = BOB_USER + "@" + DOMAIN;
+    private static final String UPPER_CASE_ADDRESS = UPPER_CASE_USER + "@" + DOMAIN;
     private static final String ALICE_ADDRESS = ALICE_USER + "@" + DOMAIN;
     private static final String CEDRIC_ADDRESS = CEDRIC_USER + "@" + DOMAIN;
 
@@ -72,6 +74,7 @@ public class AliasMappingTest {
 
     private static final String BOB_ALIAS = BOB_USER + "-alias@" + DOMAIN;
     private static final String BOB_ALIAS_2 = BOB_USER + "-alias2@" + DOMAIN;
+    private static final String UPPER_CASE_ALIAS = UPPER_CASE_USER + "-ALIAS@" + DOMAIN;
     private static final String GROUP_ALIAS = GROUP + "-alias@" + DOMAIN;
 
     private static final String MESSAGE_CONTENT = "any text";
@@ -103,10 +106,12 @@ public class AliasMappingTest {
         dataProbe.addDomain(DOMAIN);
 
         dataProbe.addUser(BOB_ADDRESS, PASSWORD);
+        dataProbe.addUser(UPPER_CASE_ADDRESS, PASSWORD);
         dataProbe.addUser(ALICE_ADDRESS, PASSWORD);
         dataProbe.addUser(CEDRIC_ADDRESS, PASSWORD);
 
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.inbox(Username.of(BOB_ADDRESS)));
+        jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.inbox(Username.of(UPPER_CASE_ADDRESS)));
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.inbox(Username.of(ALICE_ADDRESS)));
         jamesServer.getProbe(MailboxProbeImpl.class).createMailbox(MailboxPath.inbox(Username.of(CEDRIC_ADDRESS)));
 
@@ -142,15 +147,51 @@ public class AliasMappingTest {
     }
 
     @Test
-    public void messageShouldRedirectToUserWhenSentToHisAliasWithUpperCase() throws Exception {
-        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + BOB_ALIAS);
+    public void messageShouldRedirectToUserWhenSentToHisUpperCaseAlias() throws Exception {
+        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + UPPER_CASE_ALIAS.toLowerCase());
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .sendMessage(FakeMail.builder()
                 .name("name")
                 .mimeMessage(message)
                 .sender(ALICE_ADDRESS)
-                .recipient("BOB-ALIAS@domain.tld"));
+                .recipient(UPPER_CASE_ALIAS));
+
+        imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
+            .login(BOB_ADDRESS, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitMessage(awaitAtMostOneMinute);
+        assertThat(imapMessageReader.readFirstMessage()).contains(MESSAGE_CONTENT);
+    }
+
+    @Test
+    public void messageShouldRedirectToUpperCaseDefinedUserWhenSentToHisLowerCaseAlias() throws Exception {
+        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + UPPER_CASE_ADDRESS + "/sources/" + BOB_ALIAS);
+
+        messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+            .sendMessage(FakeMail.builder()
+                .name("name")
+                .mimeMessage(message)
+                .sender(ALICE_ADDRESS)
+                .recipient(BOB_ALIAS));
+
+        imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
+            .login(UPPER_CASE_ADDRESS, PASSWORD)
+            .select(IMAPMessageReader.INBOX)
+            .awaitMessage(awaitAtMostOneMinute);
+        assertThat(imapMessageReader.readFirstMessage()).contains(MESSAGE_CONTENT);
+    }
+
+    @Test
+    public void messageShouldRedirectToUserWithUpperCaseDefinedAliasWhenSentToHisLowerCaseAlias() throws Exception {
+        webAdminApi.put(AliasRoutes.ROOT_PATH + "/" + BOB_ADDRESS + "/sources/" + UPPER_CASE_ALIAS);
+
+        messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+            .sendMessage(FakeMail.builder()
+                .name("name")
+                .mimeMessage(message)
+                .sender(ALICE_ADDRESS)
+                .recipient(UPPER_CASE_ALIAS.toLowerCase()));
 
         imapMessageReader.connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
             .login(BOB_ADDRESS, PASSWORD)
