@@ -25,6 +25,10 @@ import org.apache.james.blob.api.MetricableBlobStore;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobStore;
 import org.apache.james.blob.cassandra.CassandraDefaultBucketDAO;
+import org.apache.james.blob.objectstorage.BlobExistenceTester;
+import org.apache.james.blob.objectstorage.cassandra.CassandraBlobExistenceModule;
+import org.apache.james.blob.objectstorage.cassandra.CassandraBlobExistenceTester;
+import org.apache.james.blob.objectstorage.cassandra.CassandraBlobExistenceTesterDAO;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -36,12 +40,17 @@ public class CassandraBlobStoreModule extends AbstractModule {
     protected void configure() {
         bind(CassandraDefaultBucketDAO.class).in(Scopes.SINGLETON);
         bind(CassandraBlobStore.class).in(Scopes.SINGLETON);
+        bind(CassandraBlobExistenceTesterDAO.class).in(Scopes.SINGLETON);
+        bind(CassandraBlobExistenceTester.class).in(Scopes.SINGLETON);
 
         bind(BlobStore.class)
             .annotatedWith(Names.named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION))
             .to(CassandraBlobStore.class);
 
+        bind(BlobExistenceTester.class).to(CassandraBlobExistenceTester.class);
+
         Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
         cassandraDataDefinitions.addBinding().toInstance(CassandraBlobModule.MODULE);
+        cassandraDataDefinitions.addBinding().toInstance(CassandraBlobExistenceModule.MODULE);
     }
 }
