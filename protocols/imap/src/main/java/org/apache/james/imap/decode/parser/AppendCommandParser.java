@@ -57,7 +57,7 @@ public class AppendCommandParser extends AbstractImapCommandParser {
 
     /**
      * If the next character in the request is a '"', tries to read a DateTime
-     * argument. If not, returns null.
+     * argument. If not, returns now.
      */
     private LocalDateTime parseDateTime(ImapRequestLineReader request) throws DecodingException {
         char next = request.nextWordChar();
