@@ -17,31 +17,14 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.blob.objectstorage.memory;
+package org.apache.james.blob.objectstorage;
 
-import static org.apache.james.blob.objectstorage.BlobExistenceTesterFixture.BLOB_ID_FACTORY;
+import org.apache.james.blob.api.HashBlobId;
 
-import org.apache.james.blob.api.BlobId;
-import org.apache.james.blob.objectstorage.BlobExistenceTester;
-import org.apache.james.blob.objectstorage.BlobExistenceTesterContract;
-import org.junit.jupiter.api.BeforeEach;
+public interface BlobExistenceTesterFixture {
+    HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
 
-class MemoryBlobExistenceTesterTest implements BlobExistenceTesterContract {
+    ObjectStorageBucketName BUCKET_NAME = ObjectStorageBucketName.of("default_bucket");
 
-    BlobExistenceTester blobExistenceTester;
-
-    @BeforeEach
-    void setUp() {
-        blobExistenceTester = new MemoryBlobExistenceTester();
-    }
-
-    @Override
-    public BlobExistenceTester testee() {
-        return blobExistenceTester;
-    }
-
-    @Override
-    public BlobId.Factory blobIdFactory() {
-        return BLOB_ID_FACTORY;
-    }
+    ObjectStorageBucketName OTHER_BUCKET_NAME = ObjectStorageBucketName.of("other_bucket");
 }

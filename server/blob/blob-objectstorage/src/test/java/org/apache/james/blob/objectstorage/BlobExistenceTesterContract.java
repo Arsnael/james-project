@@ -19,6 +19,8 @@
 
 package org.apache.james.blob.objectstorage;
 
+import static org.apache.james.blob.objectstorage.BlobExistenceTesterFixture.BUCKET_NAME;
+import static org.apache.james.blob.objectstorage.BlobExistenceTesterFixture.OTHER_BUCKET_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,9 +29,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
 public interface BlobExistenceTesterContract {
-    ObjectStorageBucketName BUCKET_NAME = ObjectStorageBucketName.of("default_bucket");
-    ObjectStorageBucketName OTHER_BUCKET_NAME = ObjectStorageBucketName.of("other_bucket");
-
     BlobExistenceTester testee();
 
     BlobId.Factory blobIdFactory();
