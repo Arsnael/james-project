@@ -47,39 +47,31 @@ public class AppendCommandParser extends AbstractImapCommandParser {
      * "flag_list" argument from the request. If not, returns a MessageFlags
      * with no flags set.
      */
-    public Flags optionalAppendFlags(ImapRequestLineReader request) throws DecodingException {
+    private Flags parseFlags(ImapRequestLineReader request) throws DecodingException {
         char next = request.nextWordChar();
         if (next == '(') {
             return request.flagList();
-        } else {
-            return null;
         }
+        return new Flags();
     }
 
     /**
      * If the next character in the request is a '"', tries to read a DateTime
      * argument. If not, returns null.
      */
-    public LocalDateTime optionalDateTime(ImapRequestLineReader request) throws DecodingException {
+    private LocalDateTime parseDateTime(ImapRequestLineReader request) throws DecodingException {
         char next = request.nextWordChar();
         if (next == '"') {
             return request.dateTime();
-        } else {
-            return null;
         }
+        return LocalDateTime.now();
     }
 
     @Override
     protected ImapMessage decode(ImapRequestLineReader request, Tag tag, ImapSession session) throws DecodingException {
         String mailboxName = request.mailbox();
-        Flags flags = optionalAppendFlags(request);
-        if (flags == null) {
-            flags = new Flags();
-        }
-        LocalDateTime datetime = optionalDateTime(request);
-        if (datetime == null) {
-            datetime = LocalDateTime.now();
-        }
+        Flags flags = parseFlags(request);
+        LocalDateTime datetime = parseDateTime(request);
         request.nextWordChar();
 
         return new AppendRequest(mailboxName, flags, Date.from(datetime.atZone(ZoneId.systemDefault()).toInstant()), request.consumeLiteral(true), tag);
