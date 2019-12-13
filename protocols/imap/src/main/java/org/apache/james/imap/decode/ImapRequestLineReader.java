@@ -815,7 +815,7 @@ public abstract class ImapRequestLineReader {
         boolean isValid(char chr);
     }
 
-    public static class StringValidator implements ImapRequestLineReader.CharacterValidator {
+    public static class StringValidator implements CharacterValidator {
         private final byte[] expectedStringAsBytes;
         private int position = 0;
 
