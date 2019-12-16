@@ -25,6 +25,7 @@ import org.apache.james.modules.DistributedTaskManagerModule;
 import org.apache.james.modules.TaskSerializationModule;
 import org.apache.james.modules.blobstore.BlobStoreChoosingModule;
 import org.apache.james.modules.event.RabbitMQEventBusModule;
+import org.apache.james.modules.objectstorage.CassandraBlobExistenceTesterModule;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.JMXServerModule;
 import org.apache.james.server.core.configuration.Configuration;
@@ -33,10 +34,13 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 public class CassandraRabbitMQJamesServerMain {
-    public static final Module MODULES =
-        Modules
-            .override(Modules.combine(REQUIRE_TASK_MANAGER_MODULE, new DistributedTaskManagerModule()))
-            .with(new RabbitMQModule(), new BlobStoreChoosingModule(), new RabbitMQEventBusModule(), new TaskSerializationModule());
+    public static final Module MODULES = Modules
+        .override(Modules.combine(REQUIRE_TASK_MANAGER_MODULE, new DistributedTaskManagerModule()))
+        .with(new RabbitMQModule(),
+            new BlobStoreChoosingModule(),
+            new CassandraBlobExistenceTesterModule(),
+            new RabbitMQEventBusModule(),
+            new TaskSerializationModule());
 
     public static void main(String[] args) throws Exception {
         Configuration configuration = Configuration.builder()

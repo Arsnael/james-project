@@ -17,31 +17,25 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules.mailbox;
+package org.apache.james.modules.objectstorage;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
-import org.apache.james.blob.api.BlobStore;
-import org.apache.james.blob.api.MetricableBlobStore;
-import org.apache.james.blob.cassandra.CassandraBlobModule;
-import org.apache.james.blob.cassandra.CassandraBlobStore;
-import org.apache.james.blob.cassandra.CassandraDefaultBucketDAO;
+import org.apache.james.blob.objectstorage.BlobExistenceTester;
+import org.apache.james.blob.objectstorage.cassandra.CassandraBlobExistenceModule;
+import org.apache.james.blob.objectstorage.cassandra.CassandraBlobExistenceTester;
+import org.apache.james.blob.objectstorage.cassandra.CassandraBlobExistenceTesterDAO;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
 
-public class CassandraBlobStoreModule extends AbstractModule {
+public class CassandraBlobExistenceTesterModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(CassandraDefaultBucketDAO.class).in(Scopes.SINGLETON);
-        bind(CassandraBlobStore.class).in(Scopes.SINGLETON);
-
-        bind(BlobStore.class)
-            .annotatedWith(Names.named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION))
-            .to(CassandraBlobStore.class);
+        bind(CassandraBlobExistenceTesterDAO.class).in(Scopes.SINGLETON);
+        bind(BlobExistenceTester.class).to(CassandraBlobExistenceTester.class).in(Scopes.SINGLETON);
 
         Multibinder<CassandraModule> cassandraDataDefinitions = Multibinder.newSetBinder(binder(), CassandraModule.class);
-        cassandraDataDefinitions.addBinding().toInstance(CassandraBlobModule.MODULE);
+        cassandraDataDefinitions.addBinding().toInstance(CassandraBlobExistenceModule.MODULE);
     }
 }

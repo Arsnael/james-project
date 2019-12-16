@@ -31,7 +31,6 @@ import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.objectstorage.BlobExistenceTester;
 import org.apache.james.blob.objectstorage.BlobPutter;
-import org.apache.james.blob.objectstorage.FakeBlobExistenceTester;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobStoreBuilder;
 import org.apache.james.blob.objectstorage.aws.AwsS3AuthConfiguration;
@@ -49,7 +48,6 @@ public class ObjectStorageDependenciesModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(BlobId.Factory.class).to(HashBlobId.Factory.class).in(Scopes.SINGLETON);
-        bind(BlobExistenceTester.class).to(FakeBlobExistenceTester.class).in(Scopes.SINGLETON);
     }
 
     @Provides

@@ -28,8 +28,10 @@ import java.util.stream.Stream;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.MetricableBlobStore;
+import org.apache.james.blob.objectstorage.BlobExistenceTester;
 import org.apache.james.blob.objectstorage.DockerSwift;
 import org.apache.james.blob.objectstorage.DockerSwiftExtension;
+import org.apache.james.blob.objectstorage.FakeBlobExistenceTester;
 import org.apache.james.blob.objectstorage.swift.Credentials;
 import org.apache.james.blob.objectstorage.swift.DomainName;
 import org.apache.james.blob.objectstorage.swift.IdentityV3;
@@ -133,7 +135,10 @@ class ObjectStorageBlobStoreModuleTest {
         Injector injector = Guice.createInjector(
             Modules
                 .override(new ObjectStorageBlobStoreModule())
-                .with(binder -> binder.bind(ObjectStorageBlobConfiguration.class).toInstance(configuration)));
+                .with(binder -> {
+                    binder.bind(ObjectStorageBlobConfiguration.class).toInstance(configuration);
+                    binder.bind(BlobExistenceTester.class).to(FakeBlobExistenceTester.class);
+                }));
 
         BlobStore blobStore = injector.getInstance(Key.get(BlobStore.class, Names.named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION)));
 
