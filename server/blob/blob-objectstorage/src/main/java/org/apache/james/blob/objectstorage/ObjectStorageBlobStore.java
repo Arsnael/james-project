@@ -41,8 +41,6 @@ import org.apache.james.blob.objectstorage.swift.SwiftTempAuthObjectStorage;
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.jclouds.blobstore.domain.StorageType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -55,7 +53,6 @@ import reactor.core.scheduler.Schedulers;
 
 public class ObjectStorageBlobStore implements BlobStore {
     private static final int BUFFERED_SIZE = 256 * 1024;
-    public static final Logger LOGGER = LoggerFactory.getLogger(ObjectStorageBlobStore.class);
 
     private final BlobId.Factory blobIdFactory;
 
@@ -116,16 +113,14 @@ public class ObjectStorageBlobStore implements BlobStore {
     }
 
     private Mono<BlobId> save(ObjectStorageBucketName resolvedBucketName, BlobId blobId, byte[] data) {
-        Payload payload = payloadCodec.write(data);
-
-        Blob blob = blobStore.blobBuilder(blobId.asString())
-            .payload(payload.getPayload())
-            .contentLength(payload.getLength().orElse(Long.valueOf(data.length)))
-            .build();
-
-        return blobPutter.putDirectly(resolvedBucketName, blob)
-            .flatMap(any -> blobExistenceTester.persist(resolvedBucketName, blobId))
-            .thenReturn(blobId);
+        return Mono.fromCallable(() -> payloadCodec.write(data))
+            .map(payload -> blobStore.blobBuilder(blobId.asString())
+                .payload(payload.getPayload())
+                .contentLength(payload.getLength().orElse(Long.valueOf(data.length)))
+                .build())
+            .flatMap(blob -> blobPutter.putDirectly(resolvedBucketName, blob)
+                .flatMap(any -> blobExistenceTester.persist(resolvedBucketName, blobId))
+                .thenReturn(blobId));
     }
 
     @Override
