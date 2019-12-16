@@ -35,6 +35,6 @@ public interface CassandraBlobExistenceModule {
                 SchemaBuilder.rows(CassandraConstants.DEFAULT_CACHED_ROW_PER_PARTITION)))
         .statement(statement -> statement
             .addPartitionKey(CassandraBlobExistenceTesterTable.BUCKET_NAME, text())
-            .addClusteringColumn(CassandraBlobExistenceTesterTable.BLOB_ID, text()))
+            .addPartitionKey(CassandraBlobExistenceTesterTable.BLOB_ID, text()))
         .build();
 }

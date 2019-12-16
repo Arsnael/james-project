@@ -74,7 +74,8 @@ public class CassandraBlobExistenceTesterDAO {
     private PreparedStatement prepareSelectBucket(Session session) {
         return session.prepare(select()
             .from(TABLE_NAME)
-            .where(eq(BUCKET_NAME, bindMarker(BUCKET_NAME))));
+            .where(eq(BUCKET_NAME, bindMarker(BUCKET_NAME)))
+            .allowFiltering());
     }
 
     private PreparedStatement prepareDelete(Session session) {

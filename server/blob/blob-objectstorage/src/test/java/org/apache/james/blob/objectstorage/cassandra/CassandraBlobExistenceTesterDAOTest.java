@@ -117,7 +117,7 @@ class CassandraBlobExistenceTesterDAOTest {
         testee.addBlobExistence(BUCKET_NAME, blobId2).block();
 
         assertThat(testee.getBucketBlobIds(BUCKET_NAME).collectList().block())
-            .containsExactly(blobId1, blobId2);
+            .containsOnly(blobId1, blobId2);
     }
 
     @Test
