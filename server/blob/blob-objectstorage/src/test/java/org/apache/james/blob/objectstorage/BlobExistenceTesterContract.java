@@ -90,6 +90,17 @@ public interface BlobExistenceTesterContract {
     }
 
     @Test
+    default void persistShouldBeIdempotent() {
+        BlobId blobId = blobIdFactory().from("12345");
+
+        testee().persist(BUCKET_NAME, blobId).block();
+        testee().persist(BUCKET_NAME, blobId).block();
+
+        assertThat(testee().exists(BUCKET_NAME, blobId).block())
+            .isEqualTo(true);
+    }
+
+    @Test
     default void deleteShouldThrowWhenNullBucketName() {
         assertThatThrownBy(() -> testee().delete(null, blobIdFactory().randomId()).block())
             .isInstanceOf(NullPointerException.class);
@@ -167,7 +178,7 @@ public interface BlobExistenceTesterContract {
     }
 
     @Test
-    default void deleteBucketShouldDeleteBucket() {
+    default void deleteBucketShouldDeleteBlobIdsReferencedInTheBucket() {
         BlobId blobId = blobIdFactory().from("12345");
         testee().persist(BUCKET_NAME, blobId).block();
 
