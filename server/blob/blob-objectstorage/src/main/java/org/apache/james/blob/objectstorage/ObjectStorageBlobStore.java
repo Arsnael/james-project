@@ -119,6 +119,7 @@ public class ObjectStorageBlobStore implements BlobStore {
                 .contentLength(payload.getLength().orElse(Long.valueOf(data.length)))
                 .build())
             .flatMap(blob -> blobPutter.putDirectly(resolvedBucketName, blob)
+                .publishOn(Schedulers.elastic())
                 .flatMap(any -> blobExistenceTester.persist(resolvedBucketName, blobId))
                 .thenReturn(blobId));
     }
@@ -164,6 +165,7 @@ public class ObjectStorageBlobStore implements BlobStore {
 
                 Supplier<BlobId> blobIdSupplier = () -> blobIdFactory.from(hashingInputStream.hash().toString());
                 return blobPutter.putAndComputeId(resolvedBucketName, blob, blobIdSupplier)
+                    .publishOn(Schedulers.elastic())
                     .flatMap(blobId -> blobExistenceTester.persist(resolvedBucketName, blobId)
                         .thenReturn(blobId));
             });
