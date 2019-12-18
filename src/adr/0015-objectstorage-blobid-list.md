@@ -4,9 +4,7 @@ Date: 2019-10-09
 
 ## Status
 
-Proposed
-
-Adoption needs to be backed by some performance tests.
+Accepted (lazy consensus)
 
 ## Context
 
@@ -48,7 +46,11 @@ We expect to reduce the amount of writes to the object storage. This is expected
 As id persistence in StoredBlobIdsList will be done once the blob successfully saved, inconsistencies in StoredBlobIdsList
 will lead to duplicated saved blobs, which is the current behaviour.
 
-In case of a less than 5% improvement, the code will not be added to the codebase and the proposal will get the status 'rejected'.
+In order to back this proposal with performance data, we did run the following test before and after the changeset of this proposal:
+ - Send ~10KB mails in parallel to 4 to 8 recipients
+ - Testing setup: distributed james server with James, Cassandra, ElasticSearch, Swift and RabbitMQ on the same server
+
+We noticed a +28% improvement in enqueue throughput and a +54% improvement in dequeue.
 
 ## Reference
 
@@ -57,3 +59,7 @@ Previous optimization proposal using blob existence checks before persist. This 
 https://github.com/linagora/james-project/pull/2011 (V2)
 
  - [JIRA](https://issues.apache.org/jira/browse/JAMES-2921)
+
+Here is the proof on concept pull request along with detailed performance evaluation and graphs:
+
+ - [POC](https://github.com/linagora/james-project/pull/2999)
