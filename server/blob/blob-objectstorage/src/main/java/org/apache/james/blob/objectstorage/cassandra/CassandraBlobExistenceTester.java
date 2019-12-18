@@ -33,7 +33,7 @@ public class CassandraBlobExistenceTester implements BlobExistenceTester {
     private final CassandraBlobExistenceTesterDAO cassandraBlobExistenceTesterDAO;
 
     @Inject
-    CassandraBlobExistenceTester(CassandraBlobExistenceTesterDAO cassandraBlobExistenceTesterDAO) {
+    public CassandraBlobExistenceTester(CassandraBlobExistenceTesterDAO cassandraBlobExistenceTesterDAO) {
         this.cassandraBlobExistenceTesterDAO = cassandraBlobExistenceTesterDAO;
     }
 

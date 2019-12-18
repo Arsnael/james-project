@@ -49,7 +49,7 @@ public class CassandraBlobExistenceTesterDAO {
     private final PreparedStatement delete;
 
     @Inject
-    CassandraBlobExistenceTesterDAO(BlobId.Factory blobIdFactory, Session session) {
+    public CassandraBlobExistenceTesterDAO(BlobId.Factory blobIdFactory, Session session) {
         this.blobIdFactory = blobIdFactory;
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         this.insert = prepareInsert(session);

@@ -111,7 +111,7 @@ public class ConcurrentTestRunner implements Closeable {
 
     @FunctionalInterface
     public interface ReactorOperation {
-        Publisher<Void> execute(int threadNumber, int step) throws Exception;
+        Publisher<?> execute(int threadNumber, int step) throws Exception;
 
         default ConcurrentOperation blocking() {
             return (threadNumber, step) -> Mono.from(execute(threadNumber, step))
