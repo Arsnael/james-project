@@ -156,17 +156,18 @@ public class AwsS3ObjectStorage {
 
         @Override
         public Mono<BlobId> putAndComputeId(ObjectStorageBucketName bucketName, Blob initialBlob, Supplier<BlobId> blobIdSupplier) {
-            Function<File, Mono<Void>> putChangedBlob = file -> {
-                BlobId blobId = blobIdSupplier.get();
-                initialBlob.getMetadata().setName(blobId.asString());
-                return blobExistenceTester.exists(bucketName, blobId)
-                    .flatMap(exists -> {
-                        if (exists) {
-                            return Mono.empty();
-                        }
-                        return putWithRetry(bucketName, configuration, initialBlob, file);
-                    });
-            };
+            Function<File, Mono<Void>> putChangedBlob = file -> Mono.fromSupplier(blobIdSupplier)
+                .flatMap(blobId -> {
+                    initialBlob.getMetadata().setName(blobId.asString());
+                    return blobExistenceTester.exists(bucketName, blobId)
+                        .flatMap(exists -> {
+                            if (exists) {
+                                return Mono.empty();
+                            }
+                            return putWithRetry(bucketName, configuration, initialBlob, file);
+                        });
+                });
+
             return writeFileAndAct(initialBlob, putChangedBlob)
                 .then(Mono.fromCallable(blobIdSupplier::get));
         }
