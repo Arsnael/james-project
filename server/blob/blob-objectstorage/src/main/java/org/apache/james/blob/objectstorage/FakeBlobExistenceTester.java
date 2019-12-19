@@ -40,7 +40,7 @@ public class FakeBlobExistenceTester implements BlobExistenceTester {
     }
 
     @Override
-    public Mono<Void> deleteBucket(ObjectStorageBucketName bucketName) {
+    public Mono<Void> truncateData() {
         return Mono.empty();
     }
 }

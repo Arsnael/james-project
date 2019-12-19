@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.blob.api.BlobId;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -94,52 +95,26 @@ class CassandraBlobExistenceTesterDAOTest {
     }
 
     @Test
-    void getBucketBlobIdsShouldReturnEmptyWhenNoBucket() {
-        assertThat(testee.getBucketBlobIds(BUCKET_NAME).collectList().block())
-            .isEmpty();
+    void truncateDataShouldNotThrowWhenNoData() {
+        assertThatCode(() -> testee.truncateData().block())
+            .doesNotThrowAnyException();
     }
 
     @Test
-    void getBucketBlobIdsShouldReturnBlobIdFromCorrespondingBucket() {
-        BlobId blobId = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId).block();
-
-        assertThat(testee.getBucketBlobIds(BUCKET_NAME).collectList().block())
-            .containsExactly(blobId);
-    }
-
-    @Test
-    void getBucketBlobIdsShouldReturnMultipleBlobIdsFromCorrespondingBucket() {
+    void truncateDataShouldDeleteAllBlobIds() {
         BlobId blobId1 = BLOB_ID_FACTORY.from("12345");
         testee.addBlobExistence(BUCKET_NAME, blobId1).block();
 
         BlobId blobId2 = BLOB_ID_FACTORY.from("67890");
-        testee.addBlobExistence(BUCKET_NAME, blobId2).block();
-
-        assertThat(testee.getBucketBlobIds(BUCKET_NAME).collectList().block())
-            .containsOnly(blobId1, blobId2);
-    }
-
-    @Test
-    void getBucketBlobIdsShouldNotReturnBlobIdsFromOtherBuckets() {
-        BlobId blobId1 = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId1).block();
-
-        BlobId blobId2 = BLOB_ID_FACTORY.from("12345");
         testee.addBlobExistence(OTHER_BUCKET_NAME, blobId2).block();
 
-        assertThat(testee.getBucketBlobIds(BUCKET_NAME).collectList().block())
-            .containsExactly(blobId1);
-    }
+        testee.truncateData().block();
 
-    @Test
-    void getBucketBlobIdsShouldNotReturnDeletedBlobId() {
-        BlobId blobId1 = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId1).block();
-
-        testee.removeBlobExistence(BUCKET_NAME, blobId1).block();
-
-        assertThat(testee.getBucketBlobIds(BUCKET_NAME).collectList().block())
-            .isEmpty();
+        SoftAssertions.assertSoftly(softly -> {
+            assertThat(testee.hasBlobExistence(BUCKET_NAME, blobId1).block())
+                .isEqualTo(false);
+            assertThat(testee.hasBlobExistence(OTHER_BUCKET_NAME, blobId2).block())
+                .isEqualTo(false);
+        });
     }
 }

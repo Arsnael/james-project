@@ -24,6 +24,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.truncate;
 import static org.apache.james.blob.objectstorage.cassandra.table.CassandraBlobExistenceTesterTable.BLOB_ID;
 import static org.apache.james.blob.objectstorage.cassandra.table.CassandraBlobExistenceTesterTable.BUCKET_NAME;
 import static org.apache.james.blob.objectstorage.cassandra.table.CassandraBlobExistenceTesterTable.TABLE_NAME;
@@ -37,7 +38,6 @@ import org.apache.james.blob.objectstorage.ObjectStorageBucketName;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CassandraBlobExistenceTesterDAO {
@@ -45,8 +45,8 @@ public class CassandraBlobExistenceTesterDAO {
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement insert;
     private final PreparedStatement select;
-    private final PreparedStatement selectBucket;
     private final PreparedStatement delete;
+    private final PreparedStatement truncateStatement;
 
     @Inject
     public CassandraBlobExistenceTesterDAO(BlobId.Factory blobIdFactory, Session session) {
@@ -54,8 +54,8 @@ public class CassandraBlobExistenceTesterDAO {
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         this.insert = prepareInsert(session);
         this.select = prepareSelect(session);
-        this.selectBucket = prepareSelectBucket(session);
         this.delete = prepareDelete(session);
+        this.truncateStatement = prepareTruncate(session);
     }
 
     private PreparedStatement prepareInsert(Session session) {
@@ -71,18 +71,15 @@ public class CassandraBlobExistenceTesterDAO {
             .and(eq(BLOB_ID, bindMarker(BLOB_ID))));
     }
 
-    private PreparedStatement prepareSelectBucket(Session session) {
-        return session.prepare(select()
-            .from(TABLE_NAME)
-            .where(eq(BUCKET_NAME, bindMarker(BUCKET_NAME)))
-            .allowFiltering());
-    }
-
     private PreparedStatement prepareDelete(Session session) {
         return session.prepare(delete()
             .from(TABLE_NAME)
             .where(eq(BUCKET_NAME, bindMarker(BUCKET_NAME)))
             .and(eq(BLOB_ID, bindMarker(BLOB_ID))));
+    }
+
+    private PreparedStatement prepareTruncate(Session session) {
+        return session.prepare(truncate(TABLE_NAME));
     }
 
     Mono<Void> addBlobExistence(ObjectStorageBucketName bucketName, BlobId blobId) {
@@ -105,9 +102,7 @@ public class CassandraBlobExistenceTesterDAO {
             .defaultIfEmpty(false);
     }
 
-    Flux<BlobId> getBucketBlobIds(ObjectStorageBucketName bucketName) {
-        return cassandraAsyncExecutor.executeRows(selectBucket.bind()
-                .setString(BUCKET_NAME, bucketName.asString()))
-            .map(row -> blobIdFactory.from(row.getString(BLOB_ID)));
+    Mono<Void> truncateData() {
+        return cassandraAsyncExecutor.executeVoid(truncateStatement.bind());
     }
 }

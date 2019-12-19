@@ -126,7 +126,7 @@ class CassandraBlobExistenceTesterIntegrationTest implements MetricableBlobStore
             .runSuccessfullyWithin(Duration.ofMinutes(2));
 
         // As the number of operation is odd, all threads end by adding the blob
-        //Hence we are guarantied the blob exists
+        // Hence we are guarantied the blob exists
 
         assertThat(testee().read(defaultBucketName, blobId))
             .hasSameContentAs(new ByteArrayInputStream(SHORT_BYTEARRAY));

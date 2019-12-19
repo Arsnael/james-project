@@ -59,12 +59,8 @@ public class CassandraBlobExistenceTester implements BlobExistenceTester {
     }
 
     @Override
-    public Mono<Void> deleteBucket(ObjectStorageBucketName bucketName) {
-        Preconditions.checkNotNull(bucketName, "The bucketName can't be null");
-
-        return cassandraBlobExistenceTesterDAO.getBucketBlobIds(bucketName)
-            .flatMap(blobId -> delete(bucketName, blobId))
-            .then();
+    public Mono<Void> truncateData() {
+        return cassandraBlobExistenceTesterDAO.truncateData();
     }
 
     private void preconditionsChecks(ObjectStorageBucketName bucketName, BlobId blobId) {

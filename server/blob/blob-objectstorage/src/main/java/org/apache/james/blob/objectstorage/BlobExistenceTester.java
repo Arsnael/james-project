@@ -43,5 +43,5 @@ public interface BlobExistenceTester {
 
     Mono<Void> delete(ObjectStorageBucketName bucketName, BlobId blobId);
 
-    Mono<Void> deleteBucket(ObjectStorageBucketName bucketName);
+    Mono<Void> truncateData();
 }
