@@ -35,7 +35,7 @@ public interface BlobExistenceTesterContract {
 
     @Test
     default void existsShouldThrowWhenNullBucketName() {
-        assertThatThrownBy(() -> testee().exists(null, blobIdFactory().randomId()).block())
+        assertThatThrownBy(() -> testee().exists(null, blobIdFactory().from("12345")).block())
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -47,7 +47,7 @@ public interface BlobExistenceTesterContract {
 
     @Test
     default void existsShouldReturnFalseWhenNonExistingPair() {
-        assertThat(testee().exists(BUCKET_NAME, blobIdFactory().randomId()).block())
+        assertThat(testee().exists(BUCKET_NAME, blobIdFactory().from("12345")).block())
             .isEqualTo(false);
     }
 
@@ -55,7 +55,7 @@ public interface BlobExistenceTesterContract {
     default void existsShouldReturnFalseWhenExistingBucketNameAndNotBlobId() {
         testee().persist(BUCKET_NAME, blobIdFactory().from("12345")).block();
 
-        assertThat(testee().exists(BUCKET_NAME, blobIdFactory().randomId()).block())
+        assertThat(testee().exists(BUCKET_NAME, blobIdFactory().from("67890")).block())
             .isEqualTo(false);
     }
 
@@ -79,7 +79,7 @@ public interface BlobExistenceTesterContract {
 
     @Test
     default void persistShouldThrowWhenNullBucketName() {
-        assertThatThrownBy(() -> testee().persist(null, blobIdFactory().randomId()).block())
+        assertThatThrownBy(() -> testee().persist(null, blobIdFactory().from("12345")).block())
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -102,7 +102,7 @@ public interface BlobExistenceTesterContract {
 
     @Test
     default void deleteShouldThrowWhenNullBucketName() {
-        assertThatThrownBy(() -> testee().delete(null, blobIdFactory().randomId()).block())
+        assertThatThrownBy(() -> testee().delete(null, blobIdFactory().from("12345")).block())
             .isInstanceOf(NullPointerException.class);
     }
 
