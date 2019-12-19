@@ -156,23 +156,23 @@ public class AwsS3ObjectStorage {
 
         @Override
         public Mono<BlobId> putAndComputeId(ObjectStorageBucketName bucketName, Blob initialBlob, Supplier<BlobId> blobIdSupplier) {
-            Function<File, Mono<Void>> putChangedBlob = file -> Mono.fromSupplier(blobIdSupplier)
+            Function<File, Mono<BlobId>> putChangedBlob = file -> Mono.fromSupplier(blobIdSupplier)
                 .flatMap(blobId -> {
                     initialBlob.getMetadata().setName(blobId.asString());
                     return blobExistenceTester.exists(bucketName, blobId)
                         .flatMap(exists -> {
                             if (exists) {
-                                return Mono.empty();
+                                return Mono.just(blobId);
                             }
-                            return putWithRetry(bucketName, configuration, initialBlob, file);
+                            return putWithRetry(bucketName, configuration, initialBlob, file)
+                                .thenReturn(blobId);
                         });
                 });
 
-            return writeFileAndAct(initialBlob, putChangedBlob)
-                .then(Mono.fromCallable(blobIdSupplier::get));
+            return writeFileAndAct(initialBlob, putChangedBlob);
         }
 
-        private Mono<Void> writeFileAndAct(Blob blob, Function<File, Mono<Void>> putFile) {
+        private <T> Mono<T> writeFileAndAct(Blob blob, Function<File, Mono<T>> putFile) {
             return Mono.using(
                 () -> {
                     File file = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
@@ -180,8 +180,7 @@ public class AwsS3ObjectStorage {
                     return file;
                 },
                 putFile::apply,
-                FileUtils::deleteQuietly
-            );
+                FileUtils::deleteQuietly);
         }
 
         private Mono<Void> putWithRetry(ObjectStorageBucketName bucketName, AwsS3AuthConfiguration configuration, Blob blob, File file) {
