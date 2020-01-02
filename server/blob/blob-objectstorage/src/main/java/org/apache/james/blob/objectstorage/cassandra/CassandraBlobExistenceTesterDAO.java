@@ -93,11 +93,9 @@ public class CassandraBlobExistenceTesterDAO {
     }
 
     Mono<Boolean> hasBlobExistence(ObjectStorageBucketName bucketName, BlobId blobId) {
-        return cassandraAsyncExecutor.executeSingleRow(select.bind()
+        return cassandraAsyncExecutor.executeReturnExists(select.bind()
                 .setString(BUCKET_NAME, bucketName.asString())
-                .setString(BLOB_ID, blobId.asString()))
-            .map(any -> true)
-            .defaultIfEmpty(false);
+                .setString(BLOB_ID, blobId.asString()));
     }
 
     Mono<Void> truncateData() {
