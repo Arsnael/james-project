@@ -198,8 +198,9 @@ public class ObjectStorageBlobStore implements BlobStore {
     @Override
     public Mono<Void> deleteBucket(BucketName bucketName) {
         ObjectStorageBucketName resolvedBucketName = bucketNameResolver.resolve(bucketName);
-        return Mono.<Void>fromRunnable(() -> blobStore.deleteContainer(resolvedBucketName.asString()))
-            .then(blobExistenceTester.deleteBucket(resolvedBucketName))
+
+        return blobExistenceTester.deleteBucket(resolvedBucketName)
+            .then(Mono.<Void>fromRunnable(() -> blobStore.deleteContainer(resolvedBucketName.asString())))
             .subscribeOn(Schedulers.elastic());
     }
 
@@ -220,8 +221,9 @@ public class ObjectStorageBlobStore implements BlobStore {
     @Override
     public Mono<Void> delete(BucketName bucketName, BlobId blobId) {
         ObjectStorageBucketName resolvedBucketName = bucketNameResolver.resolve(bucketName);
-        return Mono.<Void>fromRunnable(() -> blobStore.removeBlob(resolvedBucketName.asString(), blobId.asString()))
-            .then(blobExistenceTester.delete(resolvedBucketName, blobId))
+
+        return blobExistenceTester.delete(resolvedBucketName, blobId)
+            .then(Mono.<Void>fromRunnable(() -> blobStore.removeBlob(resolvedBucketName.asString(), blobId.asString())))
             .subscribeOn(Schedulers.elastic());
     }
 }
