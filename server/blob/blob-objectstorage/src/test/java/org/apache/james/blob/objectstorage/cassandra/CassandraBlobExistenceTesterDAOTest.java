@@ -42,7 +42,7 @@ class CassandraBlobExistenceTesterDAOTest {
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
-        testee = new CassandraBlobExistenceTesterDAO(BLOB_ID_FACTORY, cassandra.getConf());
+        testee = new CassandraBlobExistenceTesterDAO(cassandra.getConf());
     }
 
     @Test

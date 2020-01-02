@@ -66,7 +66,7 @@ class CassandraBlobExistenceTesterIntegrationTest implements MetricableBlobStore
 
     @BeforeEach
     void setUp(DockerAwsS3Container dockerAwsS3, CassandraCluster cassandra) {
-        CassandraBlobExistenceTesterDAO blobExistenceTesterDAO = new CassandraBlobExistenceTesterDAO(BLOB_ID_FACTORY, cassandra.getConf());
+        CassandraBlobExistenceTesterDAO blobExistenceTesterDAO = new CassandraBlobExistenceTesterDAO(cassandra.getConf());
         cassandraBlobExistenceTester = new CassandraBlobExistenceTester(blobExistenceTesterDAO);
         awsS3ObjectStorage = new AwsS3ObjectStorage(new FakeBlobExistenceTester());
         AwsS3AuthConfiguration configuration = AwsS3AuthConfiguration.builder()
@@ -298,7 +298,7 @@ class CassandraBlobExistenceTesterIntegrationTest implements MetricableBlobStore
             .runSuccessfullyWithin(Duration.ofMinutes(2));
 
         // As the number of operation is odd, all threads end by adding the blob
-        // Hence we are guarantied the blob exists
+        //Hence we are guarantied the blob exists
 
         assertThat(testee().read(defaultBucketName, blobId))
             .hasSameContentAs(new ByteArrayInputStream(SHORT_BYTEARRAY));

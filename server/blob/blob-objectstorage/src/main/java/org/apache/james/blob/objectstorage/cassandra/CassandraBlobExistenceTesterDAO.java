@@ -41,7 +41,6 @@ import com.datastax.driver.core.Session;
 import reactor.core.publisher.Mono;
 
 public class CassandraBlobExistenceTesterDAO {
-    private final BlobId.Factory blobIdFactory;
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement insert;
     private final PreparedStatement select;
@@ -49,8 +48,7 @@ public class CassandraBlobExistenceTesterDAO {
     private final PreparedStatement truncateStatement;
 
     @Inject
-    public CassandraBlobExistenceTesterDAO(BlobId.Factory blobIdFactory, Session session) {
-        this.blobIdFactory = blobIdFactory;
+    public CassandraBlobExistenceTesterDAO(Session session) {
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         this.insert = prepareInsert(session);
         this.select = prepareSelect(session);

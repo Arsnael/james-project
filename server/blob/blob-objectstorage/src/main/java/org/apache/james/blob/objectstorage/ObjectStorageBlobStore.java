@@ -201,7 +201,7 @@ public class ObjectStorageBlobStore implements BlobStore {
     public Mono<Void> deleteBucket(BucketName bucketName) {
         ObjectStorageBucketName resolvedBucketName = bucketNameResolver.resolve(bucketName);
         return Mono.<Void>fromRunnable(() -> blobStore.deleteContainer(resolvedBucketName.asString()))
-            .then(blobExistenceTester.truncateData()) // We truncate the all table here to avoid a full scan on it
+            .then(blobExistenceTester.deleteBucket(resolvedBucketName))
             .subscribeOn(Schedulers.elastic());
     }
 

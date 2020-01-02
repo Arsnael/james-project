@@ -59,8 +59,10 @@ public class MemoryBlobExistenceTester implements BlobExistenceTester {
     }
 
     @Override
-    public Mono<Void> truncateData() {
-        return Mono.fromRunnable(blobIds::clear);
+    public Mono<Void> deleteBucket(ObjectStorageBucketName bucketName) {
+        Preconditions.checkNotNull(bucketName, "The bucketName can't be null");
+
+        return Mono.fromRunnable(() -> blobIds.removeAll(bucketName));
     }
 
     private void preconditionsChecks(ObjectStorageBucketName bucketName, BlobId blobId) {

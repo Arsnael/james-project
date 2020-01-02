@@ -172,37 +172,43 @@ public interface BlobExistenceTesterContract {
     }
 
     @Test
-    default void truncateDataShouldDeleteData() {
+    default void deleteBucketShouldThrowWhenNullBucketName() {
+        assertThatThrownBy(() -> testee().deleteBucket(null).block())
+            .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    default void deleteBucketShouldDeleteBlobIdsReferencedInTheBucket() {
         BlobId blobId = blobIdFactory().from("12345");
         testee().persist(BUCKET_NAME, blobId).block();
 
-        testee().truncateData().block();
+        testee().deleteBucket(BUCKET_NAME).block();
 
         assertThat(testee().exists(BUCKET_NAME, blobId).block())
             .isEqualTo(false);
     }
 
     @Test
-    default void truncateDataShouldBeIdempotent() {
+    default void deleteBucketShouldBeIdempotent() {
         BlobId blobId = blobIdFactory().from("12345");
         testee().persist(BUCKET_NAME, blobId).block();
 
-        testee().truncateData().block();
-        testee().truncateData().block();
+        testee().deleteBucket(BUCKET_NAME).block();
+        testee().deleteBucket(BUCKET_NAME).block();
 
         assertThat(testee().exists(BUCKET_NAME, blobId).block())
             .isEqualTo(false);
     }
 
     @Test
-    default void truncateDataShouldDeleteAllDataOfABucket() {
+    default void deleteBucketShouldDeleteAllEntriesOfABucket() {
         BlobId blobId1 = blobIdFactory().from("12345");
         testee().persist(BUCKET_NAME, blobId1).block();
 
         BlobId blobId2 = blobIdFactory().from("67890");
         testee().persist(BUCKET_NAME, blobId2).block();
 
-        testee().truncateData().block();
+        testee().deleteBucket(BUCKET_NAME).block();
 
         SoftAssertions.assertSoftly(softly -> {
             assertThat(testee().exists(BUCKET_NAME, blobId1).block())
@@ -213,22 +219,20 @@ public interface BlobExistenceTesterContract {
     }
 
     @Test
-    default void truncateDataShouldDeleteAllDataOfDifferentBuckets() {
+    default void deleteBucketShouldNotDeleteEntriesOfOtherBuckets() {
         BlobId blobId1 = blobIdFactory().from("12345");
         testee().persist(BUCKET_NAME, blobId1).block();
 
         BlobId blobId2 = blobIdFactory().from("67890");
         testee().persist(OTHER_BUCKET_NAME, blobId2).block();
 
-        testee().truncateData().block();
+        testee().deleteBucket(BUCKET_NAME).block();
 
         SoftAssertions.assertSoftly(softly -> {
             assertThat(testee().exists(BUCKET_NAME, blobId1).block())
                 .isEqualTo(false);
             assertThat(testee().exists(OTHER_BUCKET_NAME, blobId2).block())
-                .isEqualTo(false);
+                .isEqualTo(true);
         });
     }
-
-
 }

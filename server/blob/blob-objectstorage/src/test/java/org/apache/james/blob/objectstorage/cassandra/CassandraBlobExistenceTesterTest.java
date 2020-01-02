@@ -27,10 +27,10 @@ import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.objectstorage.BlobExistenceTester;
 import org.apache.james.blob.objectstorage.BlobExistenceTesterContract;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class CassandraBlobExistenceTesterTest implements BlobExistenceTesterContract {
-
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraBlobExistenceModule.MODULE);
 
@@ -38,7 +38,7 @@ class CassandraBlobExistenceTesterTest implements BlobExistenceTesterContract {
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
-        CassandraBlobExistenceTesterDAO blobExistenceTesterDAO = new CassandraBlobExistenceTesterDAO(BLOB_ID_FACTORY, cassandra.getConf());
+        CassandraBlobExistenceTesterDAO blobExistenceTesterDAO = new CassandraBlobExistenceTesterDAO(cassandra.getConf());
         testee = new CassandraBlobExistenceTester(blobExistenceTesterDAO);
     }
 
@@ -50,5 +50,11 @@ class CassandraBlobExistenceTesterTest implements BlobExistenceTesterContract {
     @Override
     public BlobId.Factory blobIdFactory() {
         return BLOB_ID_FACTORY;
+    }
+
+    @Override
+    @Disabled("We truncate the all table upon delete bucket to avoid a full scan on it")
+    public void deleteBucketShouldNotDeleteEntriesOfOtherBuckets() {
+
     }
 }
