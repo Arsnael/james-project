@@ -54,7 +54,7 @@ class AWSCassandraBlobExistenceTesterIntegrationTest implements BlobExistenceTes
     void setUp(DockerAwsS3Container dockerAwsS3, CassandraCluster cassandra) {
         CassandraBlobExistenceTesterDAO blobExistenceTesterDAO = new CassandraBlobExistenceTesterDAO(cassandra.getConf());
         cassandraBlobExistenceTester = new CassandraBlobExistenceTester(blobExistenceTesterDAO);
-        awsS3ObjectStorage = new AwsS3ObjectStorage(new FakeBlobExistenceTester());
+        awsS3ObjectStorage = new AwsS3ObjectStorage(cassandraBlobExistenceTester);
         AwsS3AuthConfiguration configuration = AwsS3AuthConfiguration.builder()
             .endpoint(dockerAwsS3.getEndpoint())
             .accessKeyId(DockerAwsS3Container.ACCESS_KEY_ID)

@@ -54,7 +54,6 @@ class SwiftCassandraBlobExistenceTesterIntegrationTest implements BlobExistenceT
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraBlobExistenceModule.MODULE);
 
     BucketName defaultBucketName;
-    private org.jclouds.blobstore.BlobStore blobStore;
     SwiftTempAuthObjectStorage.Configuration testConfig;
     ObjectStorageBlobStore objectStorageBlobStore;
     CassandraBlobExistenceTester cassandraBlobExistenceTester;
@@ -76,9 +75,8 @@ class SwiftCassandraBlobExistenceTesterIntegrationTest implements BlobExistenceT
         ObjectStorageBlobStoreBuilder.ReadyToBuild blobStoreBuilder = ObjectStorageBlobStore
             .builder(testConfig)
             .blobIdFactory(blobIdFactory)
-            .blobExistenceTester(new FakeBlobExistenceTester())
+            .blobExistenceTester(cassandraBlobExistenceTester)
             .namespace(defaultBucketName);
-        blobStore = blobStoreBuilder.getSupplier().get();
         objectStorageBlobStore = blobStoreBuilder.build();
         testee = new MetricableBlobStore(metricsTestExtension.getMetricFactory(), objectStorageBlobStore);
     }
