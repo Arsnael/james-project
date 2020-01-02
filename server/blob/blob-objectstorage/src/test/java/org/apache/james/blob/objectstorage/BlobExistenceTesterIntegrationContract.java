@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Random;
 
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BucketName;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.Test;
 public interface BlobExistenceTesterIntegrationContract extends MetricableBlobStoreContract {
     BucketName CUSTOM = BucketName.of("custom");
     byte[] OTHER_SHORT_BYTEARRAY = "other_bytearray".getBytes(StandardCharsets.UTF_8);
+    Random RANDOM = new Random();
 
     BlobExistenceTester blobExistenceTester();
 
@@ -211,19 +213,23 @@ public interface BlobExistenceTesterIntegrationContract extends MetricableBlobSt
         BucketName defaultBucketName = testee().getDefaultBucketName();
         BlobId blobId = blobIdFactory().forPayload(SHORT_BYTEARRAY);
 
+        int operationCount = 5;
         ConcurrentTestRunner.builder()
             .reactorOperation(((threadNumber, step) -> {
-                if (step % 2 == 0) {
+                boolean isLast = step == operationCount;
+                // Guaranty the last operation to be a 'store'
+                if (isLast) {
+                    return testee().save(defaultBucketName, SHORT_BYTEARRAY);
+                }
+                // Otherwise mix store and delete
+                if (Math.abs(RANDOM.nextInt()) % 2 == 0) {
                     return testee().save(defaultBucketName, SHORT_BYTEARRAY);
                 }
                 return testee().delete(defaultBucketName, blobId);
             }))
             .threadCount(5)
-            .operationCount(5)
+            .operationCount(operationCount)
             .runSuccessfullyWithin(Duration.ofMinutes(2));
-
-        // As the number of operation is odd, all threads end by adding the blob
-        //Hence we are guarantied the blob exists
 
         assertThat(testee().read(defaultBucketName, blobId))
             .hasSameContentAs(new ByteArrayInputStream(SHORT_BYTEARRAY));
