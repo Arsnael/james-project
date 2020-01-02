@@ -46,74 +46,74 @@ class CassandraBlobExistenceTesterDAOTest {
     }
 
     @Test
-    void hasBlobExistenceShouldReturnFalseIfBlobDoesNotExist() {
-        assertThat(testee.hasBlobExistence(BUCKET_NAME, BLOB_ID_FACTORY.randomId()).block())
+    void isReferencedShouldReturnFalseIfBlobDoesNotExist() {
+        assertThat(testee.isReferenced(BUCKET_NAME, BLOB_ID_FACTORY.randomId()).block())
             .isEqualTo(false);
     }
 
     @Test
-    void hasBlobExistenceShouldReturnTrueIfBlobExists() {
+    void isReferencedShouldReturnTrueIfBlobExists() {
         BlobId blobId = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId).block();
+        testee.reference(BUCKET_NAME, blobId).block();
 
-        assertThat(testee.hasBlobExistence(BUCKET_NAME, blobId).block())
+        assertThat(testee.isReferenced(BUCKET_NAME, blobId).block())
             .isEqualTo(true);
     }
 
     @Test
-    void hasBlobExistenceShouldReturnFalseIfSameBucketButDifferentBlob() {
+    void isReferencedShouldReturnFalseIfSameBucketButDifferentBlob() {
         BlobId blobId = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId).block();
+        testee.reference(BUCKET_NAME, blobId).block();
 
-        assertThat(testee.hasBlobExistence(BUCKET_NAME, BLOB_ID_FACTORY.randomId()).block())
+        assertThat(testee.isReferenced(BUCKET_NAME, BLOB_ID_FACTORY.randomId()).block())
             .isEqualTo(false);
     }
 
     @Test
-    void hasBlobExistenceShouldReturnFalseIfDifferentBucketButSameBlob() {
+    void isReferencedShouldReturnFalseIfDifferentBucketButSameBlob() {
         BlobId blobId = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId).block();
+        testee.reference(BUCKET_NAME, blobId).block();
 
-        assertThat(testee.hasBlobExistence(OTHER_BUCKET_NAME, blobId).block())
+        assertThat(testee.isReferenced(OTHER_BUCKET_NAME, blobId).block())
             .isEqualTo(false);
     }
 
     @Test
-    void removeBlobExistenceShouldNotThrowWhenBlobMissing() {
-        assertThatCode(() -> testee.removeBlobExistence(BUCKET_NAME, BLOB_ID_FACTORY.randomId()).block())
+    void deReferenceShouldNotThrowWhenBlobMissing() {
+        assertThatCode(() -> testee.deReference(BUCKET_NAME, BLOB_ID_FACTORY.randomId()).block())
             .doesNotThrowAnyException();
     }
 
     @Test
-    void removeBlobExistenceShouldDeleteBlob() {
+    void deReferenceShouldDeleteBlob() {
         BlobId blobId = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId).block();
-        testee.removeBlobExistence(BUCKET_NAME, blobId).block();
+        testee.reference(BUCKET_NAME, blobId).block();
+        testee.deReference(BUCKET_NAME, blobId).block();
 
-        assertThat(testee.hasBlobExistence(BUCKET_NAME, blobId).block())
+        assertThat(testee.isReferenced(BUCKET_NAME, blobId).block())
             .isEqualTo(false);
     }
 
     @Test
-    void truncateDataShouldNotThrowWhenNoData() {
-        assertThatCode(() -> testee.truncateData().block())
+    void dropDataShouldNotThrowWhenNoData() {
+        assertThatCode(() -> testee.dropData().block())
             .doesNotThrowAnyException();
     }
 
     @Test
-    void truncateDataShouldDeleteAllBlobIds() {
+    void dropDataShouldDeleteAllBlobIds() {
         BlobId blobId1 = BLOB_ID_FACTORY.from("12345");
-        testee.addBlobExistence(BUCKET_NAME, blobId1).block();
+        testee.reference(BUCKET_NAME, blobId1).block();
 
         BlobId blobId2 = BLOB_ID_FACTORY.from("67890");
-        testee.addBlobExistence(OTHER_BUCKET_NAME, blobId2).block();
+        testee.reference(OTHER_BUCKET_NAME, blobId2).block();
 
-        testee.truncateData().block();
+        testee.dropData().block();
 
         SoftAssertions.assertSoftly(softly -> {
-            assertThat(testee.hasBlobExistence(BUCKET_NAME, blobId1).block())
+            assertThat(testee.isReferenced(BUCKET_NAME, blobId1).block())
                 .isEqualTo(false);
-            assertThat(testee.hasBlobExistence(OTHER_BUCKET_NAME, blobId2).block())
+            assertThat(testee.isReferenced(OTHER_BUCKET_NAME, blobId2).block())
                 .isEqualTo(false);
         });
     }

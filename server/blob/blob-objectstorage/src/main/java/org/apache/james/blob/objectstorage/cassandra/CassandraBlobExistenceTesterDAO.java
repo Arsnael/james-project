@@ -80,25 +80,25 @@ public class CassandraBlobExistenceTesterDAO {
         return session.prepare(truncate(TABLE_NAME));
     }
 
-    Mono<Void> addBlobExistence(ObjectStorageBucketName bucketName, BlobId blobId) {
+    Mono<Void> reference(ObjectStorageBucketName bucketName, BlobId blobId) {
         return cassandraAsyncExecutor.executeVoid(insert.bind()
             .setString(BUCKET_NAME, bucketName.asString())
             .setString(BLOB_ID, blobId.asString()));
     }
 
-    Mono<Void> removeBlobExistence(ObjectStorageBucketName bucketName, BlobId blobId) {
+    Mono<Void> deReference(ObjectStorageBucketName bucketName, BlobId blobId) {
         return cassandraAsyncExecutor.executeVoid(delete.bind()
             .setString(BUCKET_NAME, bucketName.asString())
             .setString(BLOB_ID, blobId.asString()));
     }
 
-    Mono<Boolean> hasBlobExistence(ObjectStorageBucketName bucketName, BlobId blobId) {
+    Mono<Boolean> isReferenced(ObjectStorageBucketName bucketName, BlobId blobId) {
         return cassandraAsyncExecutor.executeReturnExists(select.bind()
                 .setString(BUCKET_NAME, bucketName.asString())
                 .setString(BLOB_ID, blobId.asString()));
     }
 
-    Mono<Void> truncateData() {
+    Mono<Void> dropData() {
         return cassandraAsyncExecutor.executeVoid(truncateStatement.bind());
     }
 }

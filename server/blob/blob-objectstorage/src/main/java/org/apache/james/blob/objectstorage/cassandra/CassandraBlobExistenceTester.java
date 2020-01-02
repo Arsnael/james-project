@@ -41,30 +41,30 @@ public class CassandraBlobExistenceTester implements BlobExistenceTester {
     public Mono<Boolean> exists(ObjectStorageBucketName bucketName, BlobId blobId) {
         preconditionsChecks(bucketName, blobId);
 
-        return cassandraBlobExistenceTesterDAO.hasBlobExistence(bucketName, blobId);
+        return cassandraBlobExistenceTesterDAO.isReferenced(bucketName, blobId);
     }
 
     @Override
     public Mono<Void> persist(ObjectStorageBucketName bucketName, BlobId blobId) {
         preconditionsChecks(bucketName, blobId);
 
-        return cassandraBlobExistenceTesterDAO.addBlobExistence(bucketName, blobId);
+        return cassandraBlobExistenceTesterDAO.reference(bucketName, blobId);
     }
 
     @Override
     public Mono<Void> delete(ObjectStorageBucketName bucketName, BlobId blobId) {
         preconditionsChecks(bucketName, blobId);
 
-        return cassandraBlobExistenceTesterDAO.removeBlobExistence(bucketName, blobId);
+        return cassandraBlobExistenceTesterDAO.deReference(bucketName, blobId);
     }
 
     @Override
     public Mono<Void> deleteBucket(ObjectStorageBucketName bucketName) {
         Preconditions.checkNotNull(bucketName, "The bucketName can't be null");
 
-        // We truncate the all table here to avoid a full scan on it
+        // We drop the all table here to avoid a full scan on it
 
-        return cassandraBlobExistenceTesterDAO.truncateData();
+        return cassandraBlobExistenceTesterDAO.dropData();
     }
 
     private void preconditionsChecks(ObjectStorageBucketName bucketName, BlobId blobId) {
