@@ -209,8 +209,8 @@ public interface BlobExistenceTesterIntegrationContract extends MetricableBlobSt
         });
     }
 
-    @Disabled("Failing around 11% of the time")
-    @RepeatedTest(100)
+    @Disabled("Failing around 0.3% of the time")
+    @RepeatedTest(1000)
     default void deleteShouldNotAffectSubsequentSaveConsistency() throws Exception {
         BucketName defaultBucketName = testee().getDefaultBucketName();
         BlobId blobId = blobIdFactory().forPayload(SHORT_BYTEARRAY);

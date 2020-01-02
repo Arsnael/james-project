@@ -44,7 +44,6 @@ import org.jclouds.blobstore.domain.StorageType;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 
@@ -224,6 +223,7 @@ public class ObjectStorageBlobStore implements BlobStore {
 
         return blobExistenceTester.delete(resolvedBucketName, blobId)
             .then(Mono.<Void>fromRunnable(() -> blobStore.removeBlob(resolvedBucketName.asString(), blobId.asString())))
+            .then(blobExistenceTester.delete(resolvedBucketName, blobId))
             .subscribeOn(Schedulers.elastic());
     }
 }
