@@ -44,6 +44,7 @@ import org.jclouds.blobstore.domain.StorageType;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 
@@ -104,12 +105,9 @@ public class ObjectStorageBlobStore implements BlobStore {
 
         return Mono.fromCallable(() -> blobIdFactory.forPayload(data))
             .flatMap(blobId -> blobExistenceTester.exists(resolvedBucketName, blobId)
-                .flatMap(exists -> {
-                    if (exists) {
-                        return Mono.just(blobId);
-                    }
-                    return save(resolvedBucketName, blobId, data);
-                }));
+                .filter(exists -> exists)
+                .flatMap(any -> save(resolvedBucketName, blobId, data))
+                .defaultIfEmpty(blobId));
     }
 
     private Mono<BlobId> save(ObjectStorageBucketName resolvedBucketName, BlobId blobId, byte[] data) {
