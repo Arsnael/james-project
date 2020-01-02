@@ -105,7 +105,7 @@ public class ObjectStorageBlobStore implements BlobStore {
 
         return Mono.fromCallable(() -> blobIdFactory.forPayload(data))
             .flatMap(blobId -> blobExistenceTester.exists(resolvedBucketName, blobId)
-                .filter(exists -> exists)
+                .filter(exists -> !exists)
                 .flatMap(any -> save(resolvedBucketName, blobId, data))
                 .defaultIfEmpty(blobId));
     }

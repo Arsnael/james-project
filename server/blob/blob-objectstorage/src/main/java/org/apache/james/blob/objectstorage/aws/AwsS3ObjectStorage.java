@@ -160,7 +160,7 @@ public class AwsS3ObjectStorage {
                 .flatMap(blobId -> {
                     initialBlob.getMetadata().setName(blobId.asString());
                     return blobExistenceTester.exists(bucketName, blobId)
-                        .filter(exists -> exists)
+                        .filter(exists -> !exists)
                         .flatMap(any -> putWithRetry(bucketName, configuration, initialBlob, file))
                         .then(Mono.just(blobId));
                 });
