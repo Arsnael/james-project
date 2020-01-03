@@ -42,7 +42,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@ExtendWith(DockerAwsS3Extension.class)
+@ExtendWith(DockerSwiftExtension.class)
 class SwiftCassandraBlobExistenceTesterIntegrationTest implements BlobExistenceTesterIntegrationContract {
     static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
     private static final TenantName TENANT_NAME = TenantName.of("test");
