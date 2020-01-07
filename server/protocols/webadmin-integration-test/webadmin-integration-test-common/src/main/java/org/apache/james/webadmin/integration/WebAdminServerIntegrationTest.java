@@ -29,9 +29,18 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.List;
 
+import javax.mail.Flags;
+
 import org.apache.james.GuiceJamesServer;
+import org.apache.james.core.Username;
+import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.probe.MailboxProbe;
 import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.utils.DataProbeImpl;
@@ -65,18 +74,21 @@ public abstract class WebAdminServerIntegrationTest {
     private static final String SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
     private static final String MAILBOX = "mailbox";
     private static final String SPECIFIC_MAILBOX = SPECIFIC_USER + SEPARATOR + UserMailboxesRoutes.MAILBOXES + SEPARATOR + MAILBOX;
+    private static final MailboxPath USER_MAILBOX = MailboxPath.forUser(Username.of(USERNAME), MAILBOX);
 
     protected static final String ALIAS_1 = "alias1@" + DOMAIN;
     protected static final String ALIAS_2 = "alias2@" + DOMAIN;
 
     private GuiceJamesServer guiceJamesServer;
     private DataProbe dataProbe;
+    private MailboxProbe mailboxProbe;
 
     @Before
     public void setUp() throws Exception {
         guiceJamesServer = createJamesServer();
         guiceJamesServer.start();
         dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
+        mailboxProbe = guiceJamesServer.getProbe(MailboxProbeImpl.class);
         dataProbe.addDomain(DOMAIN);
         WebAdminGuiceProbe webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
 
@@ -91,7 +103,7 @@ public abstract class WebAdminServerIntegrationTest {
 
     protected abstract GuiceJamesServer createJamesServer() throws Exception;
 
-    protected abstract String getMessageId();
+    protected abstract void await();
 
     @Test
     public void postShouldAddTheGivenDomain() throws Exception {
@@ -209,20 +221,20 @@ public abstract class WebAdminServerIntegrationTest {
         .then()
             .statusCode(HttpStatus.NO_CONTENT_204);
 
-        assertThat(guiceJamesServer.getProbe(MailboxProbeImpl.class).listUserMailboxes(USERNAME)).containsExactly(MAILBOX);
+        assertThat(mailboxProbe.listUserMailboxes(USERNAME)).containsExactly(MAILBOX);
     }
 
     @Test
     public void deleteMailboxShouldRemoveAMailbox() throws Exception {
         dataProbe.addUser(USERNAME, "anyPassword");
-        guiceJamesServer.getProbe(MailboxProbeImpl.class).createMailbox("#private", USERNAME, MAILBOX);
+        mailboxProbe.createMailbox("#private", USERNAME, MAILBOX);
 
         when()
             .delete(SPECIFIC_MAILBOX)
         .then()
             .statusCode(HttpStatus.NO_CONTENT_204);
 
-        assertThat(guiceJamesServer.getProbe(MailboxProbeImpl.class).listUserMailboxes(USERNAME)).isEmpty();
+        assertThat(mailboxProbe.listUserMailboxes(USERNAME)).isEmpty();
     }
 
     @Test
@@ -349,12 +361,17 @@ public abstract class WebAdminServerIntegrationTest {
     }
 
     @Test
-    public void jmapMessageTasksShouldBeExposed() {
-        String messageId = getMessageId();
+    public void jmapMessageTasksShouldBeExposed() throws Exception {
+        dataProbe.addUser(USERNAME, "anyPassword");
+        mailboxProbe.createMailbox("#private", USERNAME, MAILBOX);
+
+        ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, USER_MAILBOX,
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
+        await();
 
         String taskId = with()
             .queryParam("task", "recomputeFastViewProjectionItems")
-            .post("/messages/" + messageId)
+            .post("/messages/" + message.getMessageId().serialize())
             .jsonPath()
             .get("taskId");
 
@@ -363,7 +380,7 @@ public abstract class WebAdminServerIntegrationTest {
         .when()
             .get(taskId + "/await")
         .then()
-            .body("status", is("failed"))
-            .body("type", is("RecomputeMessageFastViewProjectionItemsTask"));
+            .body("status", is("completed"))
+            .body("type", is("RecomputeMessageFastViewProjectionItemTask"));
     }
 }

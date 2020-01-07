@@ -28,8 +28,6 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
-import java.util.UUID;
-
 import org.apache.james.CassandraRabbitMQAwsS3JmapTestRule;
 import org.apache.james.DockerCassandraRule;
 import org.apache.james.GuiceJamesServer;
@@ -56,7 +54,6 @@ public class RabbitMQWebAdminServerIntegrationTest extends WebAdminServerIntegra
     private static final String VERSION_LATEST = VERSION + "/latest";
     private static final String UPGRADE_VERSION = VERSION + "/upgrade";
     private static final String UPGRADE_TO_LATEST_VERSION = UPGRADE_VERSION + "/latest";
-    private static final UUID MESSAGE_ID = UUID.fromString("13379bf8-6464-4764-a5bb-5bd879df487c");
 
     @Rule
     public DockerCassandraRule cassandra = new DockerCassandraRule();
@@ -69,8 +66,8 @@ public class RabbitMQWebAdminServerIntegrationTest extends WebAdminServerIntegra
     }
 
     @Override
-    protected String getMessageId() {
-        return MESSAGE_ID.toString();
+    protected void await() {
+        jamesTestRule.await();
     }
 
     @Test

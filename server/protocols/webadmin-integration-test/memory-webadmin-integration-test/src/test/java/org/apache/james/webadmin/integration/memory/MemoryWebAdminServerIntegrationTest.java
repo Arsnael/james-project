@@ -26,7 +26,6 @@ import org.apache.james.webadmin.integration.WebAdminServerIntegrationTest;
 import org.junit.Rule;
 
 public class MemoryWebAdminServerIntegrationTest extends WebAdminServerIntegrationTest {
-    private static final String MESSAGE_ID = "12345";
 
     @Rule
     public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
@@ -38,7 +37,6 @@ public class MemoryWebAdminServerIntegrationTest extends WebAdminServerIntegrati
     }
 
     @Override
-    protected String getMessageId() {
-        return MESSAGE_ID;
+    protected void await() {
     }
 }
