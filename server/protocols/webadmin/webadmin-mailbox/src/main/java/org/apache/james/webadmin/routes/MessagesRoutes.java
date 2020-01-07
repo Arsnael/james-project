@@ -34,6 +34,7 @@ import org.apache.james.mailbox.indexer.MessageIdReIndexer;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Routes;
+import org.apache.james.webadmin.tasks.TaskFromRequest;
 import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 import org.apache.james.webadmin.tasks.TaskIdDto;
 import org.apache.james.webadmin.utils.ErrorResponder;
@@ -59,18 +60,47 @@ public class MessagesRoutes implements Routes {
         public MessageReIndexingTaskRegistration(MessageIdReIndexer reIndexer, MessageId.Factory messageIdFactory) {
             super(MailboxesRoutes.RE_INDEX, request -> reIndexer.reIndex(extractMessageId(messageIdFactory, request)));
         }
-    }
 
-    private static MessageId extractMessageId(MessageId.Factory messageIdFactory, Request request) {
-        try {
-            return messageIdFactory.fromString(request.params(MESSAGE_ID_PARAM));
-        } catch (Exception e) {
-            throw ErrorResponder.builder()
-                .statusCode(HttpStatus.BAD_REQUEST_400)
-                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
-                .message("Error while parsing 'messageId'")
-                .cause(e)
-                .haltError();
+        @POST
+        @Path("/{messageId}")
+        @ApiOperation(value = "Re-indexes one email in the different mailboxes containing it")
+        @ApiImplicitParams({
+            @ApiImplicitParam(
+                required = true,
+                name = "task",
+                paramType = "query parameter",
+                dataType = "String",
+                defaultValue = "none",
+                example = "?task=reIndex",
+                value = "Compulsory. Only supported value is `reIndex`"),
+            @ApiImplicitParam(
+                required = true,
+                name = "messageId",
+                paramType = "path parameter",
+                dataType = "String",
+                defaultValue = "none",
+                value = "Compulsory. Needs to be a valid messageId (format depends on the mailbox implementation)")
+        })
+        @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.CREATED_201, message = "Task is created", response = TaskIdDto.class),
+            @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
+            @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
+        })
+        private static TaskFromRequest toTask(MessageIdReIndexer reIndexer, MessageId.Factory messageIdFactory) {
+            return request -> reIndexer.reIndex(extractMessageId(messageIdFactory, request));
+        }
+
+        private static MessageId extractMessageId(MessageId.Factory messageIdFactory, Request request) {
+            try {
+                return messageIdFactory.fromString(request.params(MESSAGE_ID_PARAM));
+            } catch (Exception e) {
+                throw ErrorResponder.builder()
+                    .statusCode(HttpStatus.BAD_REQUEST_400)
+                    .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+                    .message("Error while parsing 'messageId'")
+                    .cause(e)
+                    .haltError();
+            }
         }
     }
 
@@ -81,15 +111,15 @@ public class MessagesRoutes implements Routes {
 
     private final TaskManager taskManager;
     private final JsonTransformer jsonTransformer;
-    private final Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistration;
+    private final Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistrations;
 
     @Inject
     MessagesRoutes(TaskManager taskManager,
                    JsonTransformer jsonTransformer,
-                   @Named(ONE_MESSAGE_TASKS) Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistration) {
+                   @Named(ONE_MESSAGE_TASKS) Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistrations) {
         this.taskManager = taskManager;
         this.jsonTransformer = jsonTransformer;
-        this.oneMessageTaskRegistration = oneMessageTaskRegistration;
+        this.oneMessageTaskRegistrations = oneMessageTaskRegistrations;
     }
 
     @Override
@@ -99,39 +129,14 @@ public class MessagesRoutes implements Routes {
 
     @Override
     public void define(Service service) {
-        reIndexMessage()
+        oneMessageOperations()
             .ifPresent(route -> service.post(MESSAGE_PATH, route, jsonTransformer));
     }
 
-    @POST
-    @Path("/{messageId}")
-    @ApiOperation(value = "Re-indexes one email in the different mailboxes containing it")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            required = true,
-            name = "task",
-            paramType = "query parameter",
-            dataType = "String",
-            defaultValue = "none",
-            example = "?task=reIndex",
-            value = "Compulsory. Only supported value is `reIndex`"),
-        @ApiImplicitParam(
-            required = true,
-            name = "messageId",
-            paramType = "path parameter",
-            dataType = "String",
-            defaultValue = "none",
-            value = "Compulsory. Needs to be a valid messageId (format depends on the mailbox implementation)")
-    })
-    @ApiResponses(value = {
-        @ApiResponse(code = HttpStatus.CREATED_201, message = "Task is created", response = TaskIdDto.class),
-        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
-        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
-    })
-    private Optional<Route> reIndexMessage() {
+    private Optional<Route> oneMessageOperations() {
         return TaskFromRequestRegistry.builder()
             .parameterName(TASK_PARAMETER)
-            .registrations(oneMessageTaskRegistration)
+            .registrations(oneMessageTaskRegistrations)
             .buildAsRouteOptional(taskManager);
     }
 }

@@ -19,36 +19,20 @@
 
 package org.apache.james.modules.server;
 
-import static org.apache.james.webadmin.routes.MailboxesRoutes.ALL_MAILBOXES_TASKS;
-import static org.apache.james.webadmin.routes.MailboxesRoutes.ONE_MAILBOX_TASKS;
-import static org.apache.james.webadmin.routes.MailboxesRoutes.ONE_MAIL_TASKS;
-import static org.apache.james.webadmin.routes.UserMailboxesRoutes.USER_MAILBOXES_OPERATIONS_INJECTION_KEY;
+import static org.apache.james.webadmin.routes.MessagesRoutes.ONE_MESSAGE_TASKS;
 
-import org.apache.james.webadmin.routes.MailboxesRoutes;
-import org.apache.james.webadmin.routes.UserMailboxesRoutes.UserReIndexingTaskRegistration;
-import org.apache.james.webadmin.tasks.TaskFromRequestRegistry.TaskRegistration;
+import org.apache.james.webadmin.routes.MessagesRoutes;
+import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
-public class ReIndexingModule extends AbstractModule {
+public class MessageReIndexingModule extends AbstractModule {
     @Override
     protected void configure() {
-        Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(USER_MAILBOXES_OPERATIONS_INJECTION_KEY))
+        Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(ONE_MESSAGE_TASKS))
             .addBinding()
-            .to(UserReIndexingTaskRegistration.class);
-
-        Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ALL_MAILBOXES_TASKS))
-            .addBinding()
-            .to(MailboxesRoutes.ReIndexAllMailboxesTaskRegistration.class);
-
-        Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ONE_MAILBOX_TASKS))
-            .addBinding()
-            .to(MailboxesRoutes.ReIndexOneMailboxTaskRegistration.class);
-
-        Multibinder.newSetBinder(binder(), TaskRegistration.class, Names.named(ONE_MAIL_TASKS))
-            .addBinding()
-            .to(MailboxesRoutes.ReIndexOneMailTaskRegistration.class);
+            .to(MessagesRoutes.MessageReIndexingTaskRegistration.class);
     }
 }
