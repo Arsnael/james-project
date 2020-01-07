@@ -20,7 +20,7 @@
 package org.apache.james.modules.server;
 
 import org.apache.james.webadmin.data.jmap.RecomputeAllFastViewProjectionItemsRequestToTask;
-import org.apache.james.webadmin.data.jmap.RecomputeMessageFastViewProjectionItemsRequestToTask;
+import org.apache.james.webadmin.data.jmap.RecomputeMessageFastViewProjectionItemRequestToTask;
 import org.apache.james.webadmin.data.jmap.RecomputeUserFastViewProjectionItemsRequestToTask;
 import org.apache.james.webadmin.routes.MailboxesRoutes;
 import org.apache.james.webadmin.routes.MessagesRoutes;
@@ -41,6 +41,6 @@ public class JmapTasksModule extends AbstractModule {
             .addBinding().to(RecomputeUserFastViewProjectionItemsRequestToTask.class);
 
         Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(MessagesRoutes.ONE_MESSAGE_TASKS))
-            .addBinding().to(RecomputeMessageFastViewProjectionItemsRequestToTask.class);
+            .addBinding().to(RecomputeMessageFastViewProjectionItemRequestToTask.class);
     }
 }

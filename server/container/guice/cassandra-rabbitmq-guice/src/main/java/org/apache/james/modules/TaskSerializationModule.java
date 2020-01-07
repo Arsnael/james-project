@@ -55,7 +55,7 @@ import org.apache.james.vault.blob.BlobStoreVaultGarbageCollectionTaskDTO;
 import org.apache.james.webadmin.data.jmap.MessageFastViewProjectionCorrector;
 import org.apache.james.webadmin.data.jmap.RecomputeAllFastViewProjectionItemsTask;
 import org.apache.james.webadmin.data.jmap.RecomputeAllFastViewTaskAdditionalInformationDTO;
-import org.apache.james.webadmin.data.jmap.RecomputeMessageFastViewProjectionItemsTask;
+import org.apache.james.webadmin.data.jmap.RecomputeMessageFastViewProjectionItemTask;
 import org.apache.james.webadmin.data.jmap.RecomputeMessageFastViewTaskAdditionalInformationDTO;
 import org.apache.james.webadmin.data.jmap.RecomputeUserFastViewProjectionItemsTask;
 import org.apache.james.webadmin.data.jmap.RecomputeUserFastViewTaskAdditionalInformationDTO;
@@ -191,8 +191,8 @@ public class TaskSerializationModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    public TaskDTOModule<?, ?> recomputeMessageJmapPreviewsTask(RecomputeMessageFastViewProjectionItemsTask.Factory factory) {
-        return RecomputeMessageFastViewProjectionItemsTask.module(factory);
+    public TaskDTOModule<?, ?> recomputeMessageJmapPreviewsTask(RecomputeMessageFastViewProjectionItemTask.Factory factory) {
+        return RecomputeMessageFastViewProjectionItemTask.module(factory);
     }
 
     @ProvidesIntoSet
