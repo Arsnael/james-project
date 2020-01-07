@@ -66,7 +66,7 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.LogDetail;
 import spark.Service;
 
-class RecomputeMessageFastViewProjectionItemsRequestToTaskTest {
+class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
     private final class JMAPRoutes implements Routes {
         private final MessageFastViewProjectionCorrector corrector;
         private final TaskManager taskManager;
@@ -87,7 +87,7 @@ class RecomputeMessageFastViewProjectionItemsRequestToTaskTest {
         public void define(Service service) {
             service.post(BASE_PATH,
                 TaskFromRequestRegistry.builder()
-                    .registrations(new RecomputeMessageFastViewProjectionItemsRequestToTask(corrector, factory))
+                    .registrations(new RecomputeMessageFastViewProjectionItemRequestToTask(corrector, factory))
                     .buildAsRoute(taskManager),
                 new JsonTransformer());
         }
@@ -221,7 +221,7 @@ class RecomputeMessageFastViewProjectionItemsRequestToTaskTest {
         .then()
             .body("status", is("failed"))
             .body("taskId", is(taskId))
-            .body("type", is("RecomputeMessageFastViewProjectionItemsTask"))
+            .body("type", is("RecomputeMessageFastViewProjectionItemTask"))
             .body("additionalInformation.messageId", is(MESSAGE_ID))
             .body("startedDate", is(notNullValue()))
             .body("submitDate", is(notNullValue()))
@@ -252,7 +252,7 @@ class RecomputeMessageFastViewProjectionItemsRequestToTaskTest {
         .then()
             .body("status", is("completed"))
             .body("taskId", is(taskId))
-            .body("type", is("RecomputeMessageFastViewProjectionItemsTask"))
+            .body("type", is("RecomputeMessageFastViewProjectionItemTask"))
             .body("additionalInformation.messageId", is(messageId))
             .body("startedDate", is(notNullValue()))
             .body("submitDate", is(notNullValue()))

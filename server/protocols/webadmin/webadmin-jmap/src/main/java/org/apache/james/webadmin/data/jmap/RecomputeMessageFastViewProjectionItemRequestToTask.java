@@ -27,16 +27,16 @@ import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 
 import spark.Request;
 
-public class RecomputeMessageFastViewProjectionItemsRequestToTask extends TaskFromRequestRegistry.TaskRegistration {
+public class RecomputeMessageFastViewProjectionItemRequestToTask extends TaskFromRequestRegistry.TaskRegistration {
     @Inject
-    RecomputeMessageFastViewProjectionItemsRequestToTask(MessageFastViewProjectionCorrector corrector,
-                                                         MessageId.Factory factory) {
+    RecomputeMessageFastViewProjectionItemRequestToTask(MessageFastViewProjectionCorrector corrector,
+                                                        MessageId.Factory factory) {
         super(Constants.TASK_REGISTRATION_KEY,
             request -> toTask(corrector, factory, request));
     }
 
     private static Task toTask(MessageFastViewProjectionCorrector corrector, MessageId.Factory factory, Request request) {
         MessageId messageId = factory.fromString(request.params("messageId"));
-        return new RecomputeMessageFastViewProjectionItemsTask(corrector, messageId);
+        return new RecomputeMessageFastViewProjectionItemTask(corrector, messageId);
     }
 }

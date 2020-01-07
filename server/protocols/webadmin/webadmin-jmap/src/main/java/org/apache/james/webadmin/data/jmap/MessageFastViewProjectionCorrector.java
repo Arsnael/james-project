@@ -28,6 +28,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Username;
 import org.apache.james.jmap.api.projections.MessageFastViewPrecomputedProperties;
 import org.apache.james.jmap.api.projections.MessageFastViewProjection;
+import org.apache.james.jmap.draft.exceptions.MessageNotFoundException;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
@@ -50,7 +51,6 @@ import org.slf4j.LoggerFactory;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableList;
 
-import javassist.NotFoundException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -159,12 +159,12 @@ public class MessageFastViewProjectionCorrector {
             return Flux.fromStream(mailboxSessionMapperFactory.getMessageIdMapper(session)
                 .find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
                 .stream())
-                .switchIfEmpty(Mono.error(new NotFoundException(String.format("Failed to find the message with id %s", messageId))))
+                .switchIfEmpty(Mono.error(new MessageNotFoundException()))
                 .next()
                 .map(this::computeProjectionEntry)
                 .flatMap(this::storeProjectionEntry);
         } catch (Exception e) {
-            LOGGER.error("Failed to re-compute preview of message with id {}", messageId, e);
+            LOGGER.error("Failed to re-compute preview of message with id {}", messageId.serialize(), e);
             return Mono.error(e);
         }
     }
