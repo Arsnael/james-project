@@ -91,6 +91,8 @@ public abstract class WebAdminServerIntegrationTest {
 
     protected abstract GuiceJamesServer createJamesServer() throws Exception;
 
+    protected abstract String getMessageId();
+
     @Test
     public void postShouldAddTheGivenDomain() throws Exception {
         when()
@@ -344,5 +346,24 @@ public abstract class WebAdminServerIntegrationTest {
         .then()
             .body("status", is("completed"))
             .body("type", is("RecomputeUserFastViewProjectionItemsTask"));
+    }
+
+    @Test
+    public void jmapMessageTasksShouldBeExposed() {
+        String messageId = getMessageId();
+
+        String taskId = with()
+            .queryParam("task", "recomputeFastViewProjectionItems")
+            .post("/messages/" + messageId)
+            .jsonPath()
+            .get("taskId");
+
+        given()
+            .basePath(TasksRoutes.BASE)
+        .when()
+            .get(taskId + "/await")
+        .then()
+            .body("status", is("failed"))
+            .body("type", is("RecomputeMessageFastViewProjectionItemsTask"));
     }
 }

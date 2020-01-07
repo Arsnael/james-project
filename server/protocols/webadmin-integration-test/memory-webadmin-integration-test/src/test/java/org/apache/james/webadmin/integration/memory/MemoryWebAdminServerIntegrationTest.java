@@ -26,6 +26,7 @@ import org.apache.james.webadmin.integration.WebAdminServerIntegrationTest;
 import org.junit.Rule;
 
 public class MemoryWebAdminServerIntegrationTest extends WebAdminServerIntegrationTest {
+    private static final String MESSAGE_ID = "12345";
 
     @Rule
     public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
@@ -34,5 +35,10 @@ public class MemoryWebAdminServerIntegrationTest extends WebAdminServerIntegrati
     protected GuiceJamesServer createJamesServer() throws Exception {
         return memoryJmap.jmapServer(binder -> binder.bind(WebAdminConfiguration.class)
             .toInstance(WebAdminConfiguration.TEST_CONFIGURATION));
+    }
+
+    @Override
+    protected String getMessageId() {
+        return MESSAGE_ID;
     }
 }
