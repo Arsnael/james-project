@@ -40,6 +40,7 @@ import org.apache.james.task.TaskManager;
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.service.UserMailboxesService;
+import org.apache.james.webadmin.tasks.TaskFromRequest;
 import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 import org.apache.james.webadmin.tasks.TaskFromRequestRegistry.TaskRegistration;
 import org.apache.james.webadmin.tasks.TaskIdDto;
@@ -74,7 +75,29 @@ public class UserMailboxesRoutes implements Routes {
     public static class UserReIndexingTaskRegistration extends TaskRegistration {
         @Inject
         public UserReIndexingTaskRegistration(ReIndexer reIndexer) {
-            super(RE_INDEX, request -> reIndexer.reIndex(getUsernameParam(request)));
+            super(RE_INDEX, toTask(reIndexer));
+        }
+
+        @POST
+        @ApiImplicitParams({
+            @ApiImplicitParam(required = true, dataType = "string", name = "username", paramType = "path"),
+            @ApiImplicitParam(
+                required = true,
+                name = "task",
+                paramType = "query parameter",
+                dataType = "String",
+                defaultValue = "none",
+                example = "?task=reIndex",
+                value = "Compulsory. Only supported value is `reIndex`")
+        })
+        @ApiOperation(value = "Perform an action on a user mailbox")
+        @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.CREATED_201, message = "Task is created", response = TaskIdDto.class),
+            @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
+            @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
+        })
+        private static TaskFromRequest toTask(ReIndexer reIndexer) {
+            return request -> reIndexer.reIndex(getUsernameParam(request));
         }
     }
 
@@ -125,8 +148,15 @@ public class UserMailboxesRoutes implements Routes {
 
         defineDeleteUserMailboxes();
 
-        reIndexMailboxesRoute()
+        mailboxesOperations()
             .ifPresent(route -> service.post(USER_MAILBOXES_BASE, route, jsonTransformer));
+    }
+
+    private Optional<Route> mailboxesOperations() {
+        return TaskFromRequestRegistry.builder()
+            .parameterName(TASK_PARAMETER)
+            .registrations(usersMailboxesTaskRegistration)
+            .buildAsRouteOptional(taskManager);
     }
 
     @GET
@@ -155,31 +185,6 @@ public class UserMailboxesRoutes implements Routes {
                     .haltError();
             }
         }, jsonTransformer);
-    }
-
-    @POST
-    @ApiImplicitParams({
-        @ApiImplicitParam(required = true, dataType = "string", name = "username", paramType = "path"),
-        @ApiImplicitParam(
-            required = true,
-            name = "task",
-            paramType = "query parameter",
-            dataType = "String",
-            defaultValue = "none",
-            example = "?task=reIndex",
-            value = "Compulsory. Only supported value is `reIndex`")
-    })
-    @ApiOperation(value = "Perform an action on a user mailbox")
-    @ApiResponses(value = {
-        @ApiResponse(code = HttpStatus.CREATED_201, message = "Task is created", response = TaskIdDto.class),
-        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
-        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
-    })
-    public Optional<Route> reIndexMailboxesRoute() {
-        return TaskFromRequestRegistry.builder()
-            .parameterName(TASK_PARAMETER)
-            .registrations(usersMailboxesTaskRegistration)
-            .buildAsRouteOptional(taskManager);
     }
 
     @DELETE
