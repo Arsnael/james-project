@@ -21,7 +21,11 @@ package org.apache.james.webadmin.routes;
 
 import static org.apache.james.webadmin.routes.MailboxesRoutes.TASK_PARAMETER;
 
+import java.util.Optional;
+import java.util.Set;
+
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -50,21 +54,42 @@ import spark.Service;
 @Path("/messages")
 @Produces("application/json")
 public class MessagesRoutes implements Routes {
+    public static class MessageReIndexingTaskRegistration extends TaskFromRequestRegistry.TaskRegistration {
+        @Inject
+        public MessageReIndexingTaskRegistration(MessageIdReIndexer reIndexer, MessageId.Factory messageIdFactory) {
+            super(MailboxesRoutes.RE_INDEX, request -> reIndexer.reIndex(extractMessageId(messageIdFactory, request)));
+        }
+    }
+
+    private static MessageId extractMessageId(MessageId.Factory messageIdFactory, Request request) {
+        try {
+            return messageIdFactory.fromString(request.params(MESSAGE_ID_PARAM));
+        } catch (Exception e) {
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.BAD_REQUEST_400)
+                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+                .message("Error while parsing 'messageId'")
+                .cause(e)
+                .haltError();
+        }
+    }
+
     private static final String MESSAGE_ID_PARAM = ":messageId";
     private static final String BASE_PATH = "/messages";
     private static final String MESSAGE_PATH = BASE_PATH + "/" + MESSAGE_ID_PARAM;
+    public static final String ONE_MESSAGE_TASKS = "oneMessageTasks";
 
     private final TaskManager taskManager;
-    private final MessageId.Factory messageIdFactory;
-    private final MessageIdReIndexer reIndexer;
     private final JsonTransformer jsonTransformer;
+    private final Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistration;
 
     @Inject
-    MessagesRoutes(TaskManager taskManager, MessageId.Factory messageIdFactory, MessageIdReIndexer reIndexer, JsonTransformer jsonTransformer) {
+    MessagesRoutes(TaskManager taskManager,
+                   JsonTransformer jsonTransformer,
+                   @Named(ONE_MESSAGE_TASKS) Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistration) {
         this.taskManager = taskManager;
-        this.messageIdFactory = messageIdFactory;
-        this.reIndexer = reIndexer;
         this.jsonTransformer = jsonTransformer;
+        this.oneMessageTaskRegistration = oneMessageTaskRegistration;
     }
 
     @Override
@@ -74,7 +99,8 @@ public class MessagesRoutes implements Routes {
 
     @Override
     public void define(Service service) {
-        service.post(MESSAGE_PATH, reIndexMessage(), jsonTransformer);
+        reIndexMessage()
+            .ifPresent(route -> service.post(MESSAGE_PATH, route, jsonTransformer));
     }
 
     @POST
@@ -102,23 +128,10 @@ public class MessagesRoutes implements Routes {
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500, message = "Internal server error - Something went bad on the server side."),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad request - details in the returned error message")
     })
-    private Route reIndexMessage() {
+    private Optional<Route> reIndexMessage() {
         return TaskFromRequestRegistry.builder()
             .parameterName(TASK_PARAMETER)
-            .register(MailboxesRoutes.RE_INDEX, request -> reIndexer.reIndex(extractMessageId(request)))
-            .buildAsRoute(taskManager);
-    }
-
-    private MessageId extractMessageId(Request request) {
-        try {
-            return messageIdFactory.fromString(request.params(MESSAGE_ID_PARAM));
-        } catch (Exception e) {
-            throw ErrorResponder.builder()
-                .statusCode(HttpStatus.BAD_REQUEST_400)
-                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
-                .message("Error while parsing 'messageId'")
-                .cause(e)
-                .haltError();
-        }
+            .registrations(oneMessageTaskRegistration)
+            .buildAsRouteOptional(taskManager);
     }
 }

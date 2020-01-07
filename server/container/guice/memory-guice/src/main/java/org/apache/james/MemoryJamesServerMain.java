@@ -47,6 +47,7 @@ import org.apache.james.modules.server.MailQueueRoutesModule;
 import org.apache.james.modules.server.MailRepositoriesRoutesModule;
 import org.apache.james.modules.server.MailboxRoutesModule;
 import org.apache.james.modules.server.MemoryMailQueueModule;
+import org.apache.james.modules.server.MessagesRoutesModule;
 import org.apache.james.modules.server.RawPostDequeueDecoratorModule;
 import org.apache.james.modules.server.SieveRoutesModule;
 import org.apache.james.modules.server.SwaggerRoutesModule;
@@ -73,6 +74,7 @@ public class MemoryJamesServerMain {
         new MailboxRoutesModule(),
         new MailQueueRoutesModule(),
         new MailRepositoriesRoutesModule(),
+        new MessagesRoutesModule(),
         new SieveRoutesModule(),
         new SwaggerRoutesModule());
 

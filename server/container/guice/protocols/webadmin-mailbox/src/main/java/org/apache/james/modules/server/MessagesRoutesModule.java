@@ -21,14 +21,18 @@ package org.apache.james.modules.server;
 
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.routes.MessagesRoutes;
+import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
 public class MessagesRoutesModule extends AbstractModule {
     @Override
     protected void configure() {
         Multibinder<Routes> routesMultibinder = Multibinder.newSetBinder(binder(), Routes.class);
         routesMultibinder.addBinding().to(MessagesRoutes.class);
+
+        Multibinder.newSetBinder(binder(), TaskFromRequestRegistry.TaskRegistration.class, Names.named(MessagesRoutes.ONE_MESSAGE_TASKS));
     }
 }

@@ -32,12 +32,14 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
+import org.apache.james.mailbox.indexer.MessageIdReIndexer;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
 import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.task.Hostname;
@@ -55,6 +57,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import com.google.common.collect.ImmutableSet;
 
 import io.restassured.RestAssured;
 
@@ -78,12 +82,14 @@ class MessageRoutesTest {
             mailboxManager.getMapperFactory());
         JsonTransformer jsonTransformer = new JsonTransformer();
 
+        MessageIdReIndexer messageIdReIndexer = new MessageIdReIndexerImpl(reIndexerPerformer);
+        MessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
+
         webAdminServer = WebAdminUtils.createWebAdminServer(
                 new TasksRoutes(taskManager, jsonTransformer),
                 new MessagesRoutes(taskManager,
-                    new InMemoryMessageId.Factory(),
-                    new MessageIdReIndexerImpl(reIndexerPerformer),
-                    jsonTransformer))
+                    jsonTransformer,
+                    ImmutableSet.of(new MessagesRoutes.MessageReIndexingTaskRegistration(messageIdReIndexer, messageIdFactory))))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer).build();
