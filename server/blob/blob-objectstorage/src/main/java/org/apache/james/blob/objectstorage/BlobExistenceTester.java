@@ -24,9 +24,10 @@ import org.apache.james.blob.api.BlobId;
 import reactor.core.publisher.Mono;
 
 /**
- * This class allows to avoid persisting two times the same blob, resulting in performance improvement and cloud provider
+ * This class allows to avoid writing twice the same blob, resulting in performance improvement and cloud provider
  * cost reduction for ObjectStorageBlobStore.
- * Implementations should hide failure to the caller, defaulting to {@link FakeBlobExistenceTester} behavior. This results
+ * Implementations should hide failure to the caller, defaulting to {@link FakeBlobExistenceTester} behavior,
+ * and expose a log/metric/healthcheck to let an admin detect broken behavior of this component. This results
  * in the blob being stored several times which is an acceptable performance degradation.
  */
 public interface BlobExistenceTester {
