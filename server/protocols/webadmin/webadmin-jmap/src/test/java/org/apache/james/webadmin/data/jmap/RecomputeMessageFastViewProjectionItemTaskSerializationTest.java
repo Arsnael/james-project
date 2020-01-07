@@ -28,24 +28,24 @@ import org.apache.james.util.ClassLoaderUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class RecomputeMessageFastViewProjectionItemsTaskSerializationTest {
+class RecomputeMessageFastViewProjectionItemTaskSerializationTest {
     MessageFastViewProjectionCorrector corrector;
     MessageId.Factory messageIdFactory;
-    RecomputeMessageFastViewProjectionItemsTask.Factory factory;
+    RecomputeMessageFastViewProjectionItemTask.Factory factory;
 
     @BeforeEach
     void setUp() {
         messageIdFactory = new TestMessageId.Factory();
         corrector = mock(MessageFastViewProjectionCorrector.class);
-        factory = new RecomputeMessageFastViewProjectionItemsTask.Factory(corrector, new TestMessageId.Factory());
+        factory = new RecomputeMessageFastViewProjectionItemTask.Factory(corrector, new TestMessageId.Factory());
     }
 
     @Test
     void shouldMatchJsonSerializationContract() throws Exception {
         MessageId messageId = messageIdFactory.fromString("1");
 
-        JsonSerializationVerifier.dtoModule(RecomputeMessageFastViewProjectionItemsTask.module(factory))
-            .bean(new RecomputeMessageFastViewProjectionItemsTask(corrector, messageId))
+        JsonSerializationVerifier.dtoModule(RecomputeMessageFastViewProjectionItemTask.module(factory))
+            .bean(new RecomputeMessageFastViewProjectionItemTask(corrector, messageId))
             .json(ClassLoaderUtils.getSystemResourceAsString("json/recomputeMessage.task.json"))
             .verify();
     }

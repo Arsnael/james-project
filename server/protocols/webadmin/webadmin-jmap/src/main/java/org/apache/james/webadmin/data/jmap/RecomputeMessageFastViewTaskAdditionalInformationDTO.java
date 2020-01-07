@@ -29,17 +29,17 @@ import org.apache.james.server.task.json.dto.AdditionalInformationDTOModule;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RecomputeMessageFastViewTaskAdditionalInformationDTO implements AdditionalInformationDTO {
-    public static AdditionalInformationDTOModule<RecomputeMessageFastViewProjectionItemsTask.AdditionalInformation, RecomputeMessageFastViewTaskAdditionalInformationDTO> serializationModule(MessageId.Factory factory) {
-        return DTOModule.forDomainObject(RecomputeMessageFastViewProjectionItemsTask.AdditionalInformation.class)
+    public static AdditionalInformationDTOModule<RecomputeMessageFastViewProjectionItemTask.AdditionalInformation, RecomputeMessageFastViewTaskAdditionalInformationDTO> serializationModule(MessageId.Factory factory) {
+        return DTOModule.forDomainObject(RecomputeMessageFastViewProjectionItemTask.AdditionalInformation.class)
             .convertToDTO(RecomputeMessageFastViewTaskAdditionalInformationDTO.class)
-            .toDomainObjectConverter(dto -> new RecomputeMessageFastViewProjectionItemsTask.AdditionalInformation(
+            .toDomainObjectConverter(dto -> new RecomputeMessageFastViewProjectionItemTask.AdditionalInformation(
                 factory.fromString(dto.getMessageId()),
                 dto.timestamp))
             .toDTOConverter((details, type) -> new RecomputeMessageFastViewTaskAdditionalInformationDTO(
                 type,
                 details.timestamp(),
                 details.getMessageId()))
-            .typeName(RecomputeMessageFastViewProjectionItemsTask.TASK_TYPE.asString())
+            .typeName(RecomputeMessageFastViewProjectionItemTask.TASK_TYPE.asString())
             .withFactory(AdditionalInformationDTOModule::new);
     }
 

@@ -1,4 +1,4 @@
 {
-  "type":"RecomputeMessageFastViewProjectionItemsTask",
+  "type":"RecomputeMessageFastViewProjectionItemTask",
   "messageId": "1"
 }

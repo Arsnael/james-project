@@ -37,8 +37,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import reactor.core.scheduler.Schedulers;
 
-public class RecomputeMessageFastViewProjectionItemsTask implements Task {
-    static final TaskType TASK_TYPE = TaskType.of("RecomputeMessageFastViewProjectionItemsTask");
+public class RecomputeMessageFastViewProjectionItemTask implements Task {
+    static final TaskType TASK_TYPE = TaskType.of("RecomputeMessageFastViewProjectionItemTask");
 
     public static class Factory {
         private final MessageFastViewProjectionCorrector corrector;
@@ -50,9 +50,9 @@ public class RecomputeMessageFastViewProjectionItemsTask implements Task {
             this.messageIdFactory = messageIdFactory;
         }
 
-        public RecomputeMessageFastViewProjectionItemsTask create(RecomputeMessageFastViewTaskDTO dto) {
+        public RecomputeMessageFastViewProjectionItemTask create(RecomputeMessageFastViewTaskDTO dto) {
             MessageId messageId = messageIdFactory.fromString(dto.getMessageId());
-            return new RecomputeMessageFastViewProjectionItemsTask(corrector, messageId);
+            return new RecomputeMessageFastViewProjectionItemTask(corrector, messageId);
         }
     }
 
@@ -100,9 +100,9 @@ public class RecomputeMessageFastViewProjectionItemsTask implements Task {
         }
     }
 
-    public static TaskDTOModule<RecomputeMessageFastViewProjectionItemsTask, RecomputeMessageFastViewTaskDTO> module(RecomputeMessageFastViewProjectionItemsTask.Factory factory) {
+    public static TaskDTOModule<RecomputeMessageFastViewProjectionItemTask, RecomputeMessageFastViewTaskDTO> module(RecomputeMessageFastViewProjectionItemTask.Factory factory) {
         return DTOModule
-            .forDomainObject(RecomputeMessageFastViewProjectionItemsTask.class)
+            .forDomainObject(RecomputeMessageFastViewProjectionItemTask.class)
             .convertToDTO(RecomputeMessageFastViewTaskDTO.class)
             .toDomainObjectConverter(factory::create)
             .toDTOConverter((task, type) -> new RecomputeMessageFastViewTaskDTO(type, task.messageId.serialize()))
@@ -113,7 +113,7 @@ public class RecomputeMessageFastViewProjectionItemsTask implements Task {
     private final MessageFastViewProjectionCorrector corrector;
     private final MessageId messageId;
 
-    RecomputeMessageFastViewProjectionItemsTask(MessageFastViewProjectionCorrector corrector, MessageId messageId) {
+    RecomputeMessageFastViewProjectionItemTask(MessageFastViewProjectionCorrector corrector, MessageId messageId) {
         this.corrector = corrector;
         this.messageId = messageId;
     }

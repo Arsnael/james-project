@@ -43,7 +43,7 @@ class RecomputeMessageFastViewTaskAdditionalInformationDTOTest {
         MessageId messageId = factory.fromString("1");
 
         JsonSerializationVerifier.dtoModule(RecomputeMessageFastViewTaskAdditionalInformationDTO.serializationModule(factory))
-            .bean(new RecomputeMessageFastViewProjectionItemsTask.AdditionalInformation(messageId, INSTANT ))
+            .bean(new RecomputeMessageFastViewProjectionItemTask.AdditionalInformation(messageId, INSTANT ))
             .json(ClassLoaderUtils.getSystemResourceAsString("json/recomputeMessage.additionalInformation.json"))
             .verify();
     }
