@@ -38,6 +38,9 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.search.MailboxQuery;
+import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
+import org.apache.james.mailbox.store.mail.MessageMapper;
+import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.util.streams.Iterators;
@@ -45,13 +48,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
+import com.google.common.collect.ImmutableList;
 
+import javassist.NotFoundException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class MessageFastViewProjectionCorrector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageFastViewProjectionCorrector.class);
+    private static final String FAST_VIEW_CORRECTOR = "fast-view-corrector";
+    private static final Username FAST_VIEW_CORRECTOR_USER = Username.of(FAST_VIEW_CORRECTOR);
 
     static class Progress {
         private final AtomicLong processedUserCount;
@@ -91,15 +98,19 @@ public class MessageFastViewProjectionCorrector {
     private final MailboxManager mailboxManager;
     private final MessageFastViewProjection messageFastViewProjection;
     private final MessageFastViewPrecomputedProperties.Factory projectionItemFactory;
+    private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
 
     @Inject
-    MessageFastViewProjectionCorrector(UsersRepository usersRepository, MailboxManager mailboxManager,
+    MessageFastViewProjectionCorrector(UsersRepository usersRepository,
+                                       MailboxManager mailboxManager,
                                        MessageFastViewProjection messageFastViewProjection,
-                                       MessageFastViewPrecomputedProperties.Factory projectionItemFactory) {
+                                       MessageFastViewPrecomputedProperties.Factory projectionItemFactory,
+                                       MailboxSessionMapperFactory mailboxSessionMapperFactory) {
         this.usersRepository = usersRepository;
         this.mailboxManager = mailboxManager;
         this.messageFastViewProjection = messageFastViewProjection;
         this.projectionItemFactory = projectionItemFactory;
+        this.mailboxSessionMapperFactory = mailboxSessionMapperFactory;
     }
 
     Mono<Void> correctAllProjectionItems(Progress progress) {
@@ -133,15 +144,29 @@ public class MessageFastViewProjectionCorrector {
 
     private Mono<Void> correctMailboxProjectionItems(Progress progress, MessageManager messageManager, MailboxSession session) throws MailboxException {
         return listAllMailboxMessages(messageManager, session)
-            .concatMap(messageResult -> retrieveContent(messageManager, session, messageResult))
-            .map(this::computeProjectionEntry)
-            .concatMap(pair -> storeProjectionEntry(pair)
+            .concatMap(messageId -> correctMessageProjectionItems(messageId)
                 .doOnSuccess(any -> progress.processedMessageCount.incrementAndGet()))
             .onErrorContinue((error, triggeringValue) -> {
                 LOGGER.error("JMAP fastview re-computation aborted for {} - {}", session.getUser(), triggeringValue, error);
                 progress.failedMessageCount.incrementAndGet();
             })
             .then();
+    }
+
+    Mono<Void> correctMessageProjectionItems(MessageId messageId) {
+        try {
+            MailboxSession session = mailboxManager.createSystemSession(FAST_VIEW_CORRECTOR_USER);
+            return Flux.fromStream(mailboxSessionMapperFactory.getMessageIdMapper(session)
+                .find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
+                .stream())
+                .switchIfEmpty(Mono.error(new NotFoundException(String.format("Failed to find the message with id %s", messageId))))
+                .next()
+                .map(this::computeProjectionEntry)
+                .flatMap(this::storeProjectionEntry);
+        } catch (Exception e) {
+            LOGGER.error("Failed to re-compute preview of message with id {}", messageId, e);
+            return Mono.error(e);
+        }
     }
 
     private Flux<MailboxMetaData> listUsersMailboxes(MailboxSession session) throws MailboxException {
@@ -152,22 +177,17 @@ public class MessageFastViewProjectionCorrector {
         return Mono.fromCallable(() -> mailboxManager.getMailbox(mailboxMetadata.getId(), session));
     }
 
-    private Flux<MessageResult> listAllMailboxMessages(MessageManager messageManager, MailboxSession session) throws MailboxException {
-        return Iterators.toFlux(messageManager.getMessages(MessageRange.all(), FetchGroup.MINIMAL, session));
+    private Flux<MessageId> listAllMailboxMessages(MessageManager messageManager, MailboxSession session) throws MailboxException {
+        return Iterators.toFlux(messageManager.getMessages(MessageRange.all(), FetchGroup.MINIMAL, session))
+            .map(MessageResult::getMessageId);
     }
 
-    private Flux<MessageResult> retrieveContent(MessageManager messageManager, MailboxSession session, MessageResult messageResult) {
+    private Pair<MessageId, MessageFastViewPrecomputedProperties> computeProjectionEntry(MailboxMessage mailboxMessage) {
         try {
-            return Iterators.toFlux(messageManager.getMessages(MessageRange.one(messageResult.getUid()), FetchGroup.FULL_CONTENT, session));
-        } catch (MailboxException e) {
-            return Flux.error(e);
-        }
-    }
-
-    private Pair<MessageId, MessageFastViewPrecomputedProperties> computeProjectionEntry(MessageResult messageResult) {
-        try {
-            return Pair.of(messageResult.getMessageId(), projectionItemFactory.from(messageResult));
-        } catch (MailboxException | IOException e) {
+            return Pair.of(mailboxMessage.getMessageId(), projectionItemFactory.from(
+                mailboxMessage.getFullContent(), mailboxMessage.getAttachments()
+            ));
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

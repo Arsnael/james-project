@@ -37,10 +37,12 @@ import org.apache.james.jmap.memory.projections.MemoryMessageFastViewProjection;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
+import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.apache.james.task.Hostname;
 import org.apache.james.task.MemoryTaskManager;
@@ -64,14 +66,16 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.LogDetail;
 import spark.Service;
 
-class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
+class RecomputeMessageFastViewProjectionItemsRequestToTaskTest {
     private final class JMAPRoutes implements Routes {
         private final MessageFastViewProjectionCorrector corrector;
         private final TaskManager taskManager;
+        private final MessageId.Factory factory;
 
-        private JMAPRoutes(MessageFastViewProjectionCorrector corrector, TaskManager taskManager) {
+        private JMAPRoutes(MessageFastViewProjectionCorrector corrector, TaskManager taskManager, MessageId.Factory factory) {
             this.corrector = corrector;
             this.taskManager = taskManager;
+            this.factory = factory;
         }
 
         @Override
@@ -83,14 +87,13 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
         public void define(Service service) {
             service.post(BASE_PATH,
                 TaskFromRequestRegistry.builder()
-                    .registrations(new RecomputeAllFastViewProjectionItemsRequestToTask(corrector))
+                    .registrations(new RecomputeMessageFastViewProjectionItemsRequestToTask(corrector, factory))
                     .buildAsRoute(taskManager),
                 new JsonTransformer());
         }
     }
 
-    static final String BASE_PATH = "/mailboxes";
-
+    static final String BASE_PATH = "/messages/:messageId";
 
     static final MessageFastViewPrecomputedProperties PROJECTION_ITEM = MessageFastViewPrecomputedProperties.builder()
         .preview(Preview.from("body"))
@@ -99,15 +102,19 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
 
     static final DomainList NO_DOMAIN_LIST = null;
     static final Username BOB = Username.of("bob");
+    static final Username CEDRIC = Username.of("cedric");
+    static final String MESSAGE_ID = "1";
 
-    private WebAdminServer webAdminServer;
-    private MemoryTaskManager taskManager;
-    private MemoryMessageFastViewProjection messageFastViewProjection;
-    private InMemoryMailboxManager mailboxManager;
-    private MemoryUsersRepository usersRepository;
+    WebAdminServer webAdminServer;
+    MemoryTaskManager taskManager;
+    MemoryMessageFastViewProjection messageFastViewProjection;
+    InMemoryMailboxManager mailboxManager;
+    MemoryUsersRepository usersRepository;
+    MessageId.Factory factory;
 
     @BeforeEach
     void setUp() {
+        factory = new InMemoryMessageId.Factory();
         JsonTransformer jsonTransformer = new JsonTransformer();
         taskManager = new MemoryTaskManager(new Hostname("foo"));
 
@@ -122,11 +129,11 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
             new TasksRoutes(taskManager, jsonTransformer),
             new JMAPRoutes(
                 new MessageFastViewProjectionCorrector(usersRepository, mailboxManager, messageFastViewProjection, projectionItemFactory, mailboxManager.getMapperFactory()),
-                taskManager))
+                taskManager, factory))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
-            .setBasePath(BASE_PATH)
+            .setBasePath("/messages/" + MESSAGE_ID)
             .log(LogDetail.URI)
             .build();
     }
@@ -176,6 +183,20 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
     }
 
     @Test
+    void postShouldFailUponBadMessageId() {
+        given()
+            .basePath("/messages/invalid-id")
+            .queryParam("action", "recomputeFastViewProjectionItems")
+            .post()
+        .then()
+            .statusCode(HttpStatus.BAD_REQUEST_400)
+            .body("statusCode", is(400))
+            .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
+            .body("message", is("Invalid arguments supplied in the user request"))
+            .body("details", is("For input string: \"invalid-id\""));
+    }
+
+    @Test
     void postShouldCreateANewTask() {
         given()
             .queryParam("action", "recomputeFastViewProjectionItems")
@@ -186,7 +207,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
     }
 
     @Test
-    void recomputeAllShouldCompleteWhenNoUser() {
+    void recomputeMessageShouldFailWhenMessageDoesNotExist() {
         String taskId = with()
             .queryParam("action", "recomputeFastViewProjectionItems")
             .post()
@@ -198,83 +219,27 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
         .when()
             .get(taskId + "/await")
         .then()
-            .body("status", is("completed"))
+            .body("status", is("failed"))
             .body("taskId", is(taskId))
-            .body("type", is("RecomputeAllFastViewProjectionItemsTask"))
-            .body("additionalInformation.processedUserCount", is(0))
-            .body("additionalInformation.processedMessageCount", is(0))
-            .body("additionalInformation.failedUserCount", is(0))
-            .body("additionalInformation.failedMessageCount", is(0))
+            .body("type", is("RecomputeMessageFastViewProjectionItemsTask"))
+            .body("additionalInformation.messageId", is(MESSAGE_ID))
             .body("startedDate", is(notNullValue()))
             .body("submitDate", is(notNullValue()))
-            .body("completedDate", is(notNullValue()));
+            .body("failedDate", is(notNullValue()));
     }
 
     @Test
-    void recomputeAllShouldCompleteWhenUserWithNoMailbox() throws Exception {
-        usersRepository.addUser(BOB, "pass");
-
-        String taskId = with()
-            .queryParam("action", "recomputeFastViewProjectionItems")
-            .post()
-            .jsonPath()
-            .get("taskId");
-
-        given()
-            .basePath(TasksRoutes.BASE)
-        .when()
-            .get(taskId + "/await")
-        .then()
-            .body("status", is("completed"))
-            .body("taskId", is(taskId))
-            .body("type", is("RecomputeAllFastViewProjectionItemsTask"))
-            .body("additionalInformation.processedUserCount", is(1))
-            .body("additionalInformation.processedMessageCount", is(0))
-            .body("additionalInformation.failedUserCount", is(0))
-            .body("additionalInformation.failedMessageCount", is(0))
-            .body("startedDate", is(notNullValue()))
-            .body("submitDate", is(notNullValue()))
-            .body("completedDate", is(notNullValue()));
-    }
-
-    @Test
-    void recomputeAllShouldCompleteWhenUserWithNoMessage() throws Exception {
-        usersRepository.addUser(BOB, "pass");
-        mailboxManager.createMailbox(MailboxPath.inbox(BOB), mailboxManager.createSystemSession(BOB));
-
-        String taskId = with()
-            .queryParam("action", "recomputeFastViewProjectionItems")
-            .post()
-            .jsonPath()
-            .get("taskId");
-
-        given()
-            .basePath(TasksRoutes.BASE)
-        .when()
-            .get(taskId + "/await")
-        .then()
-            .body("status", is("completed"))
-            .body("taskId", is(taskId))
-            .body("type", is("RecomputeAllFastViewProjectionItemsTask"))
-            .body("additionalInformation.processedUserCount", is(1))
-            .body("additionalInformation.processedMessageCount", is(0))
-            .body("additionalInformation.failedUserCount", is(0))
-            .body("additionalInformation.failedMessageCount", is(0))
-            .body("startedDate", is(notNullValue()))
-            .body("submitDate", is(notNullValue()))
-            .body("completedDate", is(notNullValue()));
-    }
-
-    @Test
-    void recomputeAllShouldCompleteWhenOneMessage() throws Exception {
+    void recomputeMessageShouldCompleteWhenMessageExists() throws Exception {
         usersRepository.addUser(BOB, "pass");
         MailboxSession session = mailboxManager.createSystemSession(BOB);
         Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
-        mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
-            MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
-            session);
+        ComposedMessageId composedMessageId = mailboxManager.getMailbox(mailboxId.get(), session)
+            .appendMessage(MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"), session);
+
+        String messageId = composedMessageId.getMessageId().serialize();
 
         String taskId = with()
+            .basePath("/messages/" + messageId)
             .queryParam("action", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
@@ -287,26 +252,25 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
         .then()
             .body("status", is("completed"))
             .body("taskId", is(taskId))
-            .body("type", is("RecomputeAllFastViewProjectionItemsTask"))
-            .body("additionalInformation.processedUserCount", is(1))
-            .body("additionalInformation.processedMessageCount", is(1))
-            .body("additionalInformation.failedUserCount", is(0))
-            .body("additionalInformation.failedMessageCount", is(0))
+            .body("type", is("RecomputeMessageFastViewProjectionItemsTask"))
+            .body("additionalInformation.messageId", is(messageId))
             .body("startedDate", is(notNullValue()))
             .body("submitDate", is(notNullValue()))
             .body("completedDate", is(notNullValue()));
     }
 
     @Test
-    void recomputeAllShouldUpdateProjection() throws Exception {
+    void recomputeMessageShouldUpdateProjection() throws Exception {
         usersRepository.addUser(BOB, "pass");
         MailboxSession session = mailboxManager.createSystemSession(BOB);
         Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
-        ComposedMessageId messageId = mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
-            MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
-            session);
+        ComposedMessageId composedMessageId = mailboxManager.getMailbox(mailboxId.get(), session)
+            .appendMessage(MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"), session);
+
+        MessageId messageId = composedMessageId.getMessageId();
 
         String taskId = with()
+            .basePath("/messages/" + messageId.serialize())
             .queryParam("action", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
@@ -316,38 +280,43 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
             .basePath(TasksRoutes.BASE)
             .get(taskId + "/await");
 
-        assertThat(messageFastViewProjection.retrieve(messageId.getMessageId()).block())
+        assertThat(messageFastViewProjection.retrieve(messageId).block())
             .isEqualTo(PROJECTION_ITEM);
     }
 
     @Test
-    void recomputeAllShouldBeIdempotent() throws Exception {
+    void recomputeMessageShouldBeIdempotent() throws Exception {
         usersRepository.addUser(BOB, "pass");
         MailboxSession session = mailboxManager.createSystemSession(BOB);
         Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
-        ComposedMessageId messageId = mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
-            MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
-            session);
+        ComposedMessageId composedMessageId = mailboxManager.getMailbox(mailboxId.get(), session)
+            .appendMessage(MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"), session);
+
+        MessageId messageId = composedMessageId.getMessageId();
 
         String taskId1 = with()
+            .basePath("/messages/" + messageId.serialize())
             .queryParam("action", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
             .get("taskId");
+
         with()
             .basePath(TasksRoutes.BASE)
             .get(taskId1 + "/await");
 
         String taskId2 = with()
+            .basePath("/messages/" + messageId.serialize())
             .queryParam("action", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
             .get("taskId");
+
         with()
             .basePath(TasksRoutes.BASE)
             .get(taskId2 + "/await");
 
-        assertThat(messageFastViewProjection.retrieve(messageId.getMessageId()).block())
+        assertThat(messageFastViewProjection.retrieve(messageId).block())
             .isEqualTo(PROJECTION_ITEM);
     }
 }

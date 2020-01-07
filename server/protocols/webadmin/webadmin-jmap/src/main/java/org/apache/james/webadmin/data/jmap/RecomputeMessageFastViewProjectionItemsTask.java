@@ -35,6 +35,8 @@ import org.apache.james.task.TaskType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import reactor.core.scheduler.Schedulers;
+
 public class RecomputeMessageFastViewProjectionItemsTask implements Task {
     static final TaskType TASK_TYPE = TaskType.of("RecomputeMessageFastViewProjectionItemsTask");
 
@@ -109,19 +111,23 @@ public class RecomputeMessageFastViewProjectionItemsTask implements Task {
     }
 
     private final MessageFastViewProjectionCorrector corrector;
-    private final MessageFastViewProjectionCorrector.Progress progress;
     private final MessageId messageId;
 
     RecomputeMessageFastViewProjectionItemsTask(MessageFastViewProjectionCorrector corrector, MessageId messageId) {
         this.corrector = corrector;
         this.messageId = messageId;
-        this.progress = new MessageFastViewProjectionCorrector.Progress();
     }
 
     @Override
     public Result run() {
-        //TODO
-        return Result.COMPLETED;
+        try {
+            corrector.correctMessageProjectionItems(messageId)
+                .subscribeOn(Schedulers.elastic())
+                .block();
+            return Result.COMPLETED;
+        } catch (Exception e) {
+            return Result.PARTIAL;
+        }
     }
 
     @Override

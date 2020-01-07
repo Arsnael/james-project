@@ -60,7 +60,7 @@ public class Preview {
             return fromInputStream(new ByteArrayInputStream(messageAsString.getBytes(StandardCharsets.UTF_8)));
         }
 
-        private Preview fromInputStream(InputStream inputStream) throws IOException {
+        public Preview fromInputStream(InputStream inputStream) throws IOException {
             return fromMime4JMessage(parse(inputStream));
         }
 

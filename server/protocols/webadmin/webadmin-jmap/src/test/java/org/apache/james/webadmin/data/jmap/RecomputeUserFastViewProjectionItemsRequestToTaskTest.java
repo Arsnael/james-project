@@ -135,7 +135,8 @@ class RecomputeUserFastViewProjectionItemsRequestToTaskTest {
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new TasksRoutes(taskManager, jsonTransformer),
             new JMAPRoutes(
-                new MessageFastViewProjectionCorrector(usersRepository, mailboxManager, messageFastViewProjection, projectionItemFactory),
+                new MessageFastViewProjectionCorrector(usersRepository, mailboxManager, messageFastViewProjection, projectionItemFactory,
+                    mailboxManager.getMapperFactory()),
                 taskManager, usersRepository))
             .start();
 
