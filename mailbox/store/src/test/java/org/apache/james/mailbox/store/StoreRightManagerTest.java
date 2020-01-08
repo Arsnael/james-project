@@ -51,238 +51,388 @@ import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class StoreRightManagerTest {
-
+    
     static final long UID_VALIDITY = 3421L;
     StoreRightManager storeRightManager;
     MailboxSession aliceSession;
     MailboxACLResolver mailboxAclResolver;
     GroupMembershipResolver groupMembershipResolver;
     MailboxMapper mockedMailboxMapper;
+    MailboxSessionMapperFactory mockedMapperFactory;
 
     @BeforeEach
-    void setup() throws MailboxException {
-        aliceSession = MailboxSessionUtil.createUserSession(MailboxFixture.ALICE);
-        MailboxSessionMapperFactory mockedMapperFactory = mock(MailboxSessionMapperFactory.class);
+    void setup() {
+        mockedMapperFactory = mock(MailboxSessionMapperFactory.class);
         mockedMailboxMapper = mock(MailboxMapper.class);
         mailboxAclResolver = new UnionMailboxACLResolver();
         groupMembershipResolver = new SimpleGroupMembershipResolver();
         EventBus eventBus = mock(EventBus.class);
-        when(mockedMapperFactory.getMailboxMapper(aliceSession))
-            .thenReturn(mockedMailboxMapper);
 
         storeRightManager = new StoreRightManager(mockedMapperFactory, mailboxAclResolver, groupMembershipResolver, eventBus);
     }
 
-    @Test
-    void hasRightShouldThrowMailboxNotFoundExceptionWhenMailboxDoesNotExist() throws MailboxException {
-        MailboxPath mailboxPath = MailboxPath.forUser(MailboxFixture.ALICE, "unexisting mailbox");
-        when(mockedMailboxMapper.findMailboxByPath(mailboxPath))
-            .thenThrow(new MailboxNotFoundException(""));
+    @Nested
+    class UserRightTest {
+        @BeforeEach
+        void setup() throws MailboxException {
+            aliceSession = MailboxSessionUtil.createUserSession(MailboxFixture.ALICE);
 
-        assertThatThrownBy(() ->
-            storeRightManager.hasRight(mailboxPath, Right.Read, aliceSession))
-            .isInstanceOf(MailboxNotFoundException.class);
-    }
+            when(mockedMapperFactory.getMailboxMapper(aliceSession))
+                .thenReturn(mockedMailboxMapper);
+        }
 
-    @Test
-    void hasRightShouldReturnTrueWhenTheUserOwnTheMailbox() throws MailboxException {
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(ALICE, MailboxConstants.INBOX), UID_VALIDITY);
+        @Test
+        void hasRightShouldThrowMailboxNotFoundExceptionWhenMailboxDoesNotExist() throws MailboxException {
+            MailboxPath mailboxPath = MailboxPath.forUser(MailboxFixture.ALICE, "unexisting mailbox");
+            when(mockedMailboxMapper.findMailboxByPath(mailboxPath))
+                .thenThrow(new MailboxNotFoundException(""));
 
-        assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
-            .isTrue();
-    }
+            assertThatThrownBy(() ->
+                storeRightManager.hasRight(mailboxPath, Right.Read, aliceSession))
+                .isInstanceOf(MailboxNotFoundException.class);
+        }
 
-    @Test
-    void hasRightShouldReturnTrueWhenTheUserDoesNotOwnTheMailboxButHaveTheCorrectRightOnIt() throws MailboxException {
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write)));
+        @Test
+        void hasRightShouldReturnTrueWhenTheUserOwnTheMailbox() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(ALICE, MailboxConstants.INBOX), UID_VALIDITY);
 
-        assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
-            .isTrue();
-    }
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isTrue();
+        }
 
-    @Test
-    void hasRightShouldReturnTrueWhenTheUserDoesNotOwnTheMailboxButHasAtLeastTheCorrectRightOnIt() throws MailboxException {
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write, Right.Lookup)));
+        @Test
+        void hasRightShouldReturnTrueWhenTheUserDoesNotOwnTheMailboxButHaveTheCorrectRightOnIt() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write)));
 
-        assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
-            .isTrue();
-    }
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isTrue();
+        }
 
-    @Test
-    void hasRightShouldReturnFalseWhenTheUserDoesNotOwnTheMailboxAndHasNoRightOnIt() throws MailboxException {
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+        @Test
+        void hasRightShouldReturnTrueWhenTheUserDoesNotOwnTheMailboxButHasAtLeastTheCorrectRightOnIt() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write, Right.Lookup)));
 
-        assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
-            .isFalse();
-    }
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isTrue();
+        }
 
-    @Test
-    void isReadWriteShouldReturnTrueWhenUserHasInsertRightOnMailbox() throws Exception {
-        Flags flags = new Flags();
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Insert)));
+        @Test
+        void hasRightShouldReturnFalseWhenTheUserDoesNotOwnTheMailboxAndHasNoRightOnIt() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
-            .isTrue();
-    }
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isFalse();
+        }
 
-    @Test
-    void isReadWriteShouldReturnTrueWhenUserHasPerformExpungeRightOnMailbox() throws Exception {
-        Flags flags = new Flags();
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.PerformExpunge)));
+        @Test
+        void isReadWriteShouldReturnTrueWhenUserHasInsertRightOnMailbox() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Insert)));
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
-            .isTrue();
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
 
-    @Test
-    void isReadWriteShouldReturnTrueWhenUserHasDeleteMessagesRightOnMailboxAndFlagsContainDeletedFlag() throws Exception {
-        Flags flags = new Flags(Flags.Flag.DELETED);
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.DeleteMessages)));
+        @Test
+        void isReadWriteShouldReturnTrueWhenUserHasPerformExpungeRightOnMailbox() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.PerformExpunge)));
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
-            .isTrue();
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
 
-    @Test
-    void isReadWriteShouldReturnFalseWhenUserHasDeleteMessagesRightOnMailboxButFlagsDoesNotContainDeletedFlag() throws Exception {
-        Flags flags = new Flags();
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.DeleteMessages)));
+        @Test
+        void isReadWriteShouldReturnTrueWhenUserHasDeleteMessagesRightOnMailboxAndFlagsContainDeletedFlag() throws Exception {
+            Flags flags = new Flags(Flags.Flag.DELETED);
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.DeleteMessages)));
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
-            .isFalse();
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
 
-    @Test
-    void isReadWriteShouldReturnTrueWhenUserHasWriteSeenFlagRightOnMailboxAndFlagsContainSeenFlag() throws Exception {
-        Flags flags = new Flags(Flags.Flag.SEEN);
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.WriteSeenFlag)));
+        @Test
+        void isReadWriteShouldReturnFalseWhenUserHasDeleteMessagesRightOnMailboxButFlagsDoesNotContainDeletedFlag() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.DeleteMessages)));
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
-            .isTrue();
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isFalse();
+        }
 
-    @Test
-    void isReadWriteShouldReturnFalseWhenUserHasWriteSeenFlagRightOnMailboxAndFlagsDoesNotContainSeenFlag() throws Exception {
-        Flags flags = new Flags();
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.WriteSeenFlag)));
+        @Test
+        void isReadWriteShouldReturnTrueWhenUserHasWriteSeenFlagRightOnMailboxAndFlagsContainSeenFlag() throws Exception {
+            Flags flags = new Flags(Flags.Flag.SEEN);
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.WriteSeenFlag)));
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
-            .isFalse();
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
 
-    @Test
-    void isReadWriteShouldReturnTrueWhenUserHasWriteRightOnMailboxAndFlagsContainAnsweredFlag() throws Exception {
-        Flags flags = new Flags(Flags.Flag.ANSWERED);
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write)));
+        @Test
+        void isReadWriteShouldReturnFalseWhenUserHasWriteSeenFlagRightOnMailboxAndFlagsDoesNotContainSeenFlag() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.WriteSeenFlag)));
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
-            .isTrue();
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isFalse();
+        }
 
-    @Test
-    void isReadWriteShouldReturnFalseWhenUserDoesNotHaveInsertOrPerformExpungeRightOnMailboxAndNullFlag() throws Exception {
-        Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
-        mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Administer)));
+        @Test
+        void isReadWriteShouldReturnTrueWhenUserHasWriteRightOnMailboxAndFlagsContainAnsweredFlag() throws Exception {
+            Flags flags = new Flags(Flags.Flag.ANSWERED);
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write)));
 
-        assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, new Flags()))
-            .isFalse();
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
 
-    @Test
-    void filteredForSessionShouldBeIdentityWhenOwner() throws UnsupportedRightException {
-        MailboxACL acl = new MailboxACL()
-            .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
-            .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
-        MailboxACL actual = StoreRightManager.filteredForSession(
-            new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, aliceSession);
-        assertThat(actual).isEqualTo(acl);
-    }
+        @Test
+        void isReadWriteShouldReturnFalseWhenUserDoesNotHaveInsertOrPerformExpungeRightOnMailboxAndNullFlag() throws Exception {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Administer)));
 
-    @Test
-    void filteredForSessionShouldBeIdentityWhenAdmin() throws UnsupportedRightException {
-        MailboxACL acl = new MailboxACL()
-            .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
-            .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
-        MailboxACL actual = StoreRightManager.filteredForSession(
-            new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.createUserSession(CEDRIC));
-        assertThat(actual).isEqualTo(acl);
-    }
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, new Flags()))
+                .isFalse();
+        }
 
-    @Test
-    void filteredForSessionShouldContainOnlyLoggedUserWhenReadWriteAccess() throws UnsupportedRightException {
-        MailboxACL acl = new MailboxACL()
-            .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
-            .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
-        MailboxACL actual = StoreRightManager.filteredForSession(
-            new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.createUserSession(BOB));
-        assertThat(actual.getEntries()).containsKey(MailboxACL.EntryKey.createUserEntryKey(BOB));
-    }
+        @Test
+        void filteredForSessionShouldBeIdentityWhenOwner() throws UnsupportedRightException {
+            MailboxACL acl = new MailboxACL()
+                .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
+                .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
+            MailboxACL actual = StoreRightManager.filteredForSession(
+                new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, aliceSession);
+            assertThat(actual).isEqualTo(acl);
+        }
 
-    @Test
-    void areDomainsDifferentShouldReturnTrueWhenOneHasDomainNotTheOther() {
-        assertThat(storeRightManager.areDomainsDifferent("user@domain.org", Username.of("otherUser"))).isTrue();
-    }
+        @Test
+        void filteredForSessionShouldBeIdentityWhenAdmin() throws UnsupportedRightException {
+            MailboxACL acl = new MailboxACL()
+                .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
+                .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
+            MailboxACL actual = StoreRightManager.filteredForSession(
+                new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.createUserSession(CEDRIC));
+            assertThat(actual).isEqualTo(acl);
+        }
 
-    @Test
-    void areDomainsDifferentShouldReturnTrueWhenOtherHasDomainNotTheOne() {
-        assertThat(storeRightManager.areDomainsDifferent("user", Username.of("otherUser@domain.org"))).isTrue();
-    }
+        @Test
+        void filteredForSessionShouldContainOnlyLoggedUserWhenReadWriteAccess() throws UnsupportedRightException {
+            MailboxACL acl = new MailboxACL()
+                .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
+                .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
+            MailboxACL actual = StoreRightManager.filteredForSession(
+                new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.createUserSession(BOB));
+            assertThat(actual.getEntries()).containsKey(MailboxACL.EntryKey.createUserEntryKey(BOB));
+        }
 
-    @Test
-    void areDomainsDifferentShouldReturnFalseWhenNoDomain() {
-        assertThat(storeRightManager.areDomainsDifferent("user", Username.of("otherUser"))).isFalse();
-    }
+        @Test
+        void areDomainsDifferentShouldReturnTrueWhenOneHasDomainNotTheOther() {
+            assertThat(storeRightManager.areDomainsDifferent("user@domain.org", Username.of("otherUser"))).isTrue();
+        }
 
-    @Test
-    void areDomainsDifferentShouldReturnTrueWhenDomainsAreDifferent() {
-        assertThat(storeRightManager.areDomainsDifferent("user@domain.org", Username.of("otherUser@otherdomain.org"))).isTrue();
-    }
+        @Test
+        void areDomainsDifferentShouldReturnTrueWhenOtherHasDomainNotTheOne() {
+            assertThat(storeRightManager.areDomainsDifferent("user", Username.of("otherUser@domain.org"))).isTrue();
+        }
 
-    @Test
-    void areDomainsDifferentShouldReturnFalseWhenDomainsAreIdentical() {
-        assertThat(storeRightManager.areDomainsDifferent("user@domain.org", Username.of("otherUser@domain.org"))).isFalse();
-    }
+        @Test
+        void areDomainsDifferentShouldReturnFalseWhenNoDomain() {
+            assertThat(storeRightManager.areDomainsDifferent("user", Username.of("otherUser"))).isFalse();
+        }
 
-    @Test
-    void assertSharesBelongsToUserDomainShouldThrowWhenOneDomainIsDifferent() throws Exception  {
-        MailboxACL mailboxACL = new MailboxACL(new MailboxACL.Entry("a@domain.org", Right.Write), 
-                new MailboxACL.Entry("b@otherdomain.org", Right.Write), 
+        @Test
+        void areDomainsDifferentShouldReturnTrueWhenDomainsAreDifferent() {
+            assertThat(storeRightManager.areDomainsDifferent("user@domain.org", Username.of("otherUser@otherdomain.org"))).isTrue();
+        }
+
+        @Test
+        void areDomainsDifferentShouldReturnFalseWhenDomainsAreIdentical() {
+            assertThat(storeRightManager.areDomainsDifferent("user@domain.org", Username.of("otherUser@domain.org"))).isFalse();
+        }
+
+        @Test
+        void assertSharesBelongsToUserDomainShouldThrowWhenOneDomainIsDifferent() throws Exception  {
+            MailboxACL mailboxACL = new MailboxACL(new MailboxACL.Entry("a@domain.org", Right.Write),
+                new MailboxACL.Entry("b@otherdomain.org", Right.Write),
                 new MailboxACL.Entry("c@domain.org", Right.Write));
-        
-        assertThatThrownBy(() -> storeRightManager.assertSharesBelongsToUserDomain(Username.of("user@domain.org"), mailboxACL.getEntries()))
-            .isInstanceOf(DifferentDomainException.class);
-    }
 
-    @Test
-    void assertSharesBelongsToUserDomainShouldNotThrowWhenDomainsAreIdentical() throws Exception  {
-        MailboxACL mailboxACL = new MailboxACL(new MailboxACL.Entry("a@domain.org", Right.Write), 
-                new MailboxACL.Entry("b@domain.org", Right.Write), 
+            assertThatThrownBy(() -> storeRightManager.assertSharesBelongsToUserDomain(Username.of("user@domain.org"), mailboxACL.getEntries()))
+                .isInstanceOf(DifferentDomainException.class);
+        }
+
+        @Test
+        void assertSharesBelongsToUserDomainShouldNotThrowWhenDomainsAreIdentical() throws Exception  {
+            MailboxACL mailboxACL = new MailboxACL(new MailboxACL.Entry("a@domain.org", Right.Write),
+                new MailboxACL.Entry("b@domain.org", Right.Write),
                 new MailboxACL.Entry("c@domain.org", Right.Write));
-        
-        storeRightManager.assertSharesBelongsToUserDomain(Username.of("user@domain.org"), mailboxACL.getEntries());
+
+            storeRightManager.assertSharesBelongsToUserDomain(Username.of("user@domain.org"), mailboxACL.getEntries());
+        }
+
+        @Test
+        void applyRightsCommandShouldThrowWhenDomainsAreDifferent() {
+            MailboxPath mailboxPath = MailboxPath.forUser(Username.of("user@domain.org"), "mailbox");
+            ACLCommand aclCommand = MailboxACL.command()
+                .forUser(Username.of("otherUser@otherdomain.org"))
+                .rights(MailboxACL.FULL_RIGHTS)
+                .asAddition();
+
+            assertThatThrownBy(() -> storeRightManager.applyRightsCommand(mailboxPath, aclCommand, aliceSession))
+                .isInstanceOf(DifferentDomainException.class);
+        }
     }
 
-    @Test
-    void applyRightsCommandShouldThrowWhenDomainsAreDifferent() {
-        MailboxPath mailboxPath = MailboxPath.forUser(Username.of("user@domain.org"), "mailbox");
-        ACLCommand aclCommand = MailboxACL.command()
-            .forUser(Username.of("otherUser@otherdomain.org"))
-            .rights(MailboxACL.FULL_RIGHTS)
-            .asAddition();
-       
-        assertThatThrownBy(() -> storeRightManager.applyRightsCommand(mailboxPath, aclCommand, aliceSession))
-            .isInstanceOf(DifferentDomainException.class);
+    @Nested
+    class SystemRightsTest {
+        @BeforeEach
+        void setup() throws MailboxException {
+            aliceSession = MailboxSessionUtil.createSystemSession(MailboxFixture.ALICE);
+
+            when(mockedMapperFactory.getMailboxMapper(aliceSession))
+                .thenReturn(mockedMailboxMapper);
+        }
+
+        @Test
+        void hasRightShouldReturnTrueWhenTheSystemSessionOwnTheMailbox() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(ALICE, MailboxConstants.INBOX), UID_VALIDITY);
+
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isTrue();
+        }
+
+        @Test
+        void hasRightShouldReturnTrueWhenTheSystemSessionDoesNotOwnTheMailboxButHaveTheCorrectRightOnIt() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write)));
+
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isTrue();
+        }
+
+        @Test
+        void hasRightShouldReturnTrueWhenTheSystemSessionDoesNotOwnTheMailboxButHasAtLeastTheCorrectRightOnIt() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write, Right.Lookup)));
+
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isTrue();
+        }
+
+        @Test
+        void hasRightShouldReturnTrueWhenTheSystemSessionDoesNotOwnTheMailboxAndHasNoRightOnIt() throws MailboxException {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+
+            assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionHasInsertRightOnMailbox() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Insert)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionHasPerformExpungeRightOnMailbox() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.PerformExpunge)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionHasDeleteMessagesRightOnMailboxAndFlagsContainDeletedFlag() throws Exception {
+            Flags flags = new Flags(Flags.Flag.DELETED);
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.DeleteMessages)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionHasDeleteMessagesRightOnMailboxButFlagsDoesNotContainDeletedFlag() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.DeleteMessages)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionHasWriteSeenFlagRightOnMailboxAndFlagsContainSeenFlag() throws Exception {
+            Flags flags = new Flags(Flags.Flag.SEEN);
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.WriteSeenFlag)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionHasWriteSeenFlagRightOnMailboxAndFlagsDoesNotContainSeenFlag() throws Exception {
+            Flags flags = new Flags();
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.WriteSeenFlag)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionHasWriteRightOnMailboxAndFlagsContainAnsweredFlag() throws Exception {
+            Flags flags = new Flags(Flags.Flag.ANSWERED);
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Write)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, flags))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSessionDoesNotHaveInsertOrPerformExpungeRightOnMailboxAndNullFlag() throws Exception {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+            mailbox.setACL(new MailboxACL(new MailboxACL.Entry(MailboxFixture.ALICE.asString(), Right.Administer)));
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, new Flags()))
+                .isTrue();
+        }
+
+        @Test
+        void isReadWriteShouldReturnTrueWhenSystemSession() throws Exception {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+
+            assertThat(storeRightManager.isReadWrite(aliceSession, mailbox, new Flags()))
+                .isTrue();
+        }
+
+        @Test
+        void myRightsShouldReturnFullRightsWhenSystemSession() throws Exception {
+            Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY);
+
+            assertThat(storeRightManager.myRights(mailbox, aliceSession))
+                .isEqualTo(MailboxACL.FULL_RIGHTS);
+        }
     }
 }
