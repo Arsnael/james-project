@@ -114,7 +114,7 @@ public class MessagesRoutes implements Routes {
     private final Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistrations;
 
     @Inject
-    MessagesRoutes(TaskManager taskManager,
+    public MessagesRoutes(TaskManager taskManager,
                    JsonTransformer jsonTransformer,
                    @Named(ONE_MESSAGE_TASKS) Set<TaskFromRequestRegistry.TaskRegistration> oneMessageTaskRegistrations) {
         this.taskManager = taskManager;

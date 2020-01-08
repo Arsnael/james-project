@@ -119,7 +119,7 @@ public class UserMailboxesRoutes implements Routes {
     private Service service;
 
     @Inject
-    UserMailboxesRoutes(UserMailboxesService userMailboxesService,
+    public UserMailboxesRoutes(UserMailboxesService userMailboxesService,
                         JsonTransformer jsonTransformer,
                         TaskManager taskManager,
                         @Named(USER_MAILBOXES_OPERATIONS_INJECTION_KEY) Set<TaskRegistration> usersMailboxesTaskRegistration) {

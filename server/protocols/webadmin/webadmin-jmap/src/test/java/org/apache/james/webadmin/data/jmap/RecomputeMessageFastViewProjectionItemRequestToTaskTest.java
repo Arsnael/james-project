@@ -46,15 +46,13 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.apache.james.task.Hostname;
 import org.apache.james.task.MemoryTaskManager;
-import org.apache.james.task.TaskManager;
 import org.apache.james.user.memory.MemoryUsersRepository;
 import org.apache.james.util.html.HtmlTextExtractor;
 import org.apache.james.util.mime.MessageContentExtractor;
-import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
+import org.apache.james.webadmin.routes.MessagesRoutes;
 import org.apache.james.webadmin.routes.TasksRoutes;
-import org.apache.james.webadmin.tasks.TaskFromRequestRegistry;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
@@ -62,38 +60,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.ImmutableSet;
+
 import io.restassured.RestAssured;
 import io.restassured.filter.log.LogDetail;
-import spark.Service;
 
 class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
-    private final class JMAPRoutes implements Routes {
-        private final MessageFastViewProjectionCorrector corrector;
-        private final TaskManager taskManager;
-        private final MessageId.Factory factory;
-
-        private JMAPRoutes(MessageFastViewProjectionCorrector corrector, TaskManager taskManager, MessageId.Factory factory) {
-            this.corrector = corrector;
-            this.taskManager = taskManager;
-            this.factory = factory;
-        }
-
-        @Override
-        public String getBasePath() {
-            return BASE_PATH;
-        }
-
-        @Override
-        public void define(Service service) {
-            service.post(BASE_PATH,
-                TaskFromRequestRegistry.builder()
-                    .registrations(new RecomputeMessageFastViewProjectionItemRequestToTask(corrector, factory))
-                    .buildAsRoute(taskManager),
-                new JsonTransformer());
-        }
-    }
-
-    static final String BASE_PATH = "/messages/:messageId";
 
     static final MessageFastViewPrecomputedProperties PROJECTION_ITEM = MessageFastViewPrecomputedProperties.builder()
         .preview(Preview.from("body"))
@@ -102,7 +74,6 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
 
     static final DomainList NO_DOMAIN_LIST = null;
     static final Username BOB = Username.of("bob");
-    static final Username CEDRIC = Username.of("cedric");
     static final String MESSAGE_ID = "1";
 
     WebAdminServer webAdminServer;
@@ -125,11 +96,13 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
         HtmlTextExtractor htmlTextExtractor = new JsoupHtmlTextExtractor();
         Preview.Factory previewFactory = new Preview.Factory(messageContentExtractor, htmlTextExtractor);
         MessageFastViewPrecomputedProperties.Factory projectionItemFactory = new MessageFastViewPrecomputedProperties.Factory(previewFactory);
+        MessageFastViewProjectionCorrector corrector = new MessageFastViewProjectionCorrector(usersRepository, mailboxManager, messageFastViewProjection, projectionItemFactory, mailboxManager.getMapperFactory());
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new TasksRoutes(taskManager, jsonTransformer),
-            new JMAPRoutes(
-                new MessageFastViewProjectionCorrector(usersRepository, mailboxManager, messageFastViewProjection, projectionItemFactory, mailboxManager.getMapperFactory()),
-                taskManager, factory))
+            new MessagesRoutes(
+                taskManager,
+                jsonTransformer,
+                ImmutableSet.of(new RecomputeMessageFastViewProjectionItemRequestToTask(corrector, factory))))
             .start();
 
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
@@ -145,7 +118,7 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
     }
 
     @Test
-    void actionRequestParameterShouldBeCompulsory() {
+    void taskRequestParameterShouldBeCompulsory() {
         when()
             .post()
         .then()
@@ -153,40 +126,40 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
             .body("message", is("Invalid arguments supplied in the user request"))
-            .body("details", is("'action' query parameter is compulsory. Supported values are [recomputeFastViewProjectionItems]"));
+            .body("details", is("'task' query parameter is compulsory. Supported values are [recomputeFastViewProjectionItems]"));
     }
 
     @Test
-    void postShouldFailUponEmptyAction() {
+    void postShouldFailUponEmptyTask() {
         given()
-            .queryParam("action", "")
+            .queryParam("task", "")
             .post()
         .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
             .body("message", is("Invalid arguments supplied in the user request"))
-            .body("details", is("'action' query parameter cannot be empty or blank. Supported values are [recomputeFastViewProjectionItems]"));
+            .body("details", is("'task' query parameter cannot be empty or blank. Supported values are [recomputeFastViewProjectionItems]"));
     }
 
     @Test
-    void postShouldFailUponInvalidAction() {
+    void postShouldFailUponInvalidTask() {
         given()
-            .queryParam("action", "invalid")
+            .queryParam("task", "invalid")
             .post()
         .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("statusCode", is(400))
             .body("type", is(ErrorResponder.ErrorType.INVALID_ARGUMENT.getType()))
             .body("message", is("Invalid arguments supplied in the user request"))
-            .body("details", is("Invalid value supplied for query parameter 'action': invalid. Supported values are [recomputeFastViewProjectionItems]"));
+            .body("details", is("Invalid value supplied for query parameter 'task': invalid. Supported values are [recomputeFastViewProjectionItems]"));
     }
 
     @Test
     void postShouldFailUponBadMessageId() {
         given()
             .basePath("/messages/invalid-id")
-            .queryParam("action", "recomputeFastViewProjectionItems")
+            .queryParam("task", "recomputeFastViewProjectionItems")
             .post()
         .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
@@ -199,7 +172,7 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
     @Test
     void postShouldCreateANewTask() {
         given()
-            .queryParam("action", "recomputeFastViewProjectionItems")
+            .queryParam("task", "recomputeFastViewProjectionItems")
             .post()
         .then()
             .statusCode(HttpStatus.CREATED_201)
@@ -209,7 +182,7 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
     @Test
     void recomputeMessageShouldFailWhenMessageDoesNotExist() {
         String taskId = with()
-            .queryParam("action", "recomputeFastViewProjectionItems")
+            .queryParam("task", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
             .get("taskId");
@@ -240,7 +213,7 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
 
         String taskId = with()
             .basePath("/messages/" + messageId)
-            .queryParam("action", "recomputeFastViewProjectionItems")
+            .queryParam("task", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
             .get("taskId");
@@ -271,7 +244,7 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
 
         String taskId = with()
             .basePath("/messages/" + messageId.serialize())
-            .queryParam("action", "recomputeFastViewProjectionItems")
+            .queryParam("task", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
             .get("taskId");
@@ -296,7 +269,7 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
 
         String taskId1 = with()
             .basePath("/messages/" + messageId.serialize())
-            .queryParam("action", "recomputeFastViewProjectionItems")
+            .queryParam("task", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
             .get("taskId");
@@ -307,7 +280,7 @@ class RecomputeMessageFastViewProjectionItemRequestToTaskTest {
 
         String taskId2 = with()
             .basePath("/messages/" + messageId.serialize())
-            .queryParam("action", "recomputeFastViewProjectionItems")
+            .queryParam("task", "recomputeFastViewProjectionItems")
             .post()
             .jsonPath()
             .get("taskId");

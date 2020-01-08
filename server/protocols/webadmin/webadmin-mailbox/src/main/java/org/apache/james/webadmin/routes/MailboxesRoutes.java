@@ -286,7 +286,7 @@ public class MailboxesRoutes implements Routes {
     private final Set<TaskRegistration> oneMailTaskRegistration;
 
     @Inject
-    MailboxesRoutes(TaskManager taskManager,
+    public MailboxesRoutes(TaskManager taskManager,
                     JsonTransformer jsonTransformer,
                     @Named(ALL_MAILBOXES_TASKS) Set<TaskRegistration> allMailboxesTaskRegistration,
                     @Named(ONE_MAILBOX_TASKS) Set<TaskRegistration> oneMailboxTaskRegistration,
