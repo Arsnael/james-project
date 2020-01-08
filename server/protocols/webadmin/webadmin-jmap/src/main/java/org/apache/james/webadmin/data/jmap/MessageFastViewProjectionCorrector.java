@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.Username;
+import org.apache.james.jmap.api.model.Preview;
 import org.apache.james.jmap.api.projections.MessageFastViewPrecomputedProperties;
 import org.apache.james.jmap.api.projections.MessageFastViewProjection;
 import org.apache.james.jmap.draft.exceptions.MessageNotFoundException;
@@ -97,19 +98,19 @@ public class MessageFastViewProjectionCorrector {
     private final UsersRepository usersRepository;
     private final MailboxManager mailboxManager;
     private final MessageFastViewProjection messageFastViewProjection;
-    private final MessageFastViewPrecomputedProperties.Factory projectionItemFactory;
+    private final Preview.Factory previewFactory;
     private final MailboxSessionMapperFactory mailboxSessionMapperFactory;
 
     @Inject
     MessageFastViewProjectionCorrector(UsersRepository usersRepository,
                                        MailboxManager mailboxManager,
                                        MessageFastViewProjection messageFastViewProjection,
-                                       MessageFastViewPrecomputedProperties.Factory projectionItemFactory,
+                                       Preview.Factory previewFactory,
                                        MailboxSessionMapperFactory mailboxSessionMapperFactory) {
         this.usersRepository = usersRepository;
         this.mailboxManager = mailboxManager;
         this.messageFastViewProjection = messageFastViewProjection;
-        this.projectionItemFactory = projectionItemFactory;
+        this.previewFactory = previewFactory;
         this.mailboxSessionMapperFactory = mailboxSessionMapperFactory;
     }
 
@@ -184,9 +185,11 @@ public class MessageFastViewProjectionCorrector {
 
     private Pair<MessageId, MessageFastViewPrecomputedProperties> computeProjectionEntry(MailboxMessage mailboxMessage) {
         try {
-            return Pair.of(mailboxMessage.getMessageId(), projectionItemFactory.from(
-                mailboxMessage.getFullContent(), mailboxMessage.getAttachments()
-            ));
+            MessageFastViewPrecomputedProperties properties = MessageFastViewPrecomputedProperties.builder()
+                .preview(previewFactory.fromInputStream(mailboxMessage.getFullContent()))
+                .hasAttachment(MessageFastViewPrecomputedProperties.hasAttachment(mailboxMessage.getAttachments()))
+                .build();
+            return Pair.of(mailboxMessage.getMessageId(), properties);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -101,8 +101,7 @@ class RecomputeUserFastViewProjectionItemsRequestToTaskTest {
         MessageContentExtractor messageContentExtractor = new MessageContentExtractor();
         HtmlTextExtractor htmlTextExtractor = new JsoupHtmlTextExtractor();
         Preview.Factory previewFactory = new Preview.Factory(messageContentExtractor, htmlTextExtractor);
-        MessageFastViewPrecomputedProperties.Factory projectionItemFactory = new MessageFastViewPrecomputedProperties.Factory(previewFactory);
-        MessageFastViewProjectionCorrector corrector = new MessageFastViewProjectionCorrector(usersRepository, mailboxManager, messageFastViewProjection, projectionItemFactory, mailboxManager.getMapperFactory());
+        MessageFastViewProjectionCorrector corrector = new MessageFastViewProjectionCorrector(usersRepository, mailboxManager, messageFastViewProjection, previewFactory, mailboxManager.getMapperFactory());
         webAdminServer = WebAdminUtils.createWebAdminServer(
             new TasksRoutes(taskManager, jsonTransformer),
             new UserMailboxesRoutes(

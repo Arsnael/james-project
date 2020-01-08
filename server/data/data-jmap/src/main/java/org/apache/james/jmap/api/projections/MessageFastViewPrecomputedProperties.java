@@ -20,7 +20,6 @@
 package org.apache.james.jmap.api.projections;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
@@ -88,18 +87,11 @@ public class MessageFastViewPrecomputedProperties {
                 .hasAttachment(hasAttachment(messageResult.getLoadedAttachments()))
                 .build();
         }
+    }
 
-        public MessageFastViewPrecomputedProperties from(InputStream data, List<MessageAttachment> messageAttachments) throws IOException {
-            return builder()
-                .preview(previewFactory.fromInputStream(data))
-                .hasAttachment(hasAttachment(messageAttachments))
-                .build();
-        }
-
-        private boolean hasAttachment(List<MessageAttachment> attachments) {
-            return attachments.stream()
-                .anyMatch(attachment -> !attachment.isInlinedWithCid());
-        }
+    public static boolean hasAttachment(List<MessageAttachment> attachments) {
+        return attachments.stream()
+            .anyMatch(attachment -> !attachment.isInlinedWithCid());
     }
 
     private final Preview preview;
