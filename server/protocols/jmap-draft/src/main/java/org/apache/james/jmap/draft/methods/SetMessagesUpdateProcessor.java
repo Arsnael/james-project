@@ -245,7 +245,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     }
 
     private List<MailboxId> mailboxIdFor(Role role, MailboxSession session) throws MailboxException {
-        return systemMailboxesProvider.getMailboxByRole(role, session.getUser())
+        return systemMailboxesProvider.getMailboxByRole(role, session)
             .map(MessageManager::getId)
             .collect(Guavate.toImmutableList());
     }
@@ -273,7 +273,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     }
 
     private Set<MailboxId> listMailboxIdsForRole(MailboxSession session, Role role) throws MailboxException {
-        return systemMailboxesProvider.getMailboxByRole(role, session.getUser())
+        return systemMailboxesProvider.getMailboxByRole(role, session)
             .map(MessageManager::getId)
             .collect(Guavate.toImmutableSet());
     }

@@ -28,6 +28,8 @@ import org.apache.james.mailbox.exception.MailboxRoleNotFoundException;
 public interface SystemMailboxesProvider {
     Stream<MessageManager> getMailboxByRole(Role aRole, Username username) throws MailboxException;
 
+    Stream<MessageManager> getMailboxByRole(Role aRole, MailboxSession session) throws MailboxException;
+
     default MessageManager findMailbox(Role role, Username username) throws MailboxException {
         return getMailboxByRole(role, username).findAny()
             .orElseThrow(() -> new MailboxRoleNotFoundException(role));

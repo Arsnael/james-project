@@ -53,11 +53,16 @@ public class SystemMailboxesProviderImpl implements SystemMailboxesProvider {
     @Override
     public Stream<MessageManager> getMailboxByRole(Role aRole, Username username) throws MailboxException {
         MailboxSession session = mailboxManager.createSystemSession(username);
-        MailboxPath mailboxPath = MailboxPath.forUser(username, aRole.getDefaultMailbox());
+        return getMailboxByRole(aRole, session);
+    }
+
+    @Override
+    public Stream<MessageManager> getMailboxByRole(Role aRole, MailboxSession session) throws MailboxException {
+        MailboxPath mailboxPath = MailboxPath.forUser(session.getUser(), aRole.getDefaultMailbox());
         try {
             return Stream.of(mailboxManager.getMailbox(mailboxPath, session));
         } catch (MailboxNotFoundException e) {
-            return searchMessageManagerByMailboxRole(aRole, username);
+            return searchMessageManagerByMailboxRole(aRole, session.getUser());
         }
     }
 

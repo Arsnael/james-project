@@ -383,6 +383,11 @@ public class SetMessagesCreationProcessorTest {
         }
 
         @Override
+        public Stream<MessageManager> getMailboxByRole(Role aRole, MailboxSession session) {
+            return getMailboxByRole(aRole, session.getUser());
+        }
+
+        @Override
         public Stream<MessageManager> getMailboxByRole(Role aRole, Username username) {
             if (aRole.equals(Role.OUTBOX)) {
                 return OptionalUtils.toStream(outboxSupplier.get());
