@@ -240,7 +240,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
     @Test
     void recomputeAllShouldCompleteWhenUserWithNoMessage() throws Exception {
         usersRepository.addUser(BOB, "pass");
-        mailboxManager.createMailbox(MailboxPath.inbox(BOB), mailboxManager.createSystemSession(BOB));
+        mailboxManager.createMailbox(MailboxPath.inbox(BOB), mailboxManager.createUserSession(BOB));
 
         String taskId = with()
             .queryParam("action", "recomputeFastViewProjectionItems")
@@ -268,7 +268,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
     @Test
     void recomputeAllShouldCompleteWhenOneMessage() throws Exception {
         usersRepository.addUser(BOB, "pass");
-        MailboxSession session = mailboxManager.createSystemSession(BOB);
+        MailboxSession session = mailboxManager.createUserSession(BOB);
         Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
         mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
             MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
@@ -300,7 +300,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
     @Test
     void recomputeAllShouldUpdateProjection() throws Exception {
         usersRepository.addUser(BOB, "pass");
-        MailboxSession session = mailboxManager.createSystemSession(BOB);
+        MailboxSession session = mailboxManager.createUserSession(BOB);
         Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
         ComposedMessageId messageId = mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
             MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),
@@ -323,7 +323,7 @@ class RecomputeAllFastViewProjectionItemsRequestToTaskTest {
     @Test
     void recomputeAllShouldBeIdempotent() throws Exception {
         usersRepository.addUser(BOB, "pass");
-        MailboxSession session = mailboxManager.createSystemSession(BOB);
+        MailboxSession session = mailboxManager.createUserSession(BOB);
         Optional<MailboxId> mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session);
         ComposedMessageId messageId = mailboxManager.getMailbox(mailboxId.get(), session).appendMessage(
             MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),

@@ -266,7 +266,7 @@ public interface QuotaSearcherContract {
 
     default void appendMessage(QuotaSearchTestSystem testSystem, Username username, MessageManager.AppendCommand appendCommand) throws MailboxException, UsersRepositoryException, DomainListException {
         MailboxManager mailboxManager = testSystem.getMailboxManager();
-        MailboxSession session = mailboxManager.createSystemSession(username);
+        MailboxSession session = mailboxManager.createUserSession(username);
 
         MailboxPath mailboxPath = MailboxPath.inbox(session);
         mailboxManager.createMailbox(mailboxPath, session);

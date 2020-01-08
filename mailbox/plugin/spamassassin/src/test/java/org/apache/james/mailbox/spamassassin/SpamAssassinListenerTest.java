@@ -79,7 +79,7 @@ class SpamAssassinListenerTest {
     void setup() throws Exception {
         StoreMailboxManager mailboxManager = spy(InMemoryIntegrationResources.defaultResources().getMailboxManager());
         SystemMailboxesProviderImpl systemMailboxesProvider = new SystemMailboxesProviderImpl(mailboxManager);
-        when(mailboxManager.createSystemSession(USER))
+        when(mailboxManager.createUserSession(USER))
             .thenReturn(MAILBOX_SESSION);
 
         spamAssassin = mock(SpamAssassin.class);

@@ -173,7 +173,7 @@ class MailboxesRoutesTest {
 
             @Test
             void fullReprocessingShouldReturnTaskDetailsWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 mailboxManager.createMailbox(INBOX, systemSession).get();
                 mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -202,7 +202,7 @@ class MailboxesRoutesTest {
 
             @Test
             void fullReprocessingShouldReturnTaskDetailsWhenFailing() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId composedMessageId = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -239,7 +239,7 @@ class MailboxesRoutesTest {
         class SideEffects {
             @Test
             void fullReprocessingShouldPerformReprocessingWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId createdMessage = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -280,7 +280,7 @@ class MailboxesRoutesTest {
         class Validation {
             @Test
             void mailboxReprocessingShouldFailWithNoTask() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
 
                 when()
@@ -295,7 +295,7 @@ class MailboxesRoutesTest {
 
             @Test
             void mailboxReprocessingShouldFailWithBadTask() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
 
                 when()
@@ -335,7 +335,7 @@ class MailboxesRoutesTest {
         class TaskDetails {
             @Test
             void mailboxReprocessingShouldNotFailWhenNoMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
 
                 String taskId = when()
@@ -361,7 +361,7 @@ class MailboxesRoutesTest {
 
             @Test
             void mailboxReprocessingShouldReturnTaskDetailsWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -390,7 +390,7 @@ class MailboxesRoutesTest {
 
             @Test
             void mailboxReprocessingShouldReturnTaskDetailsWhenFailing() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId composedMessageId = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -428,7 +428,7 @@ class MailboxesRoutesTest {
         class SideEffects {
             @Test
             void mailboxReprocessingShouldPerformReprocessingWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId createdMessage = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -470,7 +470,7 @@ class MailboxesRoutesTest {
         class Validation {
             @Test
             void messageReprocessingShouldFailWithNoTask() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
 
                 when()
@@ -485,7 +485,7 @@ class MailboxesRoutesTest {
 
             @Test
             void messageReprocessingShouldFailWithBadTask() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
 
                 when()
@@ -536,7 +536,7 @@ class MailboxesRoutesTest {
         class TaskDetails {
             @Test
             void messageReprocessingShouldNotFailWhenUidNotFound() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
 
                 String taskId = when()
@@ -561,7 +561,7 @@ class MailboxesRoutesTest {
 
             @Test
             void messageReprocessingShouldReturnTaskDetailsWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId composedMessageId = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -594,7 +594,7 @@ class MailboxesRoutesTest {
         class SideEffects {
             @Test
             void mailboxReprocessingShouldPerformReprocessingWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId createdMessage = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -732,7 +732,7 @@ class MailboxesRoutesTest {
 
             @Test
             void fixingReIndexingShouldReturnTaskDetailsWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 mailboxManager.createMailbox(INBOX, systemSession).get();
                 mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -776,7 +776,7 @@ class MailboxesRoutesTest {
 
             @Test
             void mailboxReprocessingShouldReturnTaskDetailsWhenFailing() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId composedMessageId = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -824,7 +824,7 @@ class MailboxesRoutesTest {
         class SideEffects {
             @Test
             void fixingReprocessingShouldPerformReprocessingWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId createdMessage = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(

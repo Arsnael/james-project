@@ -111,7 +111,7 @@ public class MailboxCopierTest {
      * @throws BadCredentialsException
      */
     private void assertMailboxManagerSize(MailboxManager mailboxManager, int multiplicationFactor) throws BadCredentialsException, MailboxException {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(Username.of("manager"));
+        MailboxSession mailboxSession = mailboxManager.createUserSession(Username.of("manager"));
         mailboxManager.startProcessingRequest(mailboxSession);
 
         List<MailboxPath> mailboxPathList = mailboxManager.list(mailboxSession);
@@ -119,7 +119,7 @@ public class MailboxCopierTest {
         assertThat(mailboxPathList).hasSize(DataProvisioner.EXPECTED_MAILBOXES_COUNT);
 
         for (MailboxPath mailboxPath: mailboxPathList) {
-            MailboxSession userSession = mailboxManager.createSystemSession(mailboxPath.getUser());
+            MailboxSession userSession = mailboxManager.createUserSession(mailboxPath.getUser());
             mailboxManager.startProcessingRequest(mailboxSession);
             MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, userSession);
             assertThat(messageManager.getMetaData(false, userSession, FetchGroup.NO_UNSEEN).getMessageCount()).isEqualTo(DataProvisioner.MESSAGE_PER_MAILBOX_COUNT * multiplicationFactor);

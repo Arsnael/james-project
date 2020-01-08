@@ -60,7 +60,7 @@ public class MailboxManagementTest {
 
         mailboxManagerManagement = new MailboxManagerManagement();
         mailboxManagerManagement.setMailboxManager(mailboxManager);
-        session = mailboxManager.createSystemSession(Username.of("TEST"));
+        session = mailboxManager.createUserSession(Username.of("TEST"));
     }
 
     @Test

@@ -63,7 +63,7 @@ public class MailboxAppenderTest {
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
         testee = new MailboxAppender(mailboxManager);
 
-        session = mailboxManager.createSystemSession(USER);
+        session = mailboxManager.createUserSession(USER);
     }
 
     @Test

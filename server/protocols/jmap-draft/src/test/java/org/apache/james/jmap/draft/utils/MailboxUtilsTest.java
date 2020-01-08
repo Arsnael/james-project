@@ -42,7 +42,7 @@ public class MailboxUtilsTest {
     public void setup() throws Exception {
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
         user = Username.of("user@domain.org");
-        mailboxSession = mailboxManager.createSystemSession(user);
+        mailboxSession = mailboxManager.createUserSession(user);
         sut = new MailboxUtils(mailboxManager);
     }
     

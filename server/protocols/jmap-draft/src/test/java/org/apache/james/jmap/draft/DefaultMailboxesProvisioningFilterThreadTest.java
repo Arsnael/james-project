@@ -63,7 +63,7 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
 
         when(mailboxManager.createMailbox(any(MailboxPath.class), eq(session))).thenReturn(Optional.of(TestId.of(18L)));
         when(mailboxManager.mailboxExists(any(MailboxPath.class), eq(session))).thenReturn(false);
-        when(mailboxManager.createSystemSession(USERNAME)).thenReturn(session);
+        when(mailboxManager.createUserSession(USERNAME)).thenReturn(session);
 
         ConcurrentTestRunner
             .builder()

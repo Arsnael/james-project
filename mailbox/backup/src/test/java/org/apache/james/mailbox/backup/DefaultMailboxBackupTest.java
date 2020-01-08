@@ -63,8 +63,8 @@ class DefaultMailboxBackupTest implements MailboxMessageFixture {
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
         archiveRestorer = new ZipMailArchiveRestorer(mailboxManager, archiveLoader);
         backup = new DefaultMailboxBackup(mailboxManager, archiveService, archiveRestorer);
-        sessionUser = mailboxManager.createSystemSession(USER);
-        sessionOtherUser = mailboxManager.createSystemSession(OTHER_USER);
+        sessionUser = mailboxManager.createUserSession(USER);
+        sessionOtherUser = mailboxManager.createUserSession(OTHER_USER);
     }
 
     private void createMailboxWithMessages(MailboxSession session, MailboxPath mailboxPath, MessageManager.AppendCommand... messages) throws Exception {

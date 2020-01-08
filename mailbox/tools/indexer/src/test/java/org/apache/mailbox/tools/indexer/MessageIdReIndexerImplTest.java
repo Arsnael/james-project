@@ -62,7 +62,7 @@ public class MessageIdReIndexerImplTest {
 
     @Test
     void reIndexShouldBeWellPerformed() throws Exception {
-        MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
         MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
         ComposedMessageId createdMessage = mailboxManager.getMailbox(INBOX, systemSession)
             .appendMessage(

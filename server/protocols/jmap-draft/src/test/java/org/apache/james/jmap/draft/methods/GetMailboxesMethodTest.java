@@ -86,7 +86,7 @@ public class GetMailboxesMethodTest {
         GetMailboxesRequest getMailboxesRequest = GetMailboxesRequest.builder()
                 .build();
 
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
 
         List<JmapResponse> getMailboxesResponse = getMailboxesMethod.process(getMailboxesRequest, methodCallId, mailboxSession).collect(Collectors.toList());
 
@@ -127,7 +127,7 @@ public class GetMailboxesMethodTest {
     @SuppressWarnings("unchecked")
     public void getMailboxesShouldReturnMailboxesWhenAvailable() throws Exception {
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, "name");
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, mailboxSession);
         messageManager.appendMessage(MessageManager.AppendCommand.from(
@@ -159,8 +159,8 @@ public class GetMailboxesMethodTest {
     public void getMailboxesShouldReturnOnlyMailboxesOfCurrentUserWhenAvailable() throws Exception {
         MailboxPath mailboxPathToReturn = MailboxPath.forUser(USERNAME, "mailboxToReturn");
         MailboxPath mailboxPathtoSkip = MailboxPath.forUser(USERNAME2, "mailboxToSkip");
-        MailboxSession userSession = mailboxManager.createSystemSession(USERNAME);
-        MailboxSession user2Session = mailboxManager.createSystemSession(USERNAME2);
+        MailboxSession userSession = mailboxManager.createUserSession(USERNAME);
+        MailboxSession user2Session = mailboxManager.createUserSession(USERNAME2);
         mailboxManager.createMailbox(mailboxPathToReturn, userSession);
         mailboxManager.createMailbox(mailboxPathtoSkip, user2Session);
 
@@ -181,7 +181,7 @@ public class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnInboxWithSortOrder10() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, "INBOX");
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
 
@@ -202,7 +202,7 @@ public class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnSortOrder1000OnUnknownFolder() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, "unknown");
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
 
@@ -223,7 +223,7 @@ public class GetMailboxesMethodTest {
 
     @Test
     public void getMailboxesShouldReturnInboxWithSortOrder10OnDifferenceCase() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, "InBoX");
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
 
@@ -245,7 +245,7 @@ public class GetMailboxesMethodTest {
     @Test
     @SuppressWarnings("unchecked")
     public void getMailboxesShouldReturnMailboxesWithSortOrder() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(MailboxPath.inbox(USERNAME), mailboxSession);
         mailboxManager.createMailbox(MailboxPath.forUser(USERNAME, "Archive"), mailboxSession);
         mailboxManager.createMailbox(MailboxPath.forUser(USERNAME, "Drafts"), mailboxSession);
@@ -282,7 +282,7 @@ public class GetMailboxesMethodTest {
     @SuppressWarnings("unchecked")
     public void getMailboxesShouldReturnEmptyMailboxByDefault() throws MailboxException {
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, "name");
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
 
         GetMailboxesRequest getMailboxesRequest = GetMailboxesRequest.builder()
@@ -303,7 +303,7 @@ public class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnCorrectTotalMessagesCount() throws Exception {
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, "name");
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, mailboxSession);
         messageManager.appendMessage(MessageManager.AppendCommand.from(
@@ -333,7 +333,7 @@ public class GetMailboxesMethodTest {
     @Test
     public void getMailboxesShouldReturnCorrectUnreadMessagesCount() throws Exception {
         MailboxPath mailboxPath = MailboxPath.forUser(USERNAME, "name");
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(mailboxPath, mailboxSession);
         Flags defaultUnseenFlag = new Flags();
@@ -372,7 +372,7 @@ public class GetMailboxesMethodTest {
     @Test
     @SuppressWarnings("unchecked")
     public void getMailboxesShouldReturnMailboxesWithRoles() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(MailboxPath.forUser(USERNAME, "INBOX"), mailboxSession);
         mailboxManager.createMailbox(MailboxPath.forUser(USERNAME, "Archive"), mailboxSession);
         mailboxManager.createMailbox(MailboxPath.forUser(USERNAME, "Drafts"), mailboxSession);

@@ -1696,7 +1696,7 @@ class DeletedMessagesVaultRoutesTest {
 
         @Test
         void restoreShouldNotDeleteExistingMessagesInTheUserMailbox() throws Exception {
-            MailboxSession session = mailboxManager.createSystemSession(USERNAME);
+            MailboxSession session = mailboxManager.createUserSession(USERNAME);
             MailboxPath restoreMailboxPath = MailboxPath.forUser(USERNAME, DefaultMailboxes.RESTORED_MESSAGES);
             mailboxManager.createMailbox(restoreMailboxPath, session);
             MessageManager messageManager = mailboxManager.getMailbox(restoreMailboxPath, session);
@@ -2260,7 +2260,7 @@ class DeletedMessagesVaultRoutesTest {
     }
 
     private boolean hasAnyMail(Username username) throws MailboxException {
-        MailboxSession session = mailboxManager.createSystemSession(username);
+        MailboxSession session = mailboxManager.createUserSession(username);
         int limitToOneMessage = 1;
 
         return !mailboxManager.search(MultimailboxesSearchQuery.from(new SearchQuery()).build(), session, limitToOneMessage)
@@ -2281,7 +2281,7 @@ class DeletedMessagesVaultRoutesTest {
     }
 
     private List<MessageResult> restoreMailboxMessages(Username username) throws Exception {
-        MailboxSession session = mailboxManager.createSystemSession(username);
+        MailboxSession session = mailboxManager.createUserSession(username);
         MessageManager messageManager = mailboxManager.getMailbox(MailboxPath.forUser(username, DefaultMailboxes.RESTORED_MESSAGES), session);
         return ImmutableList.copyOf(messageManager.getMessages(MessageRange.all(), FetchGroup.MINIMAL, session));
     }

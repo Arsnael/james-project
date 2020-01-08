@@ -110,7 +110,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldNotThrowWhenMessageIsNotInOutbox() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(SENT_MAILBOX_PATH, mailboxSession);
@@ -123,7 +123,7 @@ public class PostDequeueDecoratorTest {
     
     @Test(expected = MailboxRoleNotFoundException.class)
     public void doneShouldThrowWhenSentDoesNotExist() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         ComposedMessageId messageId = messageManager.appendMessage(AppendCommand.from(message), mailboxSession);
@@ -135,7 +135,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldCopyMailFromOutboxToSentWhenSuccess() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -153,7 +153,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldDeleteMailFromOutboxWhenSuccess() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -171,7 +171,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldNotMoveMailFromOutboxToSentWhenSuccessIsFalse() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -189,7 +189,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldNotMoveMailFromOutboxToSentWhenNoMetadataProvided() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -205,7 +205,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldNotMoveMailFromOutboxToSentWhenUsernameNotProvided() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -222,7 +222,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldNotMoveMailFromOutboxToSentWhenMessageIdNotProvided() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -239,7 +239,7 @@ public class PostDequeueDecoratorTest {
     
     @Test
     public void doneShouldNotMoveMailFromOutboxToSentWhenInvalidMessageIdProvided() throws Exception {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -261,7 +261,7 @@ public class PostDequeueDecoratorTest {
         testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(),
                 messageIdManager, new SystemMailboxesProviderImpl(mailboxManager));
 
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         MailboxId sentMailboxId = mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession).get();
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
@@ -289,7 +289,7 @@ public class PostDequeueDecoratorTest {
         testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(),
                 messageIdManager, new SystemMailboxesProviderImpl(mailboxManager));
 
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession).get();
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);

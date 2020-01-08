@@ -61,7 +61,7 @@ public interface MailboxManagerStressContract<T extends MailboxManager> {
         ExecutorService pool = Executors.newFixedThreadPool(APPEND_OPERATIONS / 20, threadFactory);
         Collection<MessageUid> uList = new ConcurrentLinkedDeque<>();
         Username username = Username.of("username");
-        MailboxSession session = getManager().createSystemSession(username);
+        MailboxSession session = getManager().createUserSession(username);
         getManager().startProcessingRequest(session);
         MailboxPath path = MailboxPath.forUser(username, "INBOX");
         MailboxId mailboxId = getManager().createMailbox(path, session).get();
@@ -85,7 +85,7 @@ public interface MailboxManagerStressContract<T extends MailboxManager> {
                 }
 
                 try {
-                    MailboxSession mailboxSession = getManager().createSystemSession(username);
+                    MailboxSession mailboxSession = getManager().createUserSession(username);
 
                     getManager().startProcessingRequest(mailboxSession);
                     MessageManager m = getManager().getMailbox(path, mailboxSession);

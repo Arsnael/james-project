@@ -83,7 +83,7 @@ public class DataProvisioner {
     }
 
     private static void provisionUser(MailboxManager mailboxManager, Username user) {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(user);
+        MailboxSession mailboxSession = mailboxManager.createUserSession(user);
         mailboxManager.startProcessingRequest(mailboxSession);
 
         createMailbox(mailboxManager, mailboxSession, MailboxPath.inbox(mailboxSession));

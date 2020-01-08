@@ -79,7 +79,7 @@ public class JWTAuthenticationStrategyTest {
 
         when(stubTokenVerifier.verify(validAuthHeader)).thenReturn(false);
         when(stubTokenVerifier.extractLogin(validAuthHeader)).thenReturn(username);
-        when(mockedMailboxManager.createSystemSession(eq(Username.of(username))))
+        when(mockedMailboxManager.createUserSession(eq(Username.of(username))))
                 .thenReturn(fakeMailboxSession);
         when(mockAuthenticationExtractor.authHeaders(request))
             .thenReturn(Stream.of(fakeAuthHeaderWithPrefix));
@@ -107,7 +107,7 @@ public class JWTAuthenticationStrategyTest {
 
         when(stubTokenVerifier.verify(validAuthHeader)).thenReturn(true);
         when(stubTokenVerifier.extractLogin(validAuthHeader)).thenReturn(username);
-        when(mockedMailboxManager.createSystemSession(eq(Username.of(username))))
+        when(mockedMailboxManager.createUserSession(eq(Username.of(username))))
                 .thenReturn(fakeMailboxSession);
         when(mockAuthenticationExtractor.authHeaders(request))
             .thenReturn(Stream.of(fakeAuthHeaderWithPrefix));
@@ -126,7 +126,7 @@ public class JWTAuthenticationStrategyTest {
 
         when(stubTokenVerifier.verify(validAuthHeader)).thenReturn(true);
         when(stubTokenVerifier.extractLogin(validAuthHeader)).thenReturn(username);
-        when(mockedMailboxManager.createSystemSession(eq(Username.of(username))))
+        when(mockedMailboxManager.createUserSession(eq(Username.of(username))))
                 .thenReturn(fakeMailboxSession);
         when(mockAuthenticationExtractor.authHeaders(request))
             .thenReturn(Stream.of(fakeAuthHeaderWithPrefix));

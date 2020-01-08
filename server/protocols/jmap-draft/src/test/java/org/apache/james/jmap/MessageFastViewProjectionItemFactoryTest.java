@@ -52,7 +52,7 @@ class MessageFastViewProjectionItemFactoryTest {
         testee = new MessageFastViewPrecomputedProperties.Factory(
             new Preview.Factory(new MessageContentExtractor(), new JsoupHtmlTextExtractor()));
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
-        session = mailboxManager.createSystemSession(BOB);
+        session = mailboxManager.createUserSession(BOB);
         MailboxId mailboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), session).get();
         mailbox = mailboxManager.getMailbox(mailboxId, session);
     }

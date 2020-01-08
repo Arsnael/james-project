@@ -109,8 +109,8 @@ public abstract class AbstractMessageSearchIndexTest {
     protected void setUp() throws Exception {
         initializeMailboxManager();
 
-        session = storeMailboxManager.createSystemSession(USERNAME);
-        otherSession = storeMailboxManager.createSystemSession(OTHERUSER);
+        session = storeMailboxManager.createUserSession(USERNAME);
+        otherSession = storeMailboxManager.createUserSession(OTHERUSER);
 
         inboxPath = MailboxPath.inbox(USERNAME);
         otherInboxPath = MailboxPath.inbox(OTHERUSER);

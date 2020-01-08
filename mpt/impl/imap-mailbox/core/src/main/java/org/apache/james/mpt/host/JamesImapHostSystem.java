@@ -101,7 +101,7 @@ public abstract class JamesImapHostSystem implements ImapHostSystem, GrantRights
     @Override
     public void createMailbox(MailboxPath mailboxPath) throws Exception {
         MailboxManager mailboxManager = getMailboxManager();
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(mailboxPath.getUser());
+        MailboxSession mailboxSession = mailboxManager.createUserSession(mailboxPath.getUser());
         mailboxManager.startProcessingRequest(mailboxSession);
         mailboxManager.createMailbox(mailboxPath, mailboxSession);
         mailboxManager.logout(mailboxSession);
@@ -111,14 +111,14 @@ public abstract class JamesImapHostSystem implements ImapHostSystem, GrantRights
     @Override
     public void grantRights(MailboxPath mailboxPath, Username username, MailboxACL.Rfc4314Rights rights) throws Exception {
         MailboxManager mailboxManager = getMailboxManager();
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(mailboxPath.getUser());
+        MailboxSession mailboxSession = mailboxManager.createUserSession(mailboxPath.getUser());
         mailboxManager.startProcessingRequest(mailboxSession);
         mailboxManager.setRights(mailboxPath,
             MailboxACL.EMPTY.apply(MailboxACL.command()
                 .forUser(username)
                 .rights(rights)
                 .asAddition()),
-            mailboxManager.createSystemSession(username));
+            mailboxManager.createUserSession(username));
         mailboxManager.logout(mailboxSession);
         mailboxManager.endProcessingRequest(mailboxSession);
     }

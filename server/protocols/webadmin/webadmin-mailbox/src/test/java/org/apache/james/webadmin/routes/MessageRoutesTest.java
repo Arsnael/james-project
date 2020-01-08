@@ -161,7 +161,7 @@ class MessageRoutesTest {
 
             @Test
             void messageIdReprocessingShouldReturnTaskDetailsWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId composedMessageId = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -192,7 +192,7 @@ class MessageRoutesTest {
         class SideEffects {
             @Test
             void messageIdReprocessingShouldPerformReprocessingWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId composedMessageId = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(

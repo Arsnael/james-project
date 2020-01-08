@@ -113,7 +113,7 @@ class MessageFastViewFactoryTest {
         messageIdManager = spy(resources.getMessageIdManager());
         InMemoryMailboxManager mailboxManager = resources.getMailboxManager();
 
-        session = mailboxManager.createSystemSession(BOB);
+        session = mailboxManager.createUserSession(BOB);
         MailboxId bobInboxId = mailboxManager.createMailbox(MailboxPath.inbox(session), session).get();
 
         bobInbox = mailboxManager.getMailbox(bobInboxId, session);

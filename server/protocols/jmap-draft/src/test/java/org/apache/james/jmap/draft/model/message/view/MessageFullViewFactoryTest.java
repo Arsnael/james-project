@@ -106,7 +106,7 @@ class MessageFullViewFactoryTest {
         messageIdManager = resources.getMessageIdManager();
         InMemoryMailboxManager mailboxManager = resources.getMailboxManager();
 
-        session = mailboxManager.createSystemSession(BOB);
+        session = mailboxManager.createUserSession(BOB);
         MailboxId bobInboxId = mailboxManager.createMailbox(MailboxPath.inbox(session), session).get();
         MailboxId bobMailboxId = mailboxManager.createMailbox(MailboxPath.forUser(BOB, "anotherMailbox"), session).get();
 

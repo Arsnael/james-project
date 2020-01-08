@@ -139,8 +139,8 @@ class DeletedMessageVaultHookTest {
         searchQuery = new SearchQuery();
         searchQuery.andCriteria(SearchQuery.internalDateOn(INTERNAL_DATE, SearchQuery.DateResolution.Second));
 
-        aliceSession = mailboxManager.createSystemSession(ALICE);
-        bobSession = mailboxManager.createSystemSession(BOB);
+        aliceSession = mailboxManager.createUserSession(ALICE);
+        bobSession = mailboxManager.createUserSession(BOB);
     }
 
     @Test

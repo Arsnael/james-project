@@ -92,7 +92,7 @@ public class JMAPFilteringExtension implements BeforeEachCallback, ParameterReso
         }
 
         public MailboxId createMailbox(Username username, String mailboxName) throws Exception {
-            MailboxSession mailboxSession = mailboxManager.createSystemSession(username);
+            MailboxSession mailboxSession = mailboxManager.createUserSession(username);
             return mailboxManager
                 .createMailbox(MailboxPath.forUser(username, mailboxName), mailboxSession)
                 .orElseThrow(() -> new RuntimeException("Missing mailboxId when creating mailbox"));

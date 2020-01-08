@@ -124,7 +124,7 @@ class RecomputeUserFastViewProjectionItemsRequestToTaskTest {
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
         usersRepository = MemoryUsersRepository.withoutVirtualHosting(NO_DOMAIN_LIST);
         usersRepository.addUser(BOB, "pass");
-        bobSession = mailboxManager.createSystemSession(BOB);
+        bobSession = mailboxManager.createUserSession(BOB);
         bobInboxboxId = mailboxManager.createMailbox(MailboxPath.inbox(BOB), bobSession)
             .get();
 
@@ -340,7 +340,7 @@ class RecomputeUserFastViewProjectionItemsRequestToTaskTest {
             bobSession);
 
         usersRepository.addUser(CEDRIC, "pass");
-        MailboxSession cedricSession = mailboxManager.createSystemSession(CEDRIC);
+        MailboxSession cedricSession = mailboxManager.createUserSession(CEDRIC);
         Optional<MailboxId> mailboxIdCedric = mailboxManager.createMailbox(MailboxPath.inbox(CEDRIC), cedricSession);
         mailboxManager.getMailbox(mailboxIdCedric.get(), cedricSession).appendMessage(
             MessageManager.AppendCommand.builder().build("header: value\r\n\r\nbody"),

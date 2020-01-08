@@ -75,7 +75,7 @@ public class CassandraReIndexerImplTest {
     @Test
     void reIndexShouldBeWellPerformed() throws Exception {
         // Given a mailbox with 1000 messages * 150 KB
-        MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+        MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
         mailboxManager.createMailbox(INBOX, systemSession);
 
         byte[] bigBody = (Strings.repeat("header: value\r\n", 10000) + "\r\nbody").getBytes(StandardCharsets.UTF_8);

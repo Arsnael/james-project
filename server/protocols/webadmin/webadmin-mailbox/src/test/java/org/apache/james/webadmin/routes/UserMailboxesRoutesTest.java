@@ -780,7 +780,7 @@ class UserMailboxesRoutesTest {
         @BeforeEach
         void setUp() throws Exception {
             mailboxManager = mock(MailboxManager.class);
-            when(mailboxManager.createSystemSession(any())).thenReturn(MailboxSessionUtil.create(USERNAME));
+            when(mailboxManager.createUserSession(any())).thenReturn(MailboxSessionUtil.create(USERNAME));
 
             createServer(mailboxManager, mock(MailboxSessionMapperFactory.class));
         }
@@ -1120,7 +1120,7 @@ class UserMailboxesRoutesTest {
 
             @Test
             void userReprocessingShouldReturnTaskDetailsWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 mailboxManager.createMailbox(INBOX, systemSession).get();
                 mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -1152,7 +1152,7 @@ class UserMailboxesRoutesTest {
 
             @Test
             void userReprocessingShouldReturnTaskDetailsWhenFailing() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId composedMessageId = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(
@@ -1190,7 +1190,7 @@ class UserMailboxesRoutesTest {
         class SideEffects {
             @Test
             void userReprocessingShouldPerformReprocessingWhenMail() throws Exception {
-                MailboxSession systemSession = mailboxManager.createSystemSession(USERNAME);
+                MailboxSession systemSession = mailboxManager.createUserSession(USERNAME);
                 MailboxId mailboxId = mailboxManager.createMailbox(INBOX, systemSession).get();
                 ComposedMessageId createdMessage = mailboxManager.getMailbox(INBOX, systemSession)
                     .appendMessage(

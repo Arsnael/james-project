@@ -81,7 +81,7 @@ public class AccessTokenAuthenticationStrategyTest {
         Username username = Username.of("123456789");
         MailboxSession fakeMailboxSession = mock(MailboxSession.class);
 
-        when(mockedMailboxManager.createSystemSession(eq(username)))
+        when(mockedMailboxManager.createUserSession(eq(username)))
                 .thenReturn(fakeMailboxSession);
 
         UUID authHeader = UUID.randomUUID();
@@ -100,7 +100,7 @@ public class AccessTokenAuthenticationStrategyTest {
         Username username = Username.of("123456789");
         MailboxSession fakeMailboxSession = mock(MailboxSession.class);
 
-        when(mockedMailboxManager.createSystemSession(eq(username)))
+        when(mockedMailboxManager.createUserSession(eq(username)))
                 .thenReturn(fakeMailboxSession);
 
         UUID authHeader = UUID.randomUUID();

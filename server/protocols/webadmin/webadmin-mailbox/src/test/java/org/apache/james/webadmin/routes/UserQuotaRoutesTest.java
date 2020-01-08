@@ -436,7 +436,7 @@ class UserQuotaRoutesTest {
 
         default void appendMessage(QuotaSearchTestSystem testSystem, Username username, MessageManager.AppendCommand appendCommand) throws MailboxException {
             MailboxManager mailboxManager = testSystem.getMailboxManager();
-            MailboxSession session = mailboxManager.createSystemSession(username);
+            MailboxSession session = mailboxManager.createUserSession(username);
 
             MailboxPath mailboxPath = MailboxPath.inbox(username);
             mailboxManager.createMailbox(mailboxPath, session);
