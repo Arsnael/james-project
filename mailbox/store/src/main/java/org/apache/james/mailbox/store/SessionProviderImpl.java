@@ -25,6 +25,7 @@ import javax.inject.Inject;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.MailboxSession.SessionType;
 import org.apache.james.mailbox.MailboxSessionIdGenerator;
 import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.exception.BadCredentialsException;
@@ -52,18 +53,18 @@ public class SessionProviderImpl implements SessionProvider {
 
     @Override
     public MailboxSession createSystemSession(Username userName) {
-        return createSession(userName, MailboxSession.SessionType.System);
+        return createSession(userName, SessionType.System);
     }
 
     @Override
     public MailboxSession createUserSession(Username userName) {
-        return createSystemSession(userName);
+        return createSession(userName, SessionType.User);
     }
 
     @Override
     public MailboxSession login(Username userid, String passwd) throws MailboxException {
         if (isValidLogin(userid, passwd)) {
-            return createSession(userid, MailboxSession.SessionType.User);
+            return createUserSession(userid);
         } else {
             throw new BadCredentialsException();
         }
@@ -94,7 +95,7 @@ public class SessionProviderImpl implements SessionProvider {
         }
     }
 
-    private MailboxSession createSession(Username userName, MailboxSession.SessionType type) {
+    private MailboxSession createSession(Username userName, SessionType type) {
         return new MailboxSession(newSessionId(), userName, new ArrayList<>(), getDelimiter(), type);
     }
 
