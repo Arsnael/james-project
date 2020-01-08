@@ -32,7 +32,11 @@ public interface SessionProvider {
 
     /**
      * Creates a new system session.<br>
-     * A system session is intended to be used for programmatic access.<br>
+     * A system session is intended to be used for programmatic access, for technical
+     * purposes that do not require right validation.<br>
+     *
+     * User {@link #createUserSession(Username)} for programatic access that requires right validation.
+     *
      * Use {@link #login(Username, String)} when accessing this API from a
      * protocol.
      *
@@ -41,6 +45,18 @@ public interface SessionProvider {
      * @return <code>MailboxSession</code>, not null
      */
     MailboxSession createSystemSession(Username userName);
+
+    /**
+     * Creates a new user session, by-passing authentication.<br>
+     * An user session is intended to be used for programmatic access.<br>
+     * Use {@link #login(Username, String)} when accessing this API from a
+     * protocol.
+     *
+     * @param userName
+     *            the name of the user whose session is being created
+     * @return <code>MailboxSession</code>, not null
+     */
+    MailboxSession createUserSession(Username userName);
 
     /**
      * Autenticates the given user against the given password.<br>

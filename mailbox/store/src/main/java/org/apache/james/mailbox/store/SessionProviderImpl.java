@@ -56,6 +56,11 @@ public class SessionProviderImpl implements SessionProvider {
     }
 
     @Override
+    public MailboxSession createUserSession(Username userName) {
+        return createSystemSession(userName);
+    }
+
+    @Override
     public MailboxSession login(Username userid, String passwd) throws MailboxException {
         if (isValidLogin(userid, passwd)) {
             return createSession(userid, MailboxSession.SessionType.User);

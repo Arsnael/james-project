@@ -242,6 +242,11 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     @Override
+    public MailboxSession createUserSession(Username userName) {
+        return sessionProvider.createUserSession(userName);
+    }
+
+    @Override
     public void logout(MailboxSession session) {
         sessionProvider.logout(session);
     }
