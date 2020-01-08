@@ -57,7 +57,7 @@ public class AccessTokenAuthenticationStrategy implements AuthenticationStrategy
             .findFirst();
 
         if (username.isPresent()) {
-            return mailboxManager.createSystemSession(username.get());
+            return mailboxManager.createUserSession(username.get());
         }
         throw new NoValidAuthHeaderException();
     }

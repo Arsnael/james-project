@@ -68,7 +68,7 @@ public class JWTAuthenticationStrategy implements AuthenticationStrategy {
             });
 
         Stream<MailboxSession> mailboxSessionStream = userLoginStream
-                .map(mailboxManager::createSystemSession);
+                .map(mailboxManager::createUserSession);
 
         return mailboxSessionStream
                 .findFirst()
