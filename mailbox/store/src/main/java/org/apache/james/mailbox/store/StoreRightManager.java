@@ -103,6 +103,10 @@ public class StoreRightManager implements RightManager {
     public Rfc4314Rights myRights(Mailbox mailbox, MailboxSession session) throws UnsupportedRightException {
         Username username = session.getUser();
 
+        if (session.getType() == MailboxSession.SessionType.System) {
+            return MailboxACL.FULL_RIGHTS;
+        }
+
         return Optional.ofNullable(username)
             .map(Throwing.function(value ->
                 aclResolver.resolveRights(
@@ -156,6 +160,10 @@ public class StoreRightManager implements RightManager {
 
     public boolean isReadWrite(MailboxSession session, Mailbox mailbox, Flags sharedPermanentFlags) throws UnsupportedRightException {
         Rfc4314Rights rights = myRights(mailbox, session);
+
+        if (session.getType() == MailboxSession.SessionType.System) {
+            return true;
+        }
 
         /*
          * then go through shared flags. RFC 4314 section 4:
@@ -245,6 +253,12 @@ public class StoreRightManager implements RightManager {
         MailboxACL acl = aclResolver.applyGlobalACL(
             mailbox.getACL(),
             !GROUP_FOLDER);
+
+        if (mailboxSession.getType() == MailboxSession.SessionType.System) {
+            return acl.apply(MailboxACL.command().rights(MailboxACL.FULL_RIGHTS)
+                .forUser(mailboxSession.getUser())
+                .asAddition());
+        }
 
         return filteredForSession(mailbox, acl, mailboxSession);
     }
