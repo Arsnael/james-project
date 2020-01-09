@@ -61,6 +61,26 @@ class FullUserMaildirMailboxManagerTest extends MailboxManagerTest<StoreMailboxM
         @Test
         protected void getMailboxByIdShouldReturnMailboxWhenBelongingToUser() {
         }
+
+        @Disabled("JAMES-2993 mailboxId support for Maildir is partial")
+        @Test
+        protected void renameMailboxShouldChangeMailboxPathOfMailboxOfAnOtherUserWhenSystemSession() {
+        }
+
+        @Disabled("JAMES-2993 mailboxId support for Maildir is partial")
+        @Test
+        protected void renameMailboxByIdShouldChangeMailboxPathOfMailboxOfAnOtherUserWhenSystemSession() {
+        }
+
+        @Disabled("JAMES-2993 mailboxId support for Maildir is partial")
+        @Test
+        protected void deleteMailboxByIdShouldDeleteOtherUserMailboxWhenSystemSession() {
+        }
+
+        @Disabled("JAMES-2993 mailboxId support for Maildir is partial")
+        @Test
+        protected void getMailboxByIdShouldReturnOtherUserMailboxWhenSystemSession() {
+        }
     }
 
     @Nested

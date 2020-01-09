@@ -25,6 +25,7 @@ import static org.apache.james.mailbox.fixture.MailboxFixture.CEDRIC;
 import static org.apache.james.mailbox.fixture.MailboxFixture.INBOX_ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.james.core.Username;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MailboxSessionUtil;
@@ -70,6 +71,18 @@ public abstract class AbstractMessageManagerTest {
 
         MessageManager.MetaData actual = messageManager.getMetaData(NO_RESET_RECENT, bobSession, MessageManager.MetaData.FetchGroup.NO_COUNT);
         assertThat(actual.getACL().getEntries()).containsOnlyKeys(MailboxACL.EntryKey.createUserEntryKey(BOB));
+    }
+
+    @Test
+    void getMetadataShouldExposeAllUsersWhenSystemSession() throws Exception {
+        MailboxSession systemSession = MailboxSessionUtil.createSystemSession(Username.of("systemuser"));
+
+        mailboxManager.applyRightsCommand(INBOX_ALICE, MailboxACL.command().forUser(BOB).rights(MailboxACL.Right.Read).asAddition(), aliceSession);
+        mailboxManager.applyRightsCommand(INBOX_ALICE, MailboxACL.command().forUser(CEDRIC).rights(MailboxACL.Right.Read).asAddition(), aliceSession);
+        MessageManager messageManager = mailboxManager.getMailbox(INBOX_ALICE, aliceSession);
+
+        MessageManager.MetaData actual = messageManager.getMetaData(NO_RESET_RECENT, systemSession, MessageManager.MetaData.FetchGroup.NO_COUNT);
+        assertThat(actual.getACL().getEntries()).containsKeys(MailboxACL.EntryKey.createUserEntryKey(BOB), MailboxACL.EntryKey.createUserEntryKey(CEDRIC));
     }
 
 }
