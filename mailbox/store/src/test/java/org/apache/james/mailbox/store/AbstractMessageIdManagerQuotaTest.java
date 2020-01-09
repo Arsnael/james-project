@@ -69,7 +69,7 @@ public abstract class AbstractMessageIdManagerQuotaTest {
         CurrentQuotaManager currentQuotaManager = createCurrentQuotaManager();
         QuotaManager quotaManager = createQuotaManager(maxQuotaManager, currentQuotaManager);
 
-        session = MailboxSessionUtil.create(ALICE);
+        session = MailboxSessionUtil.createUserSession(ALICE);
         testingData = createTestSystem(quotaManager, currentQuotaManager);
         messageIdManager = testingData.getMessageIdManager();
 

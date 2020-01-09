@@ -30,7 +30,7 @@ import org.junit.Test;
 
 public class ImapSessionTest {
     private static final Username USERNAME = Username.of("username");
-    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.create(USERNAME);
+    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.createUserSession(USERNAME);
     private FakeImapSession fakeImapSession;
 
     @Before

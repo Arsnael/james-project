@@ -48,7 +48,7 @@ public class DefaultMailboxesProvisioningFilterTest {
 
     @Before
     public void before() throws Exception {
-        session = MailboxSessionUtil.create(USERNAME);
+        session = MailboxSessionUtil.createUserSession(USERNAME);
 
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
         subscriptionManager = new StoreSubscriptionManager(mailboxManager.getMapperFactory());

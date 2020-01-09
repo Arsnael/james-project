@@ -46,7 +46,7 @@ public class SetQuotaProcessorTest {
 
     @Before
     public void setUp() {
-        MailboxSession mailboxSession = MailboxSessionUtil.create(Username.of("plop"));
+        MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(Username.of("plop"));
         UnpooledStatusResponseFactory statusResponseFactory = new UnpooledStatusResponseFactory();
         imapSession = new FakeImapSession();
         mockedResponder = mock(ImapProcessor.Responder.class);

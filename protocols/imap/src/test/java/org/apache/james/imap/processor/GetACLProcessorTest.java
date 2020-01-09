@@ -78,7 +78,7 @@ public class GetACLProcessorTest {
         mailboxManager = mock(MailboxManager.class);
         subject = new GetACLProcessor(mock(ImapProcessor.class), mailboxManager, statusResponseFactory, new RecordingMetricFactory());
         imapSession = new FakeImapSession();
-        mailboxSession = MailboxSessionUtil.create(USER_1);
+        mailboxSession = MailboxSessionUtil.createUserSession(USER_1);
         MessageManager messageManager = mock(MessageManager.class);
         metaData = mock(MetaData.class);
         responder = mock(Responder.class);

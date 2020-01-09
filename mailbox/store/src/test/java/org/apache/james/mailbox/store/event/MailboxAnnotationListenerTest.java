@@ -79,7 +79,7 @@ class MailboxAnnotationListenerTest {
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        mailboxSession = MailboxSessionUtil.create(Username.of("test"));
+        mailboxSession = MailboxSessionUtil.createUserSession(Username.of("test"));
         listener = new MailboxAnnotationListener(mailboxSessionMapperFactory, sessionProvider);
 
         deleteEvent = EventFactory.mailboxDeleted()

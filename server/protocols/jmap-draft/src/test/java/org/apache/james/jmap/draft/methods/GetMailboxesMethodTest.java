@@ -110,7 +110,7 @@ public class GetMailboxesMethodTest {
 
         GetMailboxesRequest getMailboxesRequest = GetMailboxesRequest.builder()
                 .build();
-        MailboxSession session = MailboxSessionUtil.create(USERNAME);
+        MailboxSession session = MailboxSessionUtil.createUserSession(USERNAME);
 
         List<JmapResponse> getMailboxesResponse = testee.process(getMailboxesRequest, methodCallId, session).collect(Collectors.toList());
 

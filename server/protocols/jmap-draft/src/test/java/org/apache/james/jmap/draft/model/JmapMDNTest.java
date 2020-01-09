@@ -57,7 +57,7 @@ public class JmapMDNTest {
         .subject(SUBJECT)
         .textBody(TEXT_BODY)
         .build();
-    public static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.create(Username.of("user@localhost.com"));
+    public static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.createUserSession(Username.of("user@localhost.com"));
 
     @Test
     public void shouldMatchBeanContract() {

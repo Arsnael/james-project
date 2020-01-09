@@ -75,7 +75,7 @@ public abstract class AbstractCombinationManagerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        session = MailboxSessionUtil.create(MailboxFixture.ALICE);
+        session = MailboxSessionUtil.createUserSession(MailboxFixture.ALICE);
         testingData = createTestingData();
 
         mailbox1 = testingData.createMailbox(MailboxFixture.INBOX_ALICE, session);

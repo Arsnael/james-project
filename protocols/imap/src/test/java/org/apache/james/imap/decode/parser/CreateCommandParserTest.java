@@ -48,7 +48,7 @@ public class CreateCommandParserTest {
 
     @Before
     public void setUp() throws Exception {
-        MailboxSession mailboxSession = MailboxSessionUtil.create(Username.of("userName"));
+        MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(Username.of("userName"));
         imapSession = new FakeImapSession();
         imapSession.setMailboxSession(mailboxSession);
 

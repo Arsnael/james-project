@@ -26,15 +26,16 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.model.MailboxConstants;
 
-import com.google.common.annotations.VisibleForTesting;
-
 public class MailboxSessionUtil {
-    public static MailboxSession create(Username username) {
-        return create(username, MailboxSession.SessionId.of(ThreadLocalRandom.current().nextLong()));
+    public static MailboxSession createUserSession(Username username) {
+        return createSession(username, MailboxSession.SessionId.of(ThreadLocalRandom.current().nextLong()), MailboxSession.SessionType.User);
     }
 
-    @VisibleForTesting
-    public static MailboxSession create(Username username, MailboxSession.SessionId sessionId) {
+    public static MailboxSession createSystemSession(Username username) {
+        return createSession(username, MailboxSession.SessionId.of(ThreadLocalRandom.current().nextLong()), MailboxSession.SessionType.System);
+    }
+
+    private static MailboxSession createSession(Username username, MailboxSession.SessionId sessionId, MailboxSession.SessionType sessionType) {
         ArrayList<Locale> locales = new ArrayList<>();
 
         return new MailboxSession(
@@ -42,6 +43,6 @@ public class MailboxSessionUtil {
             username,
             locales,
             MailboxConstants.DEFAULT_DELIMITER,
-            MailboxSession.SessionType.User);
+            sessionType);
     }
 }

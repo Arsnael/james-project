@@ -41,7 +41,7 @@ public class UserProvisioningFilterThreadTest {
     @Before
     public void before() {
         usersRepository = MemoryUsersRepository.withoutVirtualHosting(NO_DOMAIN_LIST);
-        session = MailboxSessionUtil.create(Username.of("username"));
+        session = MailboxSessionUtil.createUserSession(Username.of("username"));
         sut = new UserProvisioningFilter(usersRepository, new RecordingMetricFactory());
     }
 

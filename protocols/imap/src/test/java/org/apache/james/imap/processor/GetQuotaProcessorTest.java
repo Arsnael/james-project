@@ -81,7 +81,7 @@ public class GetQuotaProcessorTest {
 
     @Before
     public void setUp() throws Exception {
-        mailboxSession = MailboxSessionUtil.create(PLOP);
+        mailboxSession = MailboxSessionUtil.createUserSession(PLOP);
         UnpooledStatusResponseFactory statusResponseFactory = new UnpooledStatusResponseFactory();
         imapSession = new FakeImapSession();
         mockedQuotaManager = mock(QuotaManager.class);

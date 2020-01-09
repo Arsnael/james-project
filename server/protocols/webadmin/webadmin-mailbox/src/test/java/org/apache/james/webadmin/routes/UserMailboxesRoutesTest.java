@@ -780,7 +780,7 @@ class UserMailboxesRoutesTest {
         @BeforeEach
         void setUp() throws Exception {
             mailboxManager = mock(MailboxManager.class);
-            when(mailboxManager.createUserSession(any())).thenReturn(MailboxSessionUtil.create(USERNAME));
+            when(mailboxManager.createSystemSession(any())).thenReturn(MailboxSessionUtil.createUserSession(USERNAME));
 
             createServer(mailboxManager, mock(MailboxSessionMapperFactory.class));
         }

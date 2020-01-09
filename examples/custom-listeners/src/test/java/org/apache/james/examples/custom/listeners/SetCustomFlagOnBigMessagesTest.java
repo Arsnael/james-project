@@ -67,7 +67,7 @@ class SetCustomFlagOnBigMessagesTest {
     void beforeEach() throws Exception {
         InMemoryIntegrationResources resources = InMemoryIntegrationResources.defaultResources();
         mailboxManager = resources.getMailboxManager();
-        mailboxSession = MailboxSessionUtil.create(USER);
+        mailboxSession = MailboxSessionUtil.createUserSession(USER);
         inboxId = mailboxManager.createMailbox(INBOX_PATH, mailboxSession).get();
         inboxMessageManager = mailboxManager.getMailbox(inboxId, mailboxSession);
 

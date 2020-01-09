@@ -49,7 +49,7 @@ class MessageMoveEventTest {
     @Test
     void builderShouldThrowWhenMessageMovesIsNull() {
         assertThatThrownBy(() -> MessageMoveEvent.builder()
-                .session(MailboxSessionUtil.create(USER))
+                .session(MailboxSessionUtil.createUserSession(USER))
                 .build())
             .isInstanceOf(NullPointerException.class);
     }
@@ -57,7 +57,7 @@ class MessageMoveEventTest {
     @Test
     void builderShouldReturnNoopWhenMessagesIsEmpty() {
         assertThat(MessageMoveEvent.builder()
-                .session(MailboxSessionUtil.create(USER))
+                .session(MailboxSessionUtil.createUserSession(USER))
                 .messageMoves(MessageMoves.builder()
                     .previousMailboxIds(TestId.of(1))
                     .targetMailboxIds(TestId.of(2))
@@ -68,7 +68,7 @@ class MessageMoveEventTest {
 
     @Test
     void builderShouldNotBeNoopWhenFieldsAreGiven() {
-        MailboxSession session = MailboxSessionUtil.create(USER);
+        MailboxSession session = MailboxSessionUtil.createUserSession(USER);
         MessageMoves messageMoves = MessageMoves.builder()
             .targetMailboxIds(TestId.of(2))
             .previousMailboxIds(TestId.of(1))
@@ -85,7 +85,7 @@ class MessageMoveEventTest {
 
     @Test
     void builderShouldBuildWhenFieldsAreGiven() {
-        MailboxSession session = MailboxSessionUtil.create(USER);
+        MailboxSession session = MailboxSessionUtil.createUserSession(USER);
         MessageMoves messageMoves = MessageMoves.builder()
             .targetMailboxIds(TestId.of(2))
             .previousMailboxIds(TestId.of(1))
@@ -108,7 +108,7 @@ class MessageMoveEventTest {
     @Test
     void isMoveToShouldReturnFalseWhenMailboxIdIsNotInAddedMailboxIds() {
         MessageMoveEvent event = MessageMoveEvent.builder()
-            .session(MailboxSessionUtil.create(USER))
+            .session(MailboxSessionUtil.createUserSession(USER))
             .messageMoves(MessageMoves.builder()
                     .previousMailboxIds(TestId.of(1))
                     .targetMailboxIds(TestId.of(2))
@@ -122,7 +122,7 @@ class MessageMoveEventTest {
     void isMoveToShouldReturnTrueWhenMailboxIdIsInAddedMailboxIds() {
         TestId mailboxId = TestId.of(123);
         MessageMoveEvent event = MessageMoveEvent.builder()
-            .session(MailboxSessionUtil.create(USER))
+            .session(MailboxSessionUtil.createUserSession(USER))
             .messageMoves(MessageMoves.builder()
                 .previousMailboxIds(TestId.of(1))
                 .targetMailboxIds(TestId.of(2), mailboxId)
@@ -135,7 +135,7 @@ class MessageMoveEventTest {
     @Test
     void isMoveFromShouldReturnFalseWhenMailboxIdIsNotInRemovedMailboxIds() {
         MessageMoveEvent event = MessageMoveEvent.builder()
-            .session(MailboxSessionUtil.create(USER))
+            .session(MailboxSessionUtil.createUserSession(USER))
             .messageMoves(MessageMoves.builder()
                     .previousMailboxIds(TestId.of(1))
                     .targetMailboxIds(TestId.of(2))
@@ -149,7 +149,7 @@ class MessageMoveEventTest {
     void isMoveFromShouldReturnTrueWhenMailboxIdIsInRemovedMailboxIds() {
         TestId mailboxId = TestId.of(123);
         MessageMoveEvent event = MessageMoveEvent.builder()
-            .session(MailboxSessionUtil.create(USER))
+            .session(MailboxSessionUtil.createUserSession(USER))
             .messageMoves(MessageMoves.builder()
                 .previousMailboxIds(TestId.of(1), mailboxId)
                 .targetMailboxIds(TestId.of(2))

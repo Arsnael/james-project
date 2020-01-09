@@ -76,9 +76,9 @@ public abstract class AbstractMessageIdManagerStorageTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        aliceSession = MailboxSessionUtil.create(MailboxFixture.ALICE);
-        bobSession = MailboxSessionUtil.create(MailboxFixture.BOB);
-        systemSession = MailboxSessionUtil.create(Username.of("systemuser"));
+        aliceSession = MailboxSessionUtil.createUserSession(MailboxFixture.ALICE);
+        bobSession = MailboxSessionUtil.createUserSession(MailboxFixture.BOB);
+        systemSession = MailboxSessionUtil.createUserSession(Username.of("systemuser"));
         testingData = createTestingData();
         messageIdManager = testingData.getMessageIdManager();
 

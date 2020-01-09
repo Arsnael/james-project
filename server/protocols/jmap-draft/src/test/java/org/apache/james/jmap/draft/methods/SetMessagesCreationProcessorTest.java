@@ -137,7 +137,7 @@ public class SetMessagesCreationProcessorTest {
         MessageIdManager mockMessageIdManager = mock(MessageIdManager.class);
         
         fakeSystemMailboxesProvider = new TestSystemMailboxesProvider(() -> optionalOutbox, () -> optionalDrafts);
-        session = MailboxSessionUtil.create(USER);
+        session = MailboxSessionUtil.createUserSession(USER);
         MIMEMessageConverter mimeMessageConverter = new MIMEMessageConverter();
         messageAppender = new MessageAppender(mockedMailboxManager, mockMessageIdManager, mockedAttachmentManager, mimeMessageConverter);
         messageSender = new MessageSender(mockedMailSpool);

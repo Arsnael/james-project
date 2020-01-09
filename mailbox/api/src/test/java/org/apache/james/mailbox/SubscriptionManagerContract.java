@@ -29,7 +29,7 @@ public interface SubscriptionManagerContract {
     Username USER1 = Username.of("test");
     String MAILBOX1 = "test1";
     String MAILBOX2 = "test2";
-    MailboxSession SESSION = MailboxSessionUtil.create(USER1);
+    MailboxSession SESSION = MailboxSessionUtil.createUserSession(USER1);
 
     SubscriptionManager getSubscriptionManager();
     

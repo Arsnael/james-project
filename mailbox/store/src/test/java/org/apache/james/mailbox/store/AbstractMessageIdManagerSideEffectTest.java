@@ -109,7 +109,7 @@ public abstract class AbstractMessageIdManagerSideEffectTest {
         eventCollector = new EventCollector();
         quotaManager = mock(QuotaManager.class);
 
-        session = MailboxSessionUtil.create(ALICE);
+        session = MailboxSessionUtil.createUserSession(ALICE);
         setupMockForPreDeletionHooks();
         testingData = createTestSystem(quotaManager, eventBus, ImmutableSet.of(preDeletionHook1, preDeletionHook2));
         messageIdManager = testingData.getMessageIdManager();

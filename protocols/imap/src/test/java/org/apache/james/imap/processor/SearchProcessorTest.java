@@ -124,7 +124,7 @@ public class SearchProcessorTest {
         statusResponse = mock(StatusResponse.class);
         mailbox = mock(MessageManager.class);
         mailboxManager = mock(MailboxManager.class);
-        mailboxSession = MailboxSessionUtil.create(USER);
+        mailboxSession = MailboxSessionUtil.createUserSession(USER);
         selectedMailbox = mock(SelectedMailbox.class);
         when(selectedMailbox.getMailboxId()).thenReturn(mailboxId);
         

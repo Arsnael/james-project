@@ -111,8 +111,8 @@ public class MailboxEventAnalyserTest {
 
     private static final MessageUid MESSAGE_UID = MessageUid.of(1);
     private static final Username USER = Username.of("user");
-    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.create(USER);
-    private static final MailboxSession OTHER_MAILBOX_SESSION = MailboxSessionUtil.create(USER);
+    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.createUserSession(USER);
+    private static final MailboxSession OTHER_MAILBOX_SESSION = MailboxSessionUtil.createUserSession(USER);
     private static final char PATH_DELIMITER = '.';
     private static final MailboxPath MAILBOX_PATH = new MailboxPath("namespace", USER, "name");
     private static final TestId MAILBOX_ID = TestId.of(36);

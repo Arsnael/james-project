@@ -89,7 +89,7 @@ public interface MailboxMessageFixture {
 
     Flags flags1 = new Flags("myFlags");
 
-    MailboxSession MAILBOX_SESSION = MailboxSessionUtil.create(USER);
+    MailboxSession MAILBOX_SESSION = MailboxSessionUtil.createUserSession(USER);
 
     String MAILBOX_1_NAME = "mailbox1";
     String MAILBOX_2_NAME = "mailbox2";

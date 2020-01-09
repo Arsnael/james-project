@@ -171,7 +171,7 @@ public class SelectedMailboxImplTest {
     private void emitEvent(MailboxListener mailboxListener) throws Exception {
         mailboxListener.event(EventFactory.added()
             .randomEventId()
-            .mailboxSession(MailboxSessionUtil.create(Username.of("user")))
+            .mailboxSession(MailboxSessionUtil.createUserSession(Username.of("user")))
             .mailbox(mailbox)
             .addMetaData(new MessageMetaData(EMITTED_EVENT_UID, MOD_SEQ, new Flags(), SIZE, new Date(), new DefaultMessageId()))
             .build());

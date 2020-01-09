@@ -51,7 +51,7 @@ public class CassandraMapperProvider implements MapperProvider {
     private final CassandraCluster cassandra;
     private final MessageUidProvider messageUidProvider;
     private final CassandraModSeqProvider cassandraModSeqProvider;
-    private final MailboxSession mailboxSession = MailboxSessionUtil.create(Username.of("benwa"));
+    private final MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(Username.of("benwa"));
     private CassandraMailboxSessionMapperFactory mapperFactory;
 
     public CassandraMapperProvider(CassandraCluster cassandra) {

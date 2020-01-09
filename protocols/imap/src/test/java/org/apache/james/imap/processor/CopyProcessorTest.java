@@ -75,7 +75,7 @@ public class CopyProcessorTest {
         mockStatusResponseFactory = mock(StatusResponseFactory.class);
         mockResponder = mock(ImapProcessor.Responder.class);
         imapSession = new FakeImapSession();
-        mailboxSession = MailboxSessionUtil.create(USERNAME);
+        mailboxSession = MailboxSessionUtil.createUserSession(USERNAME);
 
         testee = new CopyProcessor(mockNextProcessor, mockMailboxManager, mockStatusResponseFactory, new RecordingMetricFactory());
 

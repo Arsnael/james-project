@@ -134,7 +134,7 @@ class ComputeMessageFastViewProjectionListenerTest {
 
         resources.getEventBus().register(listener);
 
-        mailboxSession = MailboxSessionUtil.create(BOB);
+        mailboxSession = MailboxSessionUtil.createUserSession(BOB);
 
         MailboxId inboxId = mailboxManager.createMailbox(BOB_INBOX_PATH, mailboxSession).get();
         inboxMessageManager = mailboxManager.getMailbox(inboxId, mailboxSession);

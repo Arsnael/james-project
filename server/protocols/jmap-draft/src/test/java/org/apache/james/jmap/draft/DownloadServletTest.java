@@ -41,7 +41,7 @@ public class DownloadServletTest {
 
     @Test
     public void downloadMayFailWhenUnknownErrorOnAttachmentManager() throws Exception {
-        MailboxSession mailboxSession = MailboxSessionUtil.create(Username.of("User"));
+        MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(Username.of("User"));
         BlobManager mockedBlobManager = mock(BlobManager.class);
         when(mockedBlobManager.retrieve(any(), eq(mailboxSession)))
             .thenThrow(new MailboxException());

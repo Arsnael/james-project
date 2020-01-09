@@ -103,7 +103,7 @@ public class GetAnnotationProcessorTest {
         imapSession = new FakeImapSession();
 
         Username username = Username.of("username");
-        mailboxSession = MailboxSessionUtil.create(username);
+        mailboxSession = MailboxSessionUtil.createUserSession(username);
         inbox = MailboxPath.inbox(username);
         keys = ImmutableSet.of(PRIVATE_KEY);
         annotationRequestBuilder = GetAnnotationRequest.builder()

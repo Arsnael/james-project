@@ -56,7 +56,7 @@ public class AttachmentCheckerTest {
 
     @Before
     public void setUp() {
-        session = MailboxSessionUtil.create(Username.of("Jonhy"));
+        session = MailboxSessionUtil.createUserSession(Username.of("Jonhy"));
         attachmentManager = mock(AttachmentManager.class);
 
         sut = new AttachmentChecker(attachmentManager);

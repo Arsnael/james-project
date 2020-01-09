@@ -96,7 +96,7 @@ class LuceneMailboxMessageSearchIndexTest {
     
     @BeforeEach
     void setUp() throws Exception {
-        session = MailboxSessionUtil.create(Username.of("username"));
+        session = MailboxSessionUtil.createUserSession(Username.of("username"));
         TestMessageId.Factory factory = new TestMessageId.Factory();
         id1 = factory.generate();
         id2 = factory.generate();

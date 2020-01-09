@@ -94,7 +94,7 @@ public class LSubProcessorTest {
         statusResponse = mock(StatusResponse.class);
         responderImpl = responder;
         manager =  mock(SubscriptionManager.class);
-        mailboxSession = MailboxSessionUtil.create(USER);
+        mailboxSession = MailboxSessionUtil.createUserSession(USER);
         processor = new LSubProcessor(next, mock(MailboxManager.class), manager, serverResponseFactory, new RecordingMetricFactory());
         session.setMailboxSession(mailboxSession);
     }

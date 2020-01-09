@@ -77,7 +77,7 @@ public class UserProvisioningFilterTest {
     @Test
     public void filterShouldAddUsernameWhenNoVirtualHostingAndMailboxSessionContainsUsername() throws Exception {
         usersRepository.setEnableVirtualHosting(false);
-        MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME);
+        MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(USERNAME);
         when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
             .thenReturn(mailboxSession);
 
@@ -91,7 +91,7 @@ public class UserProvisioningFilterTest {
     @Test
     public void filterShouldFailOnInvalidVirtualHosting() {
         usersRepository.setEnableVirtualHosting(false);
-        MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME_WITH_DOMAIN);
+        MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(USERNAME_WITH_DOMAIN);
         when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
             .thenReturn(mailboxSession);
 
@@ -105,7 +105,7 @@ public class UserProvisioningFilterTest {
         when(usersRepository.isReadOnly()).thenReturn(true);
         sut = new UserProvisioningFilter(usersRepository, new RecordingMetricFactory());
 
-        MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME_WITH_DOMAIN);
+        MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(USERNAME_WITH_DOMAIN);
         when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
             .thenReturn(mailboxSession);
 
@@ -121,7 +121,7 @@ public class UserProvisioningFilterTest {
         when(usersRepository.isReadOnly()).thenReturn(true);
         sut = new UserProvisioningFilter(usersRepository, new RecordingMetricFactory());
 
-        MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME_WITH_DOMAIN);
+        MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(USERNAME_WITH_DOMAIN);
         when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
             .thenReturn(mailboxSession);
 

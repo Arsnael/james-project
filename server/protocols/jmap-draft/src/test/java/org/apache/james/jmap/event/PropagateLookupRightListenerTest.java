@@ -60,7 +60,7 @@ public class PropagateLookupRightListenerTest {
     private StoreMailboxManager storeMailboxManager;
     private PropagateLookupRightListener testee;
 
-    private MailboxSession mailboxSession = MailboxSessionUtil.create(OWNER_USER);
+    private MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(OWNER_USER);
 
     private MailboxId parentMailboxId;
     private MailboxId parentMailboxId1;

@@ -42,8 +42,8 @@ public abstract class AbstractMessageManagerTest {
     MailboxSession bobSession;
 
     protected void setup(MessageManagerTestSystem testSystem) throws Exception {
-        aliceSession = MailboxSessionUtil.create(ALICE);
-        bobSession = MailboxSessionUtil.create(BOB);
+        aliceSession = MailboxSessionUtil.createUserSession(ALICE);
+        bobSession = MailboxSessionUtil.createUserSession(BOB);
         mailboxManager = testSystem.getMailboxManager();
 
         testSystem.createMailbox(INBOX_ALICE, aliceSession);

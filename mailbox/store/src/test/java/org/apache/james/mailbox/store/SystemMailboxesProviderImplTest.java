@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 
 class SystemMailboxesProviderImplTest {
 
-    MailboxSession mailboxSession = MailboxSessionUtil.create(MailboxFixture.ALICE);
+    MailboxSession mailboxSession = MailboxSessionUtil.createUserSession(MailboxFixture.ALICE);
     SystemMailboxesProviderImpl systemMailboxProvider;
 
     MailboxManager mailboxManager;

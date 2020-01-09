@@ -51,7 +51,7 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
 
     @Before
     public void before() {
-        session = MailboxSessionUtil.create(USERNAME);
+        session = MailboxSessionUtil.createUserSession(USERNAME);
         mailboxManager = mock(MailboxManager.class);
         subscriptionManager = mock(SubscriptionManager.class);
         sut = new DefaultMailboxesProvisioningFilter(mailboxManager, subscriptionManager, new RecordingMetricFactory());

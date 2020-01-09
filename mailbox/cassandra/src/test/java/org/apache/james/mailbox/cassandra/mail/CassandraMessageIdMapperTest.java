@@ -40,7 +40,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.google.common.collect.ImmutableList;
 
 class CassandraMessageIdMapperTest extends MessageIdMapperTest {
-    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.create(Username.of("benwa"));
+    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.createUserSession(Username.of("benwa"));
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(MailboxAggregateModule.MODULE);

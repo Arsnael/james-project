@@ -64,7 +64,7 @@ class StoreRightManagerTest {
 
     @BeforeEach
     void setup() throws MailboxException {
-        aliceSession = MailboxSessionUtil.create(MailboxFixture.ALICE);
+        aliceSession = MailboxSessionUtil.createUserSession(MailboxFixture.ALICE);
         MailboxSessionMapperFactory mockedMapperFactory = mock(MailboxSessionMapperFactory.class);
         mockedMailboxMapper = mock(MailboxMapper.class);
         mailboxAclResolver = new UnionMailboxACLResolver();
@@ -216,7 +216,7 @@ class StoreRightManagerTest {
             .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
             .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
         MailboxACL actual = StoreRightManager.filteredForSession(
-            new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.create(CEDRIC));
+            new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.createUserSession(CEDRIC));
         assertThat(actual).isEqualTo(acl);
     }
 
@@ -226,7 +226,7 @@ class StoreRightManagerTest {
             .apply(MailboxACL.command().rights(Right.Read, Right.Write).forUser(BOB).asAddition())
             .apply(MailboxACL.command().rights(Right.Read, Right.Write, Right.Administer).forUser(CEDRIC).asAddition());
         MailboxACL actual = StoreRightManager.filteredForSession(
-            new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.create(BOB));
+            new Mailbox(INBOX_ALICE, UID_VALIDITY), acl, MailboxSessionUtil.createUserSession(BOB));
         assertThat(actual.getEntries()).containsKey(MailboxACL.EntryKey.createUserEntryKey(BOB));
     }
 

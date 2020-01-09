@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableList;
 public class InMemoryMapperProvider implements MapperProvider {
 
     private static final Username USER = Username.of("user");
-    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.create(USER);
+    private static final MailboxSession MAILBOX_SESSION = MailboxSessionUtil.createUserSession(USER);
 
     private final MessageId.Factory messageIdFactory;
     private final MessageUidProvider messageUidProvider;
@@ -65,7 +65,7 @@ public class InMemoryMapperProvider implements MapperProvider {
 
     @Override
     public MessageMapper createMessageMapper() throws MailboxException {
-        return inMemoryMailboxSessionMapperFactory.createMessageMapper(MailboxSessionUtil.create(USER));
+        return inMemoryMailboxSessionMapperFactory.createMessageMapper(MailboxSessionUtil.createUserSession(USER));
     }
 
     @Override

@@ -81,7 +81,7 @@ class StoreMailboxManagerAnnotationTest {
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        session = MailboxSessionUtil.create(Username.of("userName"));
+        session = MailboxSessionUtil.createUserSession(Username.of("userName"));
 
         when(mailboxSessionMapperFactory.getMailboxMapper(eq(session))).thenReturn(mailboxMapper);
         when(mailboxSessionMapperFactory.getAnnotationMapper(eq(session))).thenReturn(annotationMapper);

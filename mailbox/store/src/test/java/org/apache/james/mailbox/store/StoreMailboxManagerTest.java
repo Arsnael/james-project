@@ -75,7 +75,7 @@ class StoreMailboxManagerTest {
     @BeforeEach
     void setUp() throws MailboxException {
         MailboxSessionMapperFactory mockedMapperFactory = mock(MailboxSessionMapperFactory.class);
-        mockedMailboxSession = MailboxSessionUtil.create(CURRENT_USER);
+        mockedMailboxSession = MailboxSessionUtil.createUserSession(CURRENT_USER);
         mockedMailboxMapper = mock(MailboxMapper.class);
         when(mockedMapperFactory.getMailboxMapper(mockedMailboxSession))
             .thenReturn(mockedMailboxMapper);
@@ -209,7 +209,7 @@ class StoreMailboxManagerTest {
     @Test
     void getPathLikeShouldReturnUserPathLikeWhenNoPrefixDefined() {
         //Given
-        MailboxSession session = MailboxSessionUtil.create(CURRENT_USER);
+        MailboxSession session = MailboxSessionUtil.createUserSession(CURRENT_USER);
         MailboxQuery.Builder testee = MailboxQuery.builder()
             .expression(new PrefixedRegex(EMPTY_PREFIX, "abc", session.getPathDelimiter()));
         //When
@@ -227,7 +227,7 @@ class StoreMailboxManagerTest {
     @Test
     void getPathLikeShouldReturnUserPathLikeWhenPrefixDefined() {
         //Given
-        MailboxSession session = MailboxSessionUtil.create(CURRENT_USER);
+        MailboxSession session = MailboxSessionUtil.createUserSession(CURRENT_USER);
         MailboxQuery.Builder testee = MailboxQuery.builder()
             .expression(new PrefixedRegex("prefix.", "abc", session.getPathDelimiter()));
 
