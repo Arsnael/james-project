@@ -78,7 +78,7 @@ public abstract class AbstractMessageIdManagerStorageTest {
     void setUp() throws Exception {
         aliceSession = MailboxSessionUtil.createUserSession(MailboxFixture.ALICE);
         bobSession = MailboxSessionUtil.createUserSession(MailboxFixture.BOB);
-        systemSession = MailboxSessionUtil.createUserSession(Username.of("systemuser"));
+        systemSession = MailboxSessionUtil.createSystemSession(Username.of("systemuser"));
         testingData = createTestingData();
         messageIdManager = testingData.getMessageIdManager();
 
@@ -132,6 +132,13 @@ public abstract class AbstractMessageIdManagerStorageTest {
 
         assertThat(messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, aliceSession)).hasSize(1);
         assertThat(messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, bobSession)).isEmpty();
+    }
+
+    @Test
+    void getMessageShouldReturnMessageOfOtherUserWhenSystemSession() throws Exception {
+        MessageId messageId = testingData.persist(aliceMailbox1.getMailboxId(), messageUid1, FLAGS, aliceSession);
+
+        assertThat(messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, systemSession)).hasSize(1);
     }
 
     @Test
@@ -276,6 +283,19 @@ public abstract class AbstractMessageIdManagerStorageTest {
     }
 
     @Test
+    void setInMailboxesShouldSetMessageInMailboxesBelongingToOtherUsersWhenSystemSession() throws Exception {
+        MessageId messageId = testingData.persist(aliceMailbox1.getMailboxId(), messageUid1, FLAGS, aliceSession);
+
+        messageIdManager.setInMailboxes(
+            messageId,
+            ImmutableList.of(aliceMailbox1.getMailboxId(), aliceMailbox2.getMailboxId(), bobMailbox1.getMailboxId()),
+            systemSession);
+
+        assertThat(messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, systemSession))
+            .hasSize(3);
+    }
+
+    @Test
     void deleteMessageShouldRemoveMessageFromMailbox() throws Exception {
         MessageId messageId = testingData.persist(aliceMailbox1.getMailboxId(), messageUid1, FLAGS, aliceSession);
 
@@ -343,11 +363,12 @@ public abstract class AbstractMessageIdManagerStorageTest {
     }
 
     @Test
-    void deleteMessageShouldThrowExceptionWhenDeletingOnSystemSession() {
+    void deleteMessageShouldRemoveMessageOfOtherUserWhenSystemSession() throws Exception {
         MessageId messageId = testingData.persist(aliceMailbox1.getMailboxId(), messageUid1, FLAGS, aliceSession);
 
-        assertThatThrownBy(() -> messageIdManager.delete(messageId, ImmutableList.of(aliceMailbox1.getMailboxId()), systemSession))
-            .isInstanceOf(MailboxNotFoundException.class);
+        messageIdManager.delete(messageId, ImmutableList.of(aliceMailbox1.getMailboxId()), systemSession);
+
+        assertThat(messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, aliceSession)).isEmpty();
     }
 
     @Test
@@ -356,6 +377,20 @@ public abstract class AbstractMessageIdManagerStorageTest {
 
         assertThatThrownBy(() -> messageIdManager.delete(messageId, ImmutableList.of(bobMailbox1.getMailboxId()), aliceSession))
             .isInstanceOf(MailboxNotFoundException.class);
+    }
+
+    @Test
+    void deleteAllShouldRemoveMessageFromAllMailboxesOfOtherUsersWhenSystemSession() throws Exception {
+        MessageId messageId = testingData.persist(aliceMailbox1.getMailboxId(), messageUid1, FLAGS, aliceSession);
+
+        messageIdManager.setInMailboxes(
+            messageId,
+            ImmutableList.of(aliceMailbox1.getMailboxId(), aliceMailbox2.getMailboxId(), bobMailbox1.getMailboxId()),
+            systemSession);
+
+        messageIdManager.delete(messageId, systemSession);
+
+        assertThat(messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, systemSession)).isEmpty();
     }
 
     @Test
@@ -499,16 +534,14 @@ public abstract class AbstractMessageIdManagerStorageTest {
     }
 
     @Test
-    void setFlagsShouldThrowExceptionWhenSetFlagsOnSystemSession() {
+    void setFlagsShouldChangeFlagsOnOtherUserMessageWhenSystemSession() throws Exception {
         Flags newFlags = new Flags(Flags.Flag.SEEN);
         MessageId messageId = testingData.persist(aliceMailbox1.getMailboxId(), messageUid1, FLAGS, aliceSession);
 
-        assertThatThrownBy(() -> messageIdManager.setFlags(newFlags,
-                MessageManager.FlagsUpdateMode.ADD,
-                messageId,
-                ImmutableList.of(aliceMailbox1.getMailboxId()),
-                systemSession))
-            .isInstanceOf(MailboxNotFoundException.class);
+        messageIdManager.setFlags(newFlags, MessageManager.FlagsUpdateMode.ADD, messageId, ImmutableList.of(aliceMailbox1.getMailboxId()), systemSession);
+
+        MessageResult messageResult = messageIdManager.getMessage(messageId, FetchGroup.MINIMAL, aliceSession).get(0);
+        assertThat(messageResult.getFlags()).isEqualTo(newFlags);
     }
 
     @Test
@@ -571,6 +604,14 @@ public abstract class AbstractMessageIdManagerStorageTest {
 
         assertThat(messageIdManager.accessibleMessages(ImmutableList.of(messageId), bobSession))
             .isEmpty();
+    }
+
+    @Test
+    void accessibleMessagesShouldReturnMessageIdsThatBelongsToOtherUserWhenSystemSession() throws Exception {
+        MessageId messageId = testingData.persist(aliceMailbox1.getMailboxId(), messageUid1, FLAGS, aliceSession);
+
+        assertThat(messageIdManager.accessibleMessages(ImmutableList.of(messageId), systemSession))
+            .containsExactly(messageId);
     }
 
     private Predicate<MessageResult> inMailbox(final MailboxId mailboxId) {
