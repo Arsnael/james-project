@@ -86,7 +86,6 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -2312,7 +2311,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 renameMailbox asserts that the user of the session owns the mailbox, disregarding the session type")
         protected void renameMailboxShouldChangeMailboxPathOfMailboxOfAnOtherUserWhenSystemSession() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
 
@@ -2330,7 +2328,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 renameMailbox asserts that the user of the session owns the mailbox, disregarding the session type")
         protected void renameMailboxByIdShouldChangeMailboxPathOfMailboxOfAnOtherUserWhenSystemSession() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
 
@@ -2348,7 +2345,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 deleteMailbox asserts that the user of the session owns the mailbox, disregarding the session type")
         void deleteMailboxShouldDeleteOtherUserMailboxWhenSystemSession() throws Exception {
             MailboxSession sessionUser = mailboxManager.createUserSession(USER_1);
             MailboxSession sessionSystem = mailboxManager.createSystemSession(USER_2);
@@ -2362,7 +2358,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 deleteMailbox asserts that the user of the session owns the mailbox, disregarding the session type")
         protected void deleteMailboxByIdShouldDeleteOtherUserMailboxWhenSystemSession() throws Exception {
             MailboxSession sessionUser = mailboxManager.createUserSession(USER_1);
             MailboxSession sessionSystem = mailboxManager.createSystemSession(USER_2);

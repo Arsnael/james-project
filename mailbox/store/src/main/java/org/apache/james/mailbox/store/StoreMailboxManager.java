@@ -522,7 +522,7 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private void assertIsOwner(MailboxSession mailboxSession, MailboxPath mailboxPath) throws MailboxNotFoundException {
-        if (!mailboxPath.belongsTo(mailboxSession)) {
+        if (mailboxSession.getType() != MailboxSession.SessionType.System && !mailboxPath.belongsTo(mailboxSession)) {
             LOGGER.info("Mailbox {} does not belong to {}", mailboxPath.asString(), mailboxSession.getUser().asString());
             throw new MailboxNotFoundException(mailboxPath.asString());
         }
