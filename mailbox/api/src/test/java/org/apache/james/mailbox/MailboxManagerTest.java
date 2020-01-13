@@ -1765,7 +1765,9 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        void moveMessagesShouldMoveAllMessagesFromOneMailboxToAnOtherOfASameUser() throws Exception {
+        protected void moveMessagesShouldMoveAllMessagesFromOneMailboxToAnOtherOfASameUser() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+
             session = mailboxManager.createSystemSession(USER_1);
 
             MailboxPath inbox = MailboxPath.inbox(session);
@@ -1774,7 +1776,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath otherMailbox = MailboxPath.forUser(USER_1, "otherMailbox");
             MailboxId otherMailboxId = mailboxManager.createMailbox(otherMailbox, session).get();
 
-            MessageManager inboxMessageManager = mailboxManager.getMailbox(inboxId, session);
+            MessageManager inboxMessageManager = mailboxManager.getMailbox(inbox, session);
 
             MessageId messageId1 = inboxMessageManager
                 .appendMessage(AppendCommand.from(message), session)
@@ -1802,7 +1804,9 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        void moveMessagesShouldMoveOnlyOneMessageFromOneMailboxToAnOtherOfASameUser() throws Exception {
+        protected void moveMessagesShouldMoveOnlyOneMessageFromOneMailboxToAnOtherOfASameUser() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+
             session = mailboxManager.createSystemSession(USER_1);
 
             MailboxPath inbox = MailboxPath.inbox(session);
@@ -1811,7 +1815,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath otherMailbox = MailboxPath.forUser(USER_1, "otherMailbox");
             MailboxId otherMailboxId = mailboxManager.createMailbox(otherMailbox, session).get();
 
-            MessageManager inboxMessageManager = mailboxManager.getMailbox(inboxId, session);
+            MessageManager inboxMessageManager = mailboxManager.getMailbox(inbox, session);
 
             ComposedMessageId composedMessageId1 = inboxMessageManager
                 .appendMessage(AppendCommand.from(message), session);
@@ -1890,6 +1894,8 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
         @Test
         void copyMessagesShouldCopyAllMessagesFromOneMailboxToAnOtherOfASameUser() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+
             session = mailboxManager.createSystemSession(USER_1);
 
             MailboxPath inbox = MailboxPath.inbox(session);
@@ -1898,7 +1904,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath otherMailbox = MailboxPath.forUser(USER_1, "otherMailbox");
             MailboxId otherMailboxId = mailboxManager.createMailbox(otherMailbox, session).get();
 
-            MessageManager inboxMessageManager = mailboxManager.getMailbox(inboxId, session);
+            MessageManager inboxMessageManager = mailboxManager.getMailbox(inbox, session);
 
             MessageId messageId1 = inboxMessageManager
                 .appendMessage(AppendCommand.from(message), session)
@@ -1927,6 +1933,8 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
         @Test
         void copyMessagesShouldCopyOnlyOneMessageFromOneMailboxToAnOtherOfASameUser() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+
             session = mailboxManager.createSystemSession(USER_1);
 
             MailboxPath inbox = MailboxPath.inbox(session);
@@ -1935,7 +1943,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath otherMailbox = MailboxPath.forUser(USER_1, "otherMailbox");
             MailboxId otherMailboxId = mailboxManager.createMailbox(otherMailbox, session).get();
 
-            MessageManager inboxMessageManager = mailboxManager.getMailbox(inboxId, session);
+            MessageManager inboxMessageManager = mailboxManager.getMailbox(inbox, session);
 
             ComposedMessageId composedMessageId1 = inboxMessageManager
                 .appendMessage(AppendCommand.from(message), session);
@@ -2041,7 +2049,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        void getMailboxByIdShouldReturnMailboxWhenBelongingToUser() throws Exception {
+        protected void getMailboxByIdShouldReturnMailboxWhenBelongingToUser() throws Exception {
             session = mailboxManager.createSystemSession(USER_1);
 
             MailboxPath mailboxPath = MailboxPath.forUser(USER_1, "mailboxName");
