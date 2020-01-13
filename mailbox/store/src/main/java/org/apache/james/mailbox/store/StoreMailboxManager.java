@@ -701,9 +701,15 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private Stream<MailboxId> getInMailboxes(ImmutableSet<MailboxId> inMailboxes, MailboxSession session) throws MailboxException {
-       if (inMailboxes.isEmpty()) {
+        if (inMailboxes.isEmpty()) {
+            if (session.getType() == MailboxSession.SessionType.System) {
+                throw new IllegalArgumentException("'inMailboxes' can't be empty with a system session");
+            }
             return getAllReadableMailbox(session);
         } else {
+            if (session.getType() == MailboxSession.SessionType.System) {
+                return inMailboxes.stream();
+            }
             return getAllReadableMailbox(session).filter(inMailboxes::contains);
         }
     }

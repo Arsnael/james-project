@@ -1429,7 +1429,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 this search seems to generate in its code a generic MailboxQuery that only takes mailboxes belonging to user, not caring about the type of session")
         void searchForMessageShouldReturnMessageOfOtherUserMailboxWhenSystemSession() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
 
@@ -1450,6 +1449,28 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
             assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
                 .containsExactly(messageId);
+        }
+
+        @Test
+        void searchForMessageShouldThrowWithNoMailboxesSpecifiedInQueryWhenSystemSession() throws Exception {
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+
+            session = mailboxManager.createSystemSession(USER_1);
+            MailboxSession sessionFromDelegater = mailboxManager.createUserSession(USER_2);
+            MailboxPath otherMailboxPath = MailboxPath.forUser(USER_2, "SHARED");
+            MailboxId otherMailboxId = mailboxManager.createMailbox(otherMailboxPath, sessionFromDelegater).get();
+            MessageManager otherMessageManager = mailboxManager.getMailbox(otherMailboxId, sessionFromDelegater);
+
+            MessageId messageId = otherMessageManager
+                .appendMessage(AppendCommand.from(message), sessionFromDelegater)
+                .getMessageId();
+
+            MultimailboxesSearchQuery multiMailboxesQuery = MultimailboxesSearchQuery
+                .from(new SearchQuery())
+                .build();
+
+            assertThatThrownBy(() -> mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+                .isInstanceOf(IllegalArgumentException.class);
         }
     }
 

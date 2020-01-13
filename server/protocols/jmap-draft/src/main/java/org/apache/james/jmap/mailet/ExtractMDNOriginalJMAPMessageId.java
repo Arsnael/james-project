@@ -32,9 +32,12 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
 import org.apache.james.mailbox.model.SearchQuery;
+import org.apache.james.mailbox.model.search.MailboxQuery;
 import org.apache.james.mdn.MDNReport;
 import org.apache.james.mdn.MDNReportParser;
 import org.apache.james.mdn.fields.OriginalMessageId;
@@ -50,6 +53,7 @@ import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 
@@ -106,6 +110,7 @@ public class ExtractMDNOriginalJMAPMessageId extends GenericMailet {
             int limit = 1;
             MultimailboxesSearchQuery searchByRFC822MessageId = MultimailboxesSearchQuery
                 .from(new SearchQuery(SearchQuery.mimeMessageID(messageId)))
+                .inMailboxes(getMailboxIds(session))
                 .build();
             return mailboxManager.search(searchByRFC822MessageId, session, limit).stream().findFirst();
         } catch (MailboxException | UsersRepositoryException e) {
@@ -164,6 +169,13 @@ public class ExtractMDNOriginalJMAPMessageId extends GenericMailet {
             LOGGER.error("unable to parse message", e);
             return Optional.empty();
         }
+    }
+
+    private List<MailboxId> getMailboxIds(MailboxSession session) throws MailboxException {
+        return mailboxManager.search(MailboxQuery.privateMailboxesBuilder(session).build(), session)
+            .stream()
+            .map(MailboxMetaData::getId)
+            .collect(Guavate.toImmutableList());
     }
 
     @Override
