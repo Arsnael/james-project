@@ -83,7 +83,6 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -1965,8 +1964,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 It seems that getMailbox by path in MailboxManager does not check that the mailbox belongs to user, "
-                + "compared to getMailbox by id that actually does assert it")
         void copyMessagesShouldThrowWhenCopyingMessageFromMailboxNotBelongingToSameUser() throws Exception {
             MailboxSession sessionUser1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession sessionUser2 = mailboxManager.createSystemSession(USER_2);
@@ -2055,8 +2052,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 It seems that getMailbox by path in MailboxManager does not check that the mailbox belongs to user, "
-            + "compared to getMailbox by id that actually does assert it")
         void getMailboxByPathShouldThrowWhenMailboxNotBelongingToUser() throws Exception {
             MailboxSession sessionUser1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession sessionUser2 = mailboxManager.createSystemSession(USER_2);
