@@ -1765,8 +1765,9 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        protected void moveMessagesShouldMoveAllMessagesFromOneMailboxToAnOtherOfASameUser() throws Exception {
+        void moveMessagesShouldMoveAllMessagesFromOneMailboxToAnOtherOfASameUser() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Move));
 
             session = mailboxManager.createSystemSession(USER_1);
 
@@ -1804,8 +1805,9 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        protected void moveMessagesShouldMoveOnlyOneMessageFromOneMailboxToAnOtherOfASameUser() throws Exception {
+        void moveMessagesShouldMoveOnlyOneMessageFromOneMailboxToAnOtherOfASameUser() throws Exception {
             assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.ACL));
+            assumeTrue(mailboxManager.hasCapability(MailboxCapabilities.Move));
 
             session = mailboxManager.createSystemSession(USER_1);
 

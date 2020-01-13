@@ -57,16 +57,6 @@ class DomainUserMaildirMailboxManagerTest extends MailboxManagerTest<StoreMailbo
         protected void user1ShouldBeAbleToDeleteInboxById() {
         }
 
-        @Disabled("JAMES-2993 Mailbox move is not supported by Maildir")
-        @Test
-        protected void moveMessagesShouldMoveOnlyOneMessageFromOneMailboxToAnOtherOfASameUser() {
-        }
-
-        @Disabled("JAMES-2993 Mailbox move is not supported by Maildir")
-        @Test
-        protected void moveMessagesShouldMoveAllMessagesFromOneMailboxToAnOtherOfASameUser() {
-        }
-
         @Disabled("JAMES-2993 mailboxId support for Maildir is partial")
         @Test
         protected void getMailboxByIdShouldReturnMailboxWhenBelongingToUser() {
