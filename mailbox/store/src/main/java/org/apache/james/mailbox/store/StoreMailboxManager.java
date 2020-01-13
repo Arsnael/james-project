@@ -411,7 +411,7 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private void assertMailboxPathBelongToUser(MailboxSession mailboxSession, MailboxPath mailboxPath) throws MailboxException {
-        if (!mailboxPath.belongsTo(mailboxSession)) {
+        if (mailboxSession.getType() != MailboxSession.SessionType.System && !mailboxPath.belongsTo(mailboxSession)) {
             throw new InsufficientRightsException("mailboxPath '" + mailboxPath.asString() + "'"
                 + " does not belong to user '" + mailboxSession.getUser().asString() + "'");
         }

@@ -2302,7 +2302,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2993 createMailbox asserts that the mailbox path belongs to user, disregarding the type of session")
         void createMailboxShouldNotThrowWhenMailboxPathBelongsToAnotherUserAndSystemSession() throws MailboxException {
             session = mailboxManager.createSystemSession(USER_2);
             MailboxPath mailboxPath = MailboxPath.forUser(USER_1, "mailboxName");
