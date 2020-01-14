@@ -85,6 +85,7 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -1567,7 +1568,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        void renameMailboxShouldThrowWhenMailboxPathDoesNotBelongToUser() throws Exception {
+        void renameMailboxShouldThrowWhenMailboxPathsDoNotBelongToUser() throws Exception {
             MailboxSession sessionUser1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession sessionUser2 = mailboxManager.createSystemSession(USER_2);
 
@@ -1580,7 +1581,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        void renameMailboxByIdShouldThrowWhenMailboxPathDoesNotBelongToUser() throws Exception {
+        void renameMailboxByIdShouldThrowWhenMailboxPathsDoNotBelongToUser() throws Exception {
             MailboxSession sessionUser1 = mailboxManager.createSystemSession(USER_1);
             MailboxSession sessionUser2 = mailboxManager.createSystemSession(USER_2);
 
@@ -1589,6 +1590,58 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             Optional<MailboxId> mailboxId = mailboxManager.createMailbox(mailboxPath1, sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.renameMailbox(mailboxId.get(), mailboxPath2, sessionUser2))
+                .isInstanceOf(MailboxNotFoundException.class);
+        }
+
+        @Test
+        void renameMailboxShouldThrowWhenFromMailboxPathDoesNotBelongToUser() throws Exception {
+            MailboxSession sessionUser1 = mailboxManager.createSystemSession(USER_1);
+            MailboxSession sessionUser2 = mailboxManager.createSystemSession(USER_2);
+
+            MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");
+            MailboxPath mailboxPath2 = MailboxPath.forUser(USER_2, "mbx2");
+            mailboxManager.createMailbox(mailboxPath1, sessionUser1);
+
+            assertThatThrownBy(() -> mailboxManager.renameMailbox(mailboxPath1, mailboxPath2, sessionUser2))
+                .isInstanceOf(MailboxNotFoundException.class);
+        }
+
+        @Test
+        void renameMailboxByIdShouldThrowWhenFromMailboxPathDoesNotBelongToUser() throws Exception {
+            MailboxSession sessionUser1 = mailboxManager.createSystemSession(USER_1);
+            MailboxSession sessionUser2 = mailboxManager.createSystemSession(USER_2);
+
+            MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");
+            MailboxPath mailboxPath2 = MailboxPath.forUser(USER_2, "mbx2");
+            Optional<MailboxId> mailboxId = mailboxManager.createMailbox(mailboxPath1, sessionUser1);
+
+            assertThatThrownBy(() -> mailboxManager.renameMailbox(mailboxId.get(), mailboxPath2, sessionUser2))
+                .isInstanceOf(MailboxNotFoundException.class);
+        }
+
+        @Test
+        @Disabled("JAMES-2933 renameMailbox does not assert that user is the owner of destination mailbox")
+        void renameMailboxShouldThrowWhenToMailboxPathDoesNotBelongToUser() throws Exception {
+            session = mailboxManager.createSystemSession(USER_1);
+
+            MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");
+            MailboxPath mailboxPath2 = MailboxPath.forUser(USER_2, "mbx2");
+            mailboxManager.createMailbox(mailboxPath1, session);
+
+            assertThatThrownBy(() -> mailboxManager.renameMailbox(mailboxPath1, mailboxPath2, session))
+                .isInstanceOf(MailboxNotFoundException.class);
+        }
+
+        @Test
+        @Disabled("JAMES-2933 renameMailbox does not assert that user is the owner of destination mailbox")
+        void renameMailboxByIdShouldThrowWhenToMailboxPathDoesNotBelongToUser() throws Exception {
+            session = mailboxManager.createSystemSession(USER_1);
+
+            MailboxPath mailboxPath1 = MailboxPath.forUser(USER_1, "mbx1");
+            MailboxPath mailboxPath2 = MailboxPath.forUser(USER_2, "mbx2");
+            Optional<MailboxId> mailboxId = mailboxManager.createMailbox(mailboxPath1, session);
+
+            assertThatThrownBy(() -> mailboxManager.renameMailbox(mailboxId.get(), mailboxPath2, session))
                 .isInstanceOf(MailboxNotFoundException.class);
         }
 
