@@ -28,6 +28,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -125,7 +126,7 @@ public class StoreMailboxManager implements MailboxManager {
     @Inject
     public StoreMailboxManager(MailboxSessionMapperFactory mailboxSessionMapperFactory, SessionProvider sessionProvider,
                                MailboxPathLocker locker, MessageParser messageParser,
-                               MessageId.Factory messageIdFactory, MailboxAnnotationManager annotationManager,
+                               Factory messageIdFactory, MailboxAnnotationManager annotationManager,
                                EventBus eventBus, StoreRightManager storeRightManager,
                                QuotaComponents quotaComponents, MessageSearchIndex searchIndex, MailboxManagerConfiguration configuration,
                                PreDeletionHooks preDeletionHooks) {
@@ -328,7 +329,7 @@ public class StoreMailboxManager implements MailboxManager {
             throws MailboxException {
         LOGGER.debug("createMailbox {}", mailboxPath);
 
-        assertMailboxPathBelongToUser(mailboxSession, mailboxPath);
+        assertSessionHasAdministrativeAccessOn(mailboxSession, mailboxPath, getInsufficientRightsException(mailboxSession, mailboxPath));
 
         if (mailboxPath.getName().isEmpty()) {
             LOGGER.warn("Ignoring mailbox with empty name");
@@ -410,17 +411,31 @@ public class StoreMailboxManager implements MailboxManager {
         return mailboxIds;
     }
 
-    private void assertMailboxPathBelongToUser(MailboxSession mailboxSession, MailboxPath mailboxPath) throws MailboxException {
-        if (mailboxSession.getType() != MailboxSession.SessionType.System && !mailboxPath.belongsTo(mailboxSession)) {
-            throw new InsufficientRightsException("mailboxPath '" + mailboxPath.asString() + "'"
-                + " does not belong to user '" + mailboxSession.getUser().asString() + "'");
+    private void assertSessionHasAdministrativeAccessOn(MailboxSession mailboxSession, MailboxPath mailboxPath,
+                                                        Supplier<MailboxException> exceptionSupplier) throws MailboxException {
+        if (sessionHasAdministrativeAccessOn(mailboxSession, mailboxPath)) {
+            throw exceptionSupplier.get();
         }
+    }
+
+    private boolean sessionHasAdministrativeAccessOn(MailboxSession mailboxSession, MailboxPath mailboxPath) {
+        return mailboxSession.getType() != MailboxSession.SessionType.System && !mailboxPath.belongsTo(mailboxSession);
+    }
+
+    private Supplier<MailboxException> getInsufficientRightsException(MailboxSession mailboxSession, MailboxPath mailboxPath) {
+        return () -> new InsufficientRightsException("mailboxPath '" + mailboxPath.asString() + "'"
+            + " does not belong to user '" + mailboxSession.getUser().asString() + "'");
+    }
+
+    private Supplier<MailboxException> getMailboxNotFoundException(MailboxSession mailboxSession, MailboxPath mailboxPath) {
+        LOGGER.info("Mailbox {} does not belong to {}", mailboxPath.asString(), mailboxSession.getUser().asString());
+        return () -> new MailboxNotFoundException(mailboxPath.asString());
     }
 
     @Override
     public void deleteMailbox(final MailboxPath mailboxPath, final MailboxSession session) throws MailboxException {
         LOGGER.info("deleteMailbox {}", mailboxPath);
-        assertIsOwner(session, mailboxPath);
+        assertSessionHasAdministrativeAccessOn(session, mailboxPath, getMailboxNotFoundException(session, mailboxPath));
         MailboxMapper mailboxMapper = mailboxSessionMapperFactory.getMailboxMapper(session);
 
         mailboxMapper.execute(() -> {
@@ -442,7 +457,8 @@ public class StoreMailboxManager implements MailboxManager {
             if (mailbox == null) {
                 throw new MailboxNotFoundException(mailboxId);
             }
-            assertIsOwner(session, mailbox.generateAssociatedPath());
+            MailboxPath mailboxPath = mailbox.generateAssociatedPath();
+            assertSessionHasAdministrativeAccessOn(session, mailboxPath, getMailboxNotFoundException(session, mailboxPath));
             return doDeleteMailbox(mailboxMapper, mailbox, session);
         });
     }
@@ -487,7 +503,7 @@ public class StoreMailboxManager implements MailboxManager {
         MailboxPath sanitizedMailboxPath = to.sanitize(session.getPathDelimiter());
         validateDestinationPath(sanitizedMailboxPath, session);
 
-        assertIsOwner(session, from);
+        assertSessionHasAdministrativeAccessOn(session, from, getMailboxNotFoundException(session, from));
         MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
 
         mapper.execute(Mapper.toTransaction(() -> {
@@ -508,7 +524,8 @@ public class StoreMailboxManager implements MailboxManager {
         mapper.execute(Mapper.toTransaction(() -> {
             Mailbox mailbox = Optional.ofNullable(mapper.findMailboxById(mailboxId))
                 .orElseThrow(() -> new MailboxNotFoundException(mailboxId));
-            assertIsOwner(session, mailbox.generateAssociatedPath());
+            MailboxPath mailboxPath = mailbox.generateAssociatedPath();
+            assertSessionHasAdministrativeAccessOn(session, mailboxPath, getMailboxNotFoundException(session, mailboxPath));
             doRenameMailbox(mailbox, sanitizedMailboxPath, session, mapper);
         }));
     }
@@ -517,15 +534,8 @@ public class StoreMailboxManager implements MailboxManager {
         if (mailboxExists(newMailboxPath, session)) {
             throw new MailboxExistsException(newMailboxPath.toString());
         }
-        assertIsOwner(session, newMailboxPath);
+        assertSessionHasAdministrativeAccessOn(session, newMailboxPath, getMailboxNotFoundException(session, newMailboxPath));
         newMailboxPath.assertAcceptable(session.getPathDelimiter());
-    }
-
-    private void assertIsOwner(MailboxSession mailboxSession, MailboxPath mailboxPath) throws MailboxNotFoundException {
-        if (mailboxSession.getType() != MailboxSession.SessionType.System && !mailboxPath.belongsTo(mailboxSession)) {
-            LOGGER.info("Mailbox {} does not belong to {}", mailboxPath.asString(), mailboxSession.getUser().asString());
-            throw new MailboxNotFoundException(mailboxPath.asString());
-        }
     }
 
     private void doRenameMailbox(Mailbox mailbox, MailboxPath newMailboxPath, MailboxSession session, MailboxMapper mapper) throws MailboxException {
