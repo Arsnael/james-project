@@ -85,7 +85,6 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -1620,7 +1619,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2933 renameMailbox does not assert that user is the owner of destination mailbox")
         void renameMailboxShouldThrowWhenToMailboxPathDoesNotBelongToUser() throws Exception {
             session = mailboxManager.createSystemSession(USER_1);
 
@@ -1633,7 +1631,6 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
         }
 
         @Test
-        @Disabled("JAMES-2933 renameMailbox does not assert that user is the owner of destination mailbox")
         void renameMailboxByIdShouldThrowWhenToMailboxPathDoesNotBelongToUser() throws Exception {
             session = mailboxManager.createSystemSession(USER_1);
 
