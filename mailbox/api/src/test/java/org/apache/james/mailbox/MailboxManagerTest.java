@@ -53,7 +53,9 @@ import org.apache.james.mailbox.events.MessageMoveEvent;
 import org.apache.james.mailbox.exception.AnnotationException;
 import org.apache.james.mailbox.exception.HasEmptyMailboxNameInHierarchyException;
 import org.apache.james.mailbox.exception.InboxAlreadyCreated;
+import org.apache.james.mailbox.exception.InsufficientRightsException;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.extension.PreDeletionHook;
@@ -555,7 +557,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath inbox = MailboxPath.inbox(session);
 
             assertThatThrownBy(() -> mailboxManager.updateAnnotations(inbox, session, ImmutableList.of(privateAnnotation)))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -587,7 +589,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath inbox = MailboxPath.inbox(session);
 
             assertThatThrownBy(() -> mailboxManager.getAllAnnotations(inbox, session))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -610,7 +612,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath inbox = MailboxPath.inbox(session);
 
             assertThatThrownBy(() -> mailboxManager.getAnnotationsByKeys(inbox, session, ImmutableSet.of(privateKey)))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -633,7 +635,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxPath inbox = MailboxPath.inbox(session);
 
             assertThatThrownBy(() -> mailboxManager.getAnnotationsByKeysWithAllDepth(inbox, session, ImmutableSet.of(privateKey)))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -1574,7 +1576,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             mailboxManager.createMailbox(mailboxPath1, sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.renameMailbox(mailboxPath1, mailboxPath2, sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -1587,7 +1589,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             Optional<MailboxId> mailboxId = mailboxManager.createMailbox(mailboxPath1, sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.renameMailbox(mailboxId.get(), mailboxPath2, sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -1598,7 +1600,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             mailboxManager.createMailbox(inbox, session);
 
             assertThatThrownBy(() -> mailboxManager.createMailbox(inbox, session))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxExistsException.class);
         }
 
         @Test
@@ -1667,7 +1669,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             mailboxManager.createMailbox(inbox, sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.deleteMailbox(inbox, sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
 
@@ -1680,7 +1682,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxId inboxId = mailboxManager.createMailbox(inbox, sessionUser1).get();
 
             assertThatThrownBy(() -> mailboxManager.deleteMailbox(inboxId, sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -1860,7 +1862,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .appendMessage(AppendCommand.from(message), sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.moveMessages(MessageRange.all(), inbox1, inbox2, sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -1880,7 +1882,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .appendMessage(AppendCommand.from(message), sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.moveMessages(MessageRange.all(), inbox1, inbox2, sessionUser1))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -1990,7 +1992,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .appendMessage(AppendCommand.from(message), sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.copyMessages(MessageRange.all(), inbox1, inbox2, sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -2010,7 +2012,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
                 .appendMessage(AppendCommand.from(message), sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.copyMessages(MessageRange.all(), inbox1, inbox2, sessionUser1))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -2028,7 +2030,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
 
             assertThatThrownBy(() -> mailboxManager
                     .createMailbox(MailboxPath.forUser(USER_2, "mailboxName"), session))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(InsufficientRightsException.class);
         }
 
         @Test
@@ -2036,7 +2038,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             session = mailboxManager.createSystemSession(USER_1);
 
             assertThatThrownBy(() -> mailboxManager.getMailbox(MailboxPath.forUser(USER_1, "mailboxName"), session))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -2070,7 +2072,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             mailboxManager.createMailbox(mailboxPath, sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.getMailbox(mailboxPath, sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
@@ -2082,7 +2084,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             Optional<MailboxId> mailboxId = mailboxManager.createMailbox(mailboxPath, sessionUser1);
 
             assertThatThrownBy(() -> mailboxManager.getMailbox(mailboxId.get(), sessionUser2))
-                .isInstanceOf(MailboxException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
     }
 
