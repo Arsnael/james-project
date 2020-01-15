@@ -55,6 +55,7 @@ import org.apache.james.mailbox.store.quota.QuotaComponents;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.store.search.SimpleMessageSearchIndex;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -203,7 +204,10 @@ class StoreMailboxManagerTest {
     void loginAsOtherUserShouldCreateUserSessionWhenAdminWithGoodPassword() throws Exception {
         MailboxSession expected = storeMailboxManager.loginAsOtherUser(ADMIN, ADMIN_PASSWORD, CURRENT_USER);
 
-        assertThat(expected.getUser()).isEqualTo(CURRENT_USER);
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(expected.getUser()).isEqualTo(CURRENT_USER);
+            softly.assertThat(expected.getType()).isEqualTo(MailboxSession.SessionType.User);
+        });
     }
 
     @Test

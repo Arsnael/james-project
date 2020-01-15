@@ -78,7 +78,7 @@ public class SessionProviderImpl implements SessionProvider {
         Authorizator.AuthorizationState authorizationState = authorizator.canLoginAsOtherUser(adminUserid, otherUserId);
         switch (authorizationState) {
             case ALLOWED:
-                return createSystemSession(otherUserId);
+                return createSession(otherUserId, MailboxSession.SessionType.User);
             case NOT_ADMIN:
                 throw new NotAdminException();
             case UNKNOWN_USER:
