@@ -60,7 +60,7 @@ public class ACLProbeImpl implements GuiceProbe, ACLProbe {
 
     @Override
     public MailboxACL retrieveRights(MailboxPath mailboxPath) throws MailboxException {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(mailboxPath.getUser());
+        MailboxSession mailboxSession = mailboxManager.createUserSession(mailboxPath.getUser());
 
         return mailboxManager.getMailbox(mailboxPath, mailboxSession)
             .getMetaData(RESET_RECENT, mailboxSession, MessageManager.MetaData.FetchGroup.NO_COUNT)
