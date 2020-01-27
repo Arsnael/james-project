@@ -25,7 +25,7 @@ import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.DumbBlobStore;
 import org.apache.james.blob.cassandra.CassandraDumbBlobStore;
 import org.apache.james.blob.cassandra.cache.CachedBlobStore;
-import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
+import org.apache.james.blob.objectstorage.aws.S3DumbBlobStore;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTO;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
@@ -33,7 +33,7 @@ import org.apache.james.lifecycle.api.StartUpCheck;
 import org.apache.james.modules.blobstore.validation.EventsourcingStorageStrategy;
 import org.apache.james.modules.blobstore.validation.StorageStrategyModule;
 import org.apache.james.modules.mailbox.CassandraBlobStoreDependenciesModule;
-import org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule;
+import org.apache.james.modules.objectstorage.S3BlobStoreModule;
 import org.apache.james.server.blob.deduplication.DeDuplicationBlobStore;
 import org.apache.james.server.blob.deduplication.PassThroughBlobStore;
 import org.apache.james.server.blob.deduplication.StorageStrategy;
@@ -60,11 +60,9 @@ public class BlobStoreModulesChooser {
     static class ObjectStorageDumdBlobStoreDeclarationModule extends AbstractModule {
         @Override
         protected void configure() {
-            install(new ObjectStorageDependenciesModule());
-            bind(DumbBlobStore.class).to(NoopDumbBlobStore.class);
-            bind(BlobStore.class)
-                .annotatedWith(Names.named(CachedBlobStore.BACKEND))
-                .to(ObjectStorageBlobStore.class);
+            install(new S3BlobStoreModule());
+
+            bind(DumbBlobStore.class).to(S3DumbBlobStore.class);
         }
     }
 
@@ -91,23 +89,18 @@ public class BlobStoreModulesChooser {
 
     @VisibleForTesting
     public static List<Module> chooseModules(BlobStoreConfiguration choosingConfiguration) {
-        ImmutableList.Builder<Module> moduleBuilder = ImmutableList.<Module>builder()
+        return ImmutableList.<Module>builder()
             .add(chooseDumBlobStoreModule(choosingConfiguration.getImplementation()))
-            .add(new StoragePolicyConfigurationSanityEnforcementModule(choosingConfiguration));
-
-        //TODO JAMES-3028 add the storage policy module for all implementation and unbind the ObjectStorageBlobStore
-        if (choosingConfiguration.getImplementation() == BlobStoreConfiguration.BlobStoreImplName.CASSANDRA) {
-            moduleBuilder.add(
-                chooseStoragePolicyModule(choosingConfiguration.storageStrategy()));
-        }
-        return moduleBuilder.build();
+            .add(chooseStoragePolicyModule(choosingConfiguration.storageStrategy()))
+            .add(new StoragePolicyConfigurationSanityEnforcementModule(choosingConfiguration))
+            .build();
     }
 
     public static Module chooseDumBlobStoreModule(BlobStoreConfiguration.BlobStoreImplName implementation) {
         switch (implementation) {
             case CASSANDRA:
                 return new CassandraDumbBlobStoreDeclarationModule();
-            case OBJECTSTORAGE:
+            case S3:
                 return new ObjectStorageDumdBlobStoreDeclarationModule();
             default:
                 throw new RuntimeException("Unsupported blobStore implementation " + implementation);

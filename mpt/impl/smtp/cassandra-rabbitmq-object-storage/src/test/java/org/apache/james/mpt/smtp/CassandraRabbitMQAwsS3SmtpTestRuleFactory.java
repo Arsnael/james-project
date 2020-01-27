@@ -26,18 +26,19 @@ import org.apache.james.backends.cassandra.DockerCassandra;
 import org.apache.james.backends.cassandra.init.configuration.ClusterConfiguration;
 import org.apache.james.backends.rabbitmq.DockerRabbitMQSingleton;
 import org.apache.james.blob.api.BlobStore;
+import org.apache.james.blob.api.DumbBlobStore;
 import org.apache.james.blob.api.MetricableBlobStore;
-import org.apache.james.blob.objectstorage.ObjectStorageBlobStore;
+import org.apache.james.blob.objectstorage.aws.S3DumbBlobStore;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.modules.TestRabbitMQModule;
 import org.apache.james.modules.mailbox.KeyspacesConfiguration;
-import org.apache.james.modules.objectstorage.ObjectStorageDependenciesModule;
 import org.apache.james.modules.objectstorage.aws.s3.DockerAwsS3TestRule;
 import org.apache.james.modules.protocols.SmtpGuiceProbe.SmtpServerConnectedType;
 import org.apache.james.modules.rabbitmq.RabbitMQModule;
 import org.apache.james.modules.server.CamelMailetContainerModule;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
+import org.apache.james.server.blob.deduplication.DeDuplicationBlobStore;
 import org.apache.james.server.core.configuration.Configuration;
 import org.apache.james.util.Host;
 import org.junit.rules.TemporaryFolder;
@@ -56,10 +57,10 @@ public final class CassandraRabbitMQAwsS3SmtpTestRuleFactory {
     private static Module BLOB_STORE_MODULE = new AbstractModule() {
         @Override
         protected void configure() {
-            install(new ObjectStorageDependenciesModule());
             bind(BlobStore.class)
                 .annotatedWith(Names.named(MetricableBlobStore.BLOB_STORE_IMPLEMENTATION))
-                .to(ObjectStorageBlobStore.class);
+                .to(DeDuplicationBlobStore.class);
+            bind(DumbBlobStore.class).to(S3DumbBlobStore.class);
         }
     };
 
