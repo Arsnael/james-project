@@ -97,7 +97,7 @@ public abstract class AbstractUsersRepository implements UsersRepository, Config
         }
 
         if (!isLocalPartValid(username)) {
-            throw new InvalidUsernameException(String.format("Given Username %s should not contain any of those characters: %s",
+            throw new InvalidUsernameException(String.format("Given Username '%s' should not contain any of those characters: %s",
                 username.asString(), ILLEGAL_USERNAME_CHARACTERS));
         }
     }
