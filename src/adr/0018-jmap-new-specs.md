@@ -8,19 +8,21 @@ Proposed
 
 ## Context
 
-Historically, James is an early adopter for the JMAP specification, and a first partial implementation was conducted when JMAP was just a draft. But with time, the IETF draft went with radical changes and the community could not keep this implementation up to date with the spec changes.
+Historically, James has been an early adopter for the JMAP specification, and a first partial implementation was conducted when JMAP was just a draft. 
+But with time, the IETF draft went with radical changes and the community could not keep this implementation up to date with the spec changes.
 
-As off summer 2019, JMAP core ([RFC 8620](https://tools.ietf.org/html/rfc8620)) and JMAP mail ([RFC 8621](https://tools.ietf.org/html/rfc8621)) have been officially published. Thus we should implement these new specifications.
+As of summer 2019, JMAP core ([RFC 8620](https://tools.ietf.org/html/rfc8620)) and JMAP mail ([RFC 8621](https://tools.ietf.org/html/rfc8621)) have been officially published. 
+Thus we should implement these new specifications to clain JMAP support.
 
-We need to keep in mind though that part of the community actively relies on the actual 'draft' implementation of JMAP existing in James. We should ensure no changes is done to that 'draft' protocol is done while implementing the new one.
+We need to keep in mind though that part of the community actively relies on the actual 'draft' implementation of JMAP existing in James. 
 
 ## Decision
 
-The proposed approach would be as follow:
+We decided to do as follow:
 
-* Rename packages `server/protocols/jmap*` and guice packages `server/container/guice/protocols/jmap*` to `jmap-draft`. `JMAPServer` should also be renamed to `JMAPDraftServer` (this has already been contributed [here](https://github.com/apache/james-project/pull/164), thanks to @cketti). No modification in `jmap-draft` integration tests should be conducted afterwards.
+* Rename packages `server/protocols/jmap*` and guice packages `server/container/guice/protocols/jmap*` to `jmap-draft`. `JMAPServer` should also be renamed to `JMAPDraftServer` (this has already been contributed [here](https://github.com/apache/james-project/pull/164), thanks to @cketti).
 * Create a new `jmap` package, binding it on a new port.
-* Implement the new JMAP request structure with the echo method
+* Implement the new JMAP request structure with the [echo](https://jmap.io/spec-core.html#the-coreecho-method) method
 * Implement authentication and session of the new JMAP protocol
 * Implement protocol-level error handling
 * Port existing mailbox methods of `jmap-draft` to `jmap`
@@ -34,11 +36,14 @@ Then when we finish to port our existing methods to the new JMAP specifications,
 * Push and queryChanges
 * Threads
 
-In order to ease testing and development speed, we decided to support `jmap` only on top of memory-guice at first. Then, we would add it for distributed-james Guice product, and other products might follow later.
+In order to ease testing and development speed, we decided to support `jmap` only on top of memory-guice at first. 
+Then, we would add it for distributed-james Guice product, and other products might follow later.
+
+We should ensure no changes is done to `jmap-draft` while implementing the new `jmap` one.
 
 ## Consequences
 
-* Being fully compliant with the final specifications of JMAP specifications
+* Each feature implemented will respect the final specifications of JMAP
 * Getting missing features that are necessary to deliver a better mailing experience with James, like push, query changes, email submission and threads 
 * Separating the current implementation from the new one will allow existing `jmap-draft` clients to smoothly transition to `jmap`, then trigger the classic "deprecation-then-removal" process. 
 
