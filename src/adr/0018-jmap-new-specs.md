@@ -25,13 +25,14 @@ We decided to do as follow:
 * Implement the new JMAP request structure with the [echo](https://jmap.io/spec-core.html#the-coreecho-method) method
 * Implement authentication and session of the new JMAP protocol
 * Implement protocol-level error handling
-* Port existing mailbox methods of `jmap-draft` to `jmap`
-* Port existing email methods of `jmap-draft` to `jmap`
-* Port existing vacation methods of `jmap-draft` to `jmap`
+* Duplicate and adapt existing mailbox methods of `jmap-draft` to `jmap`
+* Duplicate and adapt existing email methods of `jmap-draft` to `jmap`
+* Duplicate and adapt existing vacation methods of `jmap-draft` to `jmap`
 * Support uploads/downloads
 
-Then when we finish to port our existing methods to the new JMAP specifications, we can implement the new features that we are missing and are absolutely needed:
+Then when we finish to port our existing methods to the new JMAP specifications, we can implement these new features:
 
+* Identities
 * EmailSubmission
 * Push and queryChanges
 * Threads
@@ -41,10 +42,12 @@ Then, we would add it for distributed-james Guice product, and other products mi
 
 We should ensure no changes is done to `jmap-draft` while implementing the new `jmap` one.
 
+It's worth mentioning as well that we took the decision of writing this new implementation using `Scala`.
+
 ## Consequences
 
 * Each feature implemented will respect the final specifications of JMAP
-* Getting missing features that are necessary to deliver a better mailing experience with James, like push, query changes, email submission and threads 
+* Getting missing features that are necessary to deliver a better mailing experience with James, like push, query changes and threads 
 * Separating the current implementation from the new one will allow existing `jmap-draft` clients to smoothly transition to `jmap`, then trigger the classic "deprecation-then-removal" process. 
 
 ## References
