@@ -33,6 +33,7 @@ We decided to do as follow:
 Then when we finish to port our existing methods to the new JMAP specifications, we can implement these new features:
 
 * Accounts
+* Identities
 * EmailSubmission
 * Push and queryChanges
 * Threads
