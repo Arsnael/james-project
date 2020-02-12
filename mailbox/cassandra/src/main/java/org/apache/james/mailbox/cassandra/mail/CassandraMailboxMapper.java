@@ -172,49 +172,48 @@ public class CassandraMailboxMapper implements MailboxMapper {
 
         CassandraId cassandraId = CassandraId.timeBased();
         mailbox.setMailboxId(cassandraId);
-        if (!tryCreate(mailbox, cassandraId).block()) {
+        if (!tryCreate(mailbox, cassandraId)) {
             throw new MailboxExistsException(mailbox.generateAssociatedPath().asString());
         }
         return cassandraId;
     }
 
-    private Mono<Boolean> tryCreate(Mailbox cassandraMailbox, CassandraId cassandraId) {
-        return mailboxPathV2DAO.save(cassandraMailbox.generateAssociatedPath(), cassandraId)
-            .flatMap(isCreated -> {
-                if (isCreated) {
-                    return mailboxDAO.save(cassandraMailbox)
-                        .thenReturn(isCreated);
-                }
-                return Mono.just(isCreated);
-            });
-    }
-
-    @Override
-    public MailboxId save(Mailbox mailbox) throws MailboxException {
-        CassandraId cassandraId = retrieveId(mailbox);
-        mailbox.setMailboxId(cassandraId);
-        if (!trySave(mailbox, cassandraId)) {
-            throw new MailboxExistsException(mailbox.generateAssociatedPath().asString());
-        }
-        return cassandraId;
-    }
-
-    private boolean trySave(Mailbox cassandraMailbox, CassandraId cassandraId) {
+    private boolean tryCreate(Mailbox cassandraMailbox, CassandraId cassandraId) {
         return mailboxPathV2DAO.save(cassandraMailbox.generateAssociatedPath(), cassandraId)
             .filter(isCreated -> isCreated)
-            .flatMap(mailboxHasCreated -> mailboxDAO.retrieveMailbox(cassandraId)
-                .flatMap(mailbox -> mailboxPathV2DAO.delete(mailbox.generateAssociatedPath()))
-                .then(mailboxDAO.save(cassandraMailbox))
+            .flatMap(mailboxHasCreated -> mailboxDAO.save(cassandraMailbox)
                 .thenReturn(true))
             .switchIfEmpty(Mono.just(false))
             .block();
     }
 
-    private CassandraId retrieveId(Mailbox cassandraMailbox) {
-        if (cassandraMailbox.getMailboxId() == null) {
-            return CassandraId.timeBased();
-        } else {
-            return (CassandraId) cassandraMailbox.getMailboxId();
+    @Override
+    public MailboxId rename(Mailbox mailbox) throws MailboxException {
+        Preconditions.checkNotNull(mailbox.getMailboxId(), "A mailbox we want to rename should have a defined mailboxId");
+
+        CassandraId cassandraId = (CassandraId) mailbox.getMailboxId();
+        if (!tryRename(mailbox, cassandraId)) {
+            throw new MailboxExistsException(mailbox.generateAssociatedPath().asString());
+        }
+        return cassandraId;
+    }
+
+    private boolean tryRename(Mailbox cassandraMailbox, CassandraId cassandraId) throws MailboxException {
+        try {
+            return mailboxDAO.retrieveMailbox(cassandraId)
+                .flatMap(mailbox -> mailboxPathV2DAO.save(cassandraMailbox.generateAssociatedPath(), cassandraId)
+                    .filter(isCreated -> isCreated)
+                    .flatMap(mailboxHasCreated -> mailboxPathV2DAO.delete(mailbox.generateAssociatedPath())
+                        .then(mailboxDAO.save(cassandraMailbox))
+                        .thenReturn(true))
+                    .switchIfEmpty(Mono.just(false)))
+                .switchIfEmpty(Mono.error(() -> new MailboxNotFoundException(cassandraId)))
+                .block();
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof MailboxNotFoundException) {
+                throw (MailboxNotFoundException)e.getCause();
+            }
+            throw e;
         }
     }
 

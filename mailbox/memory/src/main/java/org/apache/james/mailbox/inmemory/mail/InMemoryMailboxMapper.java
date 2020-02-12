@@ -41,6 +41,7 @@ import org.apache.james.mailbox.store.mail.MailboxMapper;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 
 public class InMemoryMailboxMapper implements MailboxMapper {
     
@@ -92,24 +93,35 @@ public class InMemoryMailboxMapper implements MailboxMapper {
     }
 
     @Override
-    public MailboxId save(Mailbox mailbox) throws MailboxException {
+    public MailboxId create(Mailbox mailbox) throws MailboxException {
+        Preconditions.checkArgument(mailbox.getMailboxId() == null, "A mailbox we want to create should not have a mailboxId set already");
+
+        InMemoryId id = InMemoryId.of(mailboxIdGenerator.incrementAndGet());
+        mailbox.setMailboxId(id);
+
+        saveMailbox(mailbox);
+
+        return mailbox.getMailboxId();
+    }
+
+    @Override
+    public MailboxId rename(Mailbox mailbox) throws MailboxException {
+        Preconditions.checkNotNull(mailbox.getMailboxId(), "A mailbox we want to rename should have a defined mailboxId");
+
         InMemoryId id = (InMemoryId) mailbox.getMailboxId();
-        if (id == null) {
-            id = InMemoryId.of(mailboxIdGenerator.incrementAndGet());
-            mailbox.setMailboxId(id);
-        } else {
-            try {
-                Mailbox mailboxWithPreviousName = findMailboxById(id);
-                mailboxesByPath.remove(mailboxWithPreviousName.generateAssociatedPath());
-            } catch (MailboxNotFoundException e) {
-                // No need to remove the previous mailbox
-            }
-        }
+        Mailbox mailboxWithPreviousName = findMailboxById(id);
+
+        saveMailbox(mailbox);
+        mailboxesByPath.remove(mailboxWithPreviousName.generateAssociatedPath());
+
+        return mailbox.getMailboxId();
+    }
+
+    private void saveMailbox(Mailbox mailbox) throws MailboxException {
         Mailbox previousMailbox = mailboxesByPath.putIfAbsent(mailbox.generateAssociatedPath(), mailbox);
         if (previousMailbox != null) {
             throw new MailboxExistsException(mailbox.getName());
         }
-        return mailbox.getMailboxId();
     }
 
     @Override
