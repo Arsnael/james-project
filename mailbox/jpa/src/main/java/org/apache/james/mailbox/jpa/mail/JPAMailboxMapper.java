@@ -47,6 +47,7 @@ import org.apache.james.mailbox.store.mail.MailboxMapper;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -80,6 +81,30 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
                 }
             }
             throw new MailboxException("Commit of transaction failed", e);
+        }
+    }
+
+    @Override
+    public MailboxId create(Mailbox mailbox) throws MailboxException {
+        Preconditions.checkArgument(mailbox.getMailboxId() == null, "A mailbox we want to create should not have a mailboxId set already");
+
+        try {
+            begin();
+            if (isPathAlreadyUsedByAnotherMailbox(mailbox)) {
+                rollback();
+                throw new MailboxExistsException(mailbox.getName());
+            }
+
+            this.lastMailboxName = mailbox.getName();
+            JPAMailbox persistedMailbox = JPAMailbox.from(mailbox);
+
+            getEntityManager().persist(persistedMailbox);
+            mailbox.setMailboxId(persistedMailbox.getMailboxId());
+            commit();
+            return persistedMailbox.getMailboxId();
+        } catch (PersistenceException e) {
+            rollback();
+            throw new MailboxException("Save of mailbox " + mailbox.getName() + " failed", e);
         }
     }
     
