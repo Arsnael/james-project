@@ -17,6 +17,7 @@ advanced users.
 
  - [Overall architecture](#overall-architecture)
  - [Basic Monitoring](#basic-monitoring)
+ - [Event Bus](#event-bus)
  - [Mail Processing](#mail-processing)
 
 ## Overall architecture
@@ -146,3 +147,56 @@ or [delete a single mail of a mail repository](manage-webadmin.html#removing-a-m
 Performance of mail processing can be monitored via the 
 [mailet grafana board](https://github.com/apache/james-project/blob/master/grafana-reporting/MAILET-1490071694187-dashboard.json) 
 and [matcher grafana board](https://github.com/apache/james-project/blob/master/grafana-reporting/MATCHER-1490071813409-dashboard.json).
+
+## Event Bus
+
+James relies on an event bus system. Each operations performed on the mailbox will trigger related events.
+
+Many different kind of events can be triggered during a mailbox operation, such as:
+
+ - `MailboxEvent`: event related to an operation regarding a mailbox:
+   - `MailboxDeletion`: a mailbox has been deleted
+   - `MailboxAdded`: a mailbox has been added
+   - `MailboxRenamed`: a mailbox has been renamed
+   - `MailboxACLUpdated`: a mailbox got its rights and permissions updated
+ - `MessageEvent`: event related to an operation regarding a message:
+   - `Added`: messages have been added to a mailbox
+   - `Expunged`: messages have been expunged from a mailbox 
+   - `FlagsUpdated`: messages had their flags updated
+   - `MessageMoveEvent`: messages have been moved from a mailbox to an other
+ - `QuotaUsageUpdatedEvent`: event related to quota update
+
+Mailbox listeners can register themselves on this event bus system to be called when an event is fired,
+allowing to do different kind of extra operations on the system, like:
+
+ - Quota calculation
+ - Message search indexation with ElasticSearch
+ - Mailbox annotations
+ - Ham/spam reporting with SpamAssassin
+ - Pre-deletion hooks
+ - ...
+
+Each mailbox listener is registered on the event bus using a specific defined group listener.
+
+It is possible for the administrator of James to define the mailbox listeners he wants to use, by adding them in the
+[listeners.xml](https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra-rabbitmq/destination/conf/listeners.xml) configuration file.
+It's possible also to add your own custom mailbox listeners, and you can get more information about those [here](config-listeners.html).
+
+Currently, an administrator can monitor listeners failures through `ERROR` log review. 
+Metrics regarding mailbox listeners can be monitored via
+[mailbox_listeners grafana board](https://github.com/apache/james-project/blob/master/grafana-reporting/MailboxListeners-1528958667486-dashboard.json) 
+and [mailbox_listeners_rate grafana board](https://github.com/apache/james-project/blob/master/grafana-reporting/MailboxListeners%20rate-1552903378376.json).
+
+Upon exceptions, a bounded number of retries are performed (with exponential backoff delays). 
+If after those retries the listener is still failing to perform its operation, then the event will be stored in the 
+[Event Dead Letter](https://james.apache.org/server/manage-webadmin.html#Event_Dead_Letter). 
+This API allows diagnosing issues, as well as redelivering the events. 
+
+To check that you have failed delivered events in your system, one can call to 
+[Listing mailbox listener groups](https://james.apache.org/server/manage-webadmin.html#Listing_mailbox_listener_groups).
+If the response is not an empty, it means you have failed delivered events.
+
+An easy way to solve this is just to trigger then the
+[Redeliver all events](https://james.apache.org/server/manage-webadmin.html#Redeliver_all_events) task. It will start 
+reprocessing all the failed events registered in event dead letters and return you a task Id, that you can use to check
+the result of the task with [task management](https://james.apache.org/server/manage-webadmin.html#Task_management).
