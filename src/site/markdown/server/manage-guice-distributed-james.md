@@ -17,7 +17,7 @@ advanced users.
 
  - [Overall architecture](#overall-architecture)
  - [Basic Monitoring](#basic-monitoring)
- - [Event Bus](#event-bus)
+ - [Mailbox Event Bus](#mailbox-event-bus)
  - [Mail Processing](#mail-processing)
 
 ## Overall architecture
@@ -148,9 +148,10 @@ Performance of mail processing can be monitored via the
 [mailet grafana board](https://github.com/apache/james-project/blob/master/grafana-reporting/MAILET-1490071694187-dashboard.json) 
 and [matcher grafana board](https://github.com/apache/james-project/blob/master/grafana-reporting/MATCHER-1490071813409-dashboard.json).
 
-## Event Bus
+## Mailbox Event Bus
 
-James relies on an event bus system. Each operations performed on the mailbox will trigger related events.
+James relies on an event bus system to enrich mailbox capabilities. Each operation performed on the mailbox will trigger 
+asynchronously related events, that can be processed by potentially any James node on a distributed system.
 
 Many different kind of events can be triggered during a mailbox operation, such as:
 
@@ -169,18 +170,16 @@ Many different kind of events can be triggered during a mailbox operation, such 
 Mailbox listeners can register themselves on this event bus system to be called when an event is fired,
 allowing to do different kind of extra operations on the system, like:
 
- - Quota calculation
- - Message search indexation with ElasticSearch
- - Mailbox annotations
- - Ham/spam reporting with SpamAssassin
- - Pre-deletion hooks
+ - Current quota calculation
+ - Message indexation with ElasticSearch
+ - Mailbox annotations cleanup
+ - Ham/spam reporting to SpamAssassin
  - ...
-
-Each mailbox listener is registered on the event bus using a specific defined group listener.
 
 It is possible for the administrator of James to define the mailbox listeners he wants to use, by adding them in the
 [listeners.xml](https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra-rabbitmq/destination/conf/listeners.xml) configuration file.
-It's possible also to add your own custom mailbox listeners, and you can get more information about those [here](config-listeners.html).
+It's possible also to add your own custom mailbox listeners. This enables to enhance capabilities of James as a Mail Delivery Agent.
+You can get more information about those [here](config-listeners.html).
 
 Currently, an administrator can monitor listeners failures through `ERROR` log review. 
 Metrics regarding mailbox listeners can be monitored via
@@ -192,11 +191,17 @@ If after those retries the listener is still failing to perform its operation, t
 [Event Dead Letter](https://james.apache.org/server/manage-webadmin.html#Event_Dead_Letter). 
 This API allows diagnosing issues, as well as redelivering the events. 
 
-To check that you have failed delivered events in your system, one can call to 
-[Listing mailbox listener groups](https://james.apache.org/server/manage-webadmin.html#Listing_mailbox_listener_groups).
-If the response is not an empty, it means you have failed delivered events.
+To check that you have undelivered events in your system, you can first
+[list mailbox listener groups](https://james.apache.org/server/manage-webadmin.html#Listing_mailbox_listener_groups).
+You will get a list of groups back, allowing you to check if those contain registered events in each by
+[listing their failed events](https://james.apache.org/server/manage-webadmin.html#Listing_failed_events).
+
+If you get failed events IDs back, you can as well [check their details](https://james.apache.org/server/manage-webadmin.html#Getting_event_details).
 
 An easy way to solve this is just to trigger then the
-[Redeliver all events](https://james.apache.org/server/manage-webadmin.html#Redeliver_all_events) task. It will start 
-reprocessing all the failed events registered in event dead letters and return you a task Id, that you can use to check
-the result of the task with [task management](https://james.apache.org/server/manage-webadmin.html#Task_management).
+[redeliver all events](https://james.apache.org/server/manage-webadmin.html#Redeliver_all_events) task. It will start 
+reprocessing all the failed events registered in event dead letters.
+
+If for some other reason you don't need to redeliver all events, you have more fine-grained operations allowing you to
+[redeliver group events](https://james.apache.org/server/manage-webadmin.html#Redeliver_group_events) or even just
+[redeliver a single event](https://james.apache.org/server/manage-webadmin.html#Redeliver_a_single_event).
