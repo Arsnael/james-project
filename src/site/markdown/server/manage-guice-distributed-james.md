@@ -151,7 +151,7 @@ and [matcher grafana board](https://github.com/apache/james-project/blob/master/
 ## Mailbox Event Bus
 
 James relies on an event bus system to enrich mailbox capabilities. Each operation performed on the mailbox will trigger 
-asynchronously related events, that can be processed by potentially any James node on a distributed system.
+related events, that can be processed asynchronously by potentially any James node on a distributed system.
 
 Many different kind of events can be triggered during a mailbox operation, such as:
 
