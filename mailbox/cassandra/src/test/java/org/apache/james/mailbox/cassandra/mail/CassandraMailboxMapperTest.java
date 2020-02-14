@@ -142,6 +142,26 @@ class CassandraMailboxMapperTest {
         }
 
         @Test
+        void createShouldBeConsistentWhenFailToPersistMailbox() {
+            doReturn(Mono.error(new RuntimeException("mock exception")))
+                .when(mailboxDAO)
+                .save(inbox);
+
+            doQuietly(() -> testee.create(inbox));
+
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThatThrownBy(() -> testee.findMailboxById(inboxId))
+                    .isInstanceOf(MailboxNotFoundException.class);
+                softly.assertThatThrownBy(() -> testee.findMailboxByPath(inboxPath))
+                    .isInstanceOf(MailboxNotFoundException.class);
+                softly.assertThat(testee.findMailboxWithPathLike(inboxSearchQuery))
+                    .isEmpty();
+                softly.assertThat(testee.findMailboxWithPathLike(allMailboxesSearchQuery))
+                    .isEmpty();
+            });
+        }
+
+        @Test
         void saveOnCreateShouldBeConsistentWhenFailToPersistMailbox() {
             doReturn(Mono.error(new RuntimeException("mock exception")))
                 .when(mailboxDAO)
