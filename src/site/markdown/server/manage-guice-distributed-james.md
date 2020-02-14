@@ -209,17 +209,21 @@ If for some other reason you don't need to redeliver all events, you have more f
 
 ## ElasticSearch Indexing
 
-Every time operations are done on messages, events are fired, and one mailbox listener has the role of indexing them
-under ElasticSearch. As explained in the [Mailbox Event Bus](#mailbox-event-bus) section, processing those events can
-fail sometimes.
+A projection of messages is maintained in ElasticSearch via a listener plugged into the mailbox event bus in order to enable search features. 
+As explained in the [Mailbox Event Bus](#mailbox-event-bus) section, processing those events can fail sometimes.
+
+You can find more information about ElasticSearch configuration [here](config-elasticsearch.html).
+
+### Usual troubleshooting procedures
 
 Currently, an administrator can monitor indexation failures through `ERROR` log review. You can as well
 [list failed events](manage-webadmin.html#Listing_failed_events) by looking with the group called 
 `org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex$ElasticSearchListeningMessageSearchIndexGroup`.
 A first on-the-fly solution could be to just 
-[redeliver those group events with event dead letter](manage-webadmin.html#Redeliver_group_events).
+[redeliver those group events with event dead letter](#mailbox-event-bus).
 
-But maybe for some reasons you just lost data in ElasticSearch. Then you might need to use our WebAdmin reIndexing tasks.
+If the event storage in dead-letters fails (for instance in the face of Cassandra storage exceptions), 
+then you might need to use our WebAdmin reIndexing tasks.
 
 From there, you have multiple choices. You can
 [reIndex all mails](manage-webadmin.html#ReIndexing_all_mails),
@@ -229,9 +233,15 @@ or even just [reIndex a single mail](manage-webadmin.html#ReIndexing_a_single_ma
 When checking the result of a reIndexing task, you might have failed reprocessed mails. You can still use the task ID to
 [reprocess previously failed reIndexing mails](manage-webadmin.html#Fixing_previously_failed_ReIndexing).
 
-But despite all those tools, sometimes you might still need to depend on the API provided by ElasticSearch itself. 
-Let's say for example that you want to scale up your nodes, or increase your shard count or replication factor on your index, 
-or even update your language analyser from English to French. In order to achieve such a procedure, you need to:
+### On the fly ElasticSearch Index setting update
+
+Sometimes you might need to update index settings. Cases when an administrator might want to update index settings include:
+
+ - Scaling out: increasing the shard count might be needed.
+ - Changing string analysers, for instance to target another language
+ - etc..
+
+In order to achieve such a procedure, you need to:
 
  - [Create the new index](https://www.elastic.co/guide/en/elasticsearch/reference/6.3/indices-create-index.html) with the right
 settings and mapping
@@ -239,12 +249,11 @@ settings and mapping
 First [add an alias](https://www.elastic.co/guide/en/elasticsearch/reference/6.3/indices-aliases.html) `mailboxWriteAlias` to that new index,
 so that now James writes on the old and new indexes, while only keeping reading on the first one
  - Now trigger a [reindex](https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-reindex.html)
-from the old index to the new one
+from the old index to the new one (this actively relies on `_source` field being present)
  - When this is done, add the `mailboxReadAlias` alias to the new index
  - Now that the migration to the new index is done, you can 
 [drop the old index](https://www.elastic.co/guide/en/elasticsearch/reference/6.3/indices-delete-index.html)
  - You might want as well modify the James configuration file 
 [elasticsearch.properties](https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra-rabbitmq/destination/conf/elasticsearch.properties)
-by setting the parameter `elasticsearch.index.mailbox.name` to the name of your new index. This is to avoid that James re-creates
-the old index as soon as you restart it for any reason. You can find more information about it by reading
-[ElasticSearch configuration](config-elasticsearch.html)
+by setting the parameter `elasticsearch.index.mailbox.name` to the name of your new index. This is to avoid that James 
+re-creates index upon restart
