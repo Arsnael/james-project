@@ -188,20 +188,20 @@ and [mailbox_listeners_rate grafana board](https://github.com/apache/james-proje
 
 Upon exceptions, a bounded number of retries are performed (with exponential backoff delays). 
 If after those retries the listener is still failing to perform its operation, then the event will be stored in the 
-[Event Dead Letter](https://james.apache.org/server/manage-webadmin.html#Event_Dead_Letter). 
+[Event Dead Letter](manage-webadmin.html#Event_Dead_Letter). 
 This API allows diagnosing issues, as well as redelivering the events. 
 
 To check that you have undelivered events in your system, you can first
-[list mailbox listener groups](https://james.apache.org/server/manage-webadmin.html#Listing_mailbox_listener_groups).
+[list mailbox listener groups](manage-webadmin.html#Listing_mailbox_listener_groups).
 You will get a list of groups back, allowing you to check if those contain registered events in each by
-[listing their failed events](https://james.apache.org/server/manage-webadmin.html#Listing_failed_events).
+[listing their failed events](manage-webadmin.html#Listing_failed_events).
 
-If you get failed events IDs back, you can as well [check their details](https://james.apache.org/server/manage-webadmin.html#Getting_event_details).
+If you get failed events IDs back, you can as well [check their details](manage-webadmin.html#Getting_event_details).
 
 An easy way to solve this is just to trigger then the
-[redeliver all events](https://james.apache.org/server/manage-webadmin.html#Redeliver_all_events) task. It will start 
+[redeliver all events](manage-webadmin.html#Redeliver_all_events) task. It will start 
 reprocessing all the failed events registered in event dead letters.
 
 If for some other reason you don't need to redeliver all events, you have more fine-grained operations allowing you to
-[redeliver group events](https://james.apache.org/server/manage-webadmin.html#Redeliver_group_events) or even just
-[redeliver a single event](https://james.apache.org/server/manage-webadmin.html#Redeliver_a_single_event).
+[redeliver group events](manage-webadmin.html#Redeliver_group_events) or even just
+[redeliver a single event](manage-webadmin.html#Redeliver_a_single_event).
