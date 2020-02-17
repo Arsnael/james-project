@@ -209,12 +209,13 @@ If for some other reason you don't need to redeliver all events, you have more f
 
 ## ElasticSearch Indexing
 
-A projection of messages is maintained in ElasticSearch via a listener plugged into the mailbox event bus in order to enable search features. 
-As explained in the [Mailbox Event Bus](#mailbox-event-bus) section, processing those events can fail sometimes.
+A projection of messages is maintained in ElasticSearch via a listener plugged into the mailbox event bus in order to enable search features.
 
 You can find more information about ElasticSearch configuration [here](config-elasticsearch.html).
 
 ### Usual troubleshooting procedures
+
+As explained in the [Mailbox Event Bus](#mailbox-event-bus) section, processing those events can fail sometimes.
 
 Currently, an administrator can monitor indexation failures through `ERROR` log review. You can as well
 [list failed events](manage-webadmin.html#Listing_failed_events) by looking with the group called 
