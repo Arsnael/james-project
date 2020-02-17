@@ -239,7 +239,7 @@ Sometimes you might need to update index settings. Cases when an administrator m
 
  - Scaling out: increasing the shard count might be needed.
  - Changing string analysers, for instance to target another language
- - etc..
+ - etc.
 
 In order to achieve such a procedure, you need to:
 
@@ -257,3 +257,5 @@ from the old index to the new one (this actively relies on `_source` field being
 [elasticsearch.properties](https://github.com/apache/james-project/blob/master/dockerfiles/run/guice/cassandra-rabbitmq/destination/conf/elasticsearch.properties)
 by setting the parameter `elasticsearch.index.mailbox.name` to the name of your new index. This is to avoid that James 
 re-creates index upon restart
+
+_Note_: keep in mind that reindexing can be a very long operation depending on the volume of mails you have stored.
