@@ -21,7 +21,9 @@ We need to keep in mind though that part of the community actively relies on the
 We decided to do as follow:
 
 * Rename packages `server/protocols/jmap*` and guice packages `server/container/guice/protocols/jmap*` to `jmap-draft`. `JMAPServer` should also be renamed to `JMAPDraftServer` (this has already been contributed [here](https://github.com/apache/james-project/pull/164), thanks to @cketti).
-* Create a new `jmap` package, binding it on a new port.
+* Port `jmap-draft` to be served with a reactive technology
+* Implement a JMAP meta project to select the JMAP version specified in the accept header and map it to the correct implementation
+* Create a new `jmap` package
 * Implement the new JMAP request structure with the [echo](https://jmap.io/spec-core.html#the-coreecho-method) method
 * Implement authentication and session of the new JMAP protocol
 * Implement protocol-level error handling
@@ -42,6 +44,13 @@ In order to ease testing and development speed, we decided to support `jmap` onl
 Then, we would add it for distributed-james Guice product, and other products might follow later.
 
 We should ensure no changes is done to `jmap-draft` while implementing the new `jmap` one.
+
+Regarding the versioning in the accept headers:
+
+* `Accept: application/json;jmapVersion=draft` would redirect to `jmap-draft`
+* `Accept: application/json;jmapVersion=rfc-8620` would redirect to `jmap`
+* When the `jmapVersion` is omitted, we will redirect first towards `jmap-draft`, then to `jmap`
+when `jmap-draft` becomes deprecated
 
 It's worth mentioning as well that we took the decision of writing this new implementation using `Scala`.
 
