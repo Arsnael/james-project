@@ -12,7 +12,7 @@ Historically, James has been an early adopter for the JMAP specification, and a 
 But with time, the IETF draft went with radical changes and the community could not keep this implementation up to date with the spec changes.
 
 As of summer 2019, JMAP core ([RFC 8620](https://tools.ietf.org/html/rfc8620)) and JMAP mail ([RFC 8621](https://tools.ietf.org/html/rfc8621)) have been officially published. 
-Thus we should implement these new specifications to clain JMAP support.
+Thus we should implement these new specifications to claim JMAP support.
 
 We need to keep in mind though that part of the community actively relies on the actual 'draft' implementation of JMAP existing in James. 
 
@@ -40,8 +40,7 @@ Then when we finish to port our existing methods to the new JMAP specifications,
 * Push and queryChanges
 * Threads
 
-In order to ease testing and development speed, we decided to support `jmap` only on top of memory-guice at first. 
-Then, we would add it for distributed-james Guice product, and other products might follow later.
+We decided to support `jmap` on top of memory-guice and distributed-james products for now. 
 
 We should ensure no changes is done to `jmap-draft` while implementing the new `jmap` one.
 
