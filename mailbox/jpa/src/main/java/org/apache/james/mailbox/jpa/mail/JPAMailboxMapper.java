@@ -88,9 +88,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
         Preconditions.checkArgument(mailbox.getMailboxId() == null, "A mailbox we want to create should not have a mailboxId set already");
 
         try {
-            begin();
             if (isPathAlreadyUsedByAnotherMailbox(mailbox)) {
-                rollback();
                 throw new MailboxExistsException(mailbox.getName());
             }
 
@@ -99,10 +97,8 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
 
             getEntityManager().persist(persistedMailbox);
             mailbox.setMailboxId(persistedMailbox.getMailboxId());
-            commit();
             return persistedMailbox.getMailboxId();
         } catch (PersistenceException e) {
-            rollback();
             throw new MailboxException("Save of mailbox " + mailbox.getName() + " failed", e);
         }
     }
@@ -112,9 +108,7 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
         Preconditions.checkNotNull(mailbox.getMailboxId(), "A mailbox we want to rename should have a defined mailboxId");
 
         try {
-            begin();
             if (isPathAlreadyUsedByAnotherMailbox(mailbox)) {
-                rollback();
                 throw new MailboxExistsException(mailbox.getName());
             }
 
@@ -123,10 +117,8 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
 
             getEntityManager().persist(persistedMailbox);
             mailbox.setMailboxId(persistedMailbox.getMailboxId());
-            commit();
             return persistedMailbox.getMailboxId();
         } catch (PersistenceException e) {
-            rollback();
             throw new MailboxException("Save of mailbox " + mailbox.getName() + " failed", e);
         } 
     }
