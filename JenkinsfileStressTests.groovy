@@ -61,6 +61,23 @@ pipeline {
                             sh 'docker run -d --name=swift -p 8080:8080 -v /srv/bench-running-docker/swift:/srv/1/node/sdb1 jeantil/openstack-keystone-swift:pike'
                             sh 'docker run -d --name=rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3.8.1-management'
 
+                            sleep 5
+
+                            sh 'docker container exec -it cassandra bin/sh -c \'echo "\nauthenticator: PasswordAuthenticator" >> /etc/cassandra/cassandra.yaml\''
+                            sh 'docker container exec -it cassandra bin/sh -c \'echo "\nauthorizer: org.apache.cassandra.auth.CassandraAuthorizer" >> /etc/cassandra/cassandra.yaml\''
+
+                            sh 'docker restart cassandra'
+
+                            sleep 20
+
+                            sh 'docker container exec -it cassandra cqlsh -u cassandra -p cassandra -e "CREATE ROLE restricted WITH PASSWORD = \'restricted\' AND LOGIN = true;"'
+
+                            sh 'docker container exec -it cassandra cqlsh -u cassandra -p cassandra -e  "CREATE KEYSPACE IF NOT EXISTS james_restricted WITH replication = {\'class\':\'SimpleStrategy\', \'replication_factor\':1};"'
+
+                            sh 'docker container exec -it cassandra cqlsh -u cassandra -p cassandra -e  "GRANT CREATE ON KEYSPACE james_restricted TO restricted;"'
+                            sh 'docker container exec -it cassandra cqlsh -u cassandra -p cassandra -e  "GRANT SELECT ON KEYSPACE james_restricted TO restricted;"'
+                            sh 'docker container exec -it cassandra cqlsh -u cassandra -p cassandra -e  "GRANT MODIFY ON KEYSPACE james_restricted TO restricted;"'
+
                             sh 'docker run -d --hostname HOSTNAME -p 25:25 -p 1080:80 -p 8000:8000 -p 110:110 -p 143:143 -p 465:465 -p 587:587 -p 993:993 --link cassandra:cassandra --link rabbitmq:rabbitmq --link elasticsearch:elasticsearch --link tika:tika --link swift:swift --name james_run -t james_run'
                             timeout(time: 20, unit: 'MINUTES') {
                                 retry(200) {
