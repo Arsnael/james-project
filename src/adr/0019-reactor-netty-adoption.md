@@ -16,8 +16,9 @@ it was agreed that we would need to be able to serve both `jmap-draft` and the n
 
 We decided to use [reactor-netty](https://github.com/reactor/reactor-netty) for the following reasons:
 
-* it's a reactive server
-* it's using [Reactor](https://projectreactor.io/), which is the same technology that we use in the rest of our codebase
+* It's a reactive server
+* It's using [Reactor](https://projectreactor.io/), which is the same technology that we use in the rest of our codebase
+* Implementing JMAP do not require high level HTTP server features
 
 ## Consequences
 
