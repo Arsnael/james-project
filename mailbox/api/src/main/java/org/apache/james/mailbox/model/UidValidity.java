@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 
 public class UidValidity {
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final long UPPER_EXCLUSIVE_BOUND = 4294967296L;
+    private static final long UPPER_EXCLUSIVE_BOUND = 1L << 32;
 
     /**
      * Despite RFC-3501 recommendations, we chose random as a UidVality generation mechanism.
