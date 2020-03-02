@@ -33,7 +33,7 @@ We decide to use `reactor-netty` for the following reasons:
 
 * Porting current `jmap-draft` to use a `reactor-netty` server instead of a Jetty server
 * The `reactor-netty` server should serve as well the new `jmap` implementation
-* Should be possible to refactor and get end-to-end reactive operations with it
+* We will be able to refactor and get end-to-end reactive operations for JMAP, unlocking performance gains
 
 ## References
 
