@@ -27,7 +27,7 @@ We decide to use `reactor-netty` for the following reasons:
 
 * It's a reactive server
 * It's using [Reactor](https://projectreactor.io/), which is the same technology that we use in the rest of our codebase
-* Implementing JMAP do not require high level HTTP server features
+* Implementing JMAP does not require high level HTTP server features
 
 ## Consequences
 
