@@ -21,6 +21,7 @@ package org.apache.james.jmap;
 
 import java.util.Optional;
 
+import org.apache.james.jmap.draft.AuthenticationRoute;
 import org.apache.james.util.Port;
 
 import reactor.netty.DisposableServer;
@@ -49,7 +50,7 @@ public class JMAPServer {
                 .port(configuration.getPort()
                     .map(Port::getValue)
                     .orElse(RANDOM_PORT))
-                .handle((request, response) -> request.receive().then(response.sendNotFound()))
+                .route(routes -> routes.post("/authentication", new AuthenticationRoute(mapper, usersRepository, simpleTokenManager, accessTokenManager, simpleTokenFactory, metricFactory)))
                 .bindNow());
         }
     }
