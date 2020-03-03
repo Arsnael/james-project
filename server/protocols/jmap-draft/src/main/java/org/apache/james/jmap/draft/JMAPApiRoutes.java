@@ -20,8 +20,6 @@ package org.apache.james.jmap.draft;
 
 import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE;
-import static org.apache.james.jmap.HttpConstants.SC_BAD_REQUEST;
-import static org.apache.james.jmap.HttpConstants.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.james.jmap.HttpConstants.SC_OK;
 import static org.apache.james.jmap.draft.JMAPUrls.JMAP;
 
@@ -32,6 +30,7 @@ import javax.inject.Inject;
 import org.apache.james.jmap.JMAPRoutes;
 import org.apache.james.jmap.draft.exceptions.BadRequestException;
 import org.apache.james.jmap.draft.exceptions.InternalErrorException;
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.jmap.draft.methods.RequestHandler;
 import org.apache.james.jmap.draft.model.AuthenticatedRequest;
 import org.apache.james.jmap.draft.model.InvocationRequest;
@@ -60,14 +59,23 @@ public class JMAPApiRoutes implements JMAPRoutes {
     private final RequestHandler requestHandler;
     private final MetricFactory metricFactory;
     private final AuthenticationReactiveFilter authenticationReactiveFilter;
+    private final UserProvisioner userProvisioner;
+    private final DefaultMailboxesReactiveProvisioner defaultMailboxesProvisioner;
 
     @Inject
-    public JMAPApiRoutes(RequestHandler requestHandler, MetricFactory metricFactory, AuthenticationReactiveFilter authenticationReactiveFilter) {
+    public JMAPApiRoutes(RequestHandler requestHandler, MetricFactory metricFactory, AuthenticationReactiveFilter authenticationReactiveFilter, UserProvisioner userProvisioner, DefaultMailboxesReactiveProvisioner defaultMailboxesProvisioner) {
         this.requestHandler = requestHandler;
         this.metricFactory = metricFactory;
         this.authenticationReactiveFilter = authenticationReactiveFilter;
+        this.userProvisioner = userProvisioner;
+        this.defaultMailboxesProvisioner = defaultMailboxesProvisioner;
         this.objectMapper = new ObjectMapper();
         objectMapper.configure(Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+    }
+
+    @Override
+    public Logger logger() {
+        return LOGGER;
     }
 
     @Override
@@ -79,6 +87,11 @@ public class JMAPApiRoutes implements JMAPRoutes {
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {
         return metricFactory.runPublishingTimerMetric("JMAP-request",
             authenticationReactiveFilter.authenticate(request)
+                .flatMap(session -> Flux.merge(
+                        userProvisioner.provisionUser(session),
+                        defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
+                    .then()
+                    .thenReturn(session))
                 .flatMap(session -> post(request, response, session)));
     }
 
@@ -92,7 +105,7 @@ public class JMAPApiRoutes implements JMAPRoutes {
 
         return sendResponses(response, responses)
             .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
-            .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
+            .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
             .onErrorResume(e -> handleInternalError(response, e))
             .subscribeOn(Schedulers.elastic());
     }
@@ -130,15 +143,5 @@ public class JMAPApiRoutes implements JMAPRoutes {
                 }
             })
             .flatMapMany(Flux::fromArray);
-    }
-
-    private Mono<Void> handleInternalError(HttpServerResponse response, Throwable e) {
-        LOGGER.error("Internal error", e);
-        return response.status(SC_INTERNAL_SERVER_ERROR).send();
-    }
-
-    private Mono<Void> handleBadRequest(HttpServerResponse response, BadRequestException e) {
-        LOGGER.warn("Invalid authentication request received.", e);
-        return response.status(SC_BAD_REQUEST).send();
     }
 }
