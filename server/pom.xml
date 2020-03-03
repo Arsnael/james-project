@@ -109,6 +109,7 @@
         <module>task/task-memory</module>
 
         <module>testing</module>
+        <module>protocols/jmap</module>
     </modules>
 
     <properties>
