@@ -110,7 +110,7 @@ public class AuthenticationServlet extends HttpServlet {
     
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        accessTokenManager.revoke(AccessToken.fromString(req.getHeader("Authorization")));
+        accessTokenManager.revoke(AccessToken.fromString(req.getHeader("Authorization"))).block();
         resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 
@@ -191,7 +191,7 @@ public class AuthenticationServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_CREATED);
         AccessTokenResponse response = AccessTokenResponse
             .builder()
-            .accessToken(accessTokenManager.grantAccessToken(username))
+            .accessToken(accessTokenManager.grantAccessToken(username).block())
             .api(JMAPUrls.JMAP)
             .eventSource("/notImplemented")
             .upload(JMAPUrls.UPLOAD)

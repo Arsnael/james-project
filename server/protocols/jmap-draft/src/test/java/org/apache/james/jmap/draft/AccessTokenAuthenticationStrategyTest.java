@@ -40,6 +40,8 @@ import org.apache.james.mailbox.MailboxSession;
 import org.junit.Before;
 import org.junit.Test;
 
+import reactor.core.publisher.Mono;
+
 public class AccessTokenAuthenticationStrategyTest {
 
     private AccessTokenManagerImpl mockedAccessTokenManager;
@@ -86,7 +88,7 @@ public class AccessTokenAuthenticationStrategyTest {
 
         UUID authHeader = UUID.randomUUID();
         when(mockedAccessTokenManager.getUsernameFromToken(AccessToken.fromString(authHeader.toString())))
-                .thenReturn(username);
+                .thenReturn(Mono.just(username));
         when(mockAuthenticationExtractor.authHeaders(request))
             .thenReturn(Stream.of(authHeader.toString()));
 
@@ -106,11 +108,11 @@ public class AccessTokenAuthenticationStrategyTest {
         UUID authHeader = UUID.randomUUID();
         AccessToken accessToken = AccessToken.fromString(authHeader.toString());
         when(mockedAccessTokenManager.getUsernameFromToken(accessToken))
-                .thenReturn(username);
+                .thenReturn(Mono.just(username));
         when(mockAuthenticationExtractor.authHeaders(request))
             .thenReturn(Stream.of(authHeader.toString()));
         when(mockedAccessTokenManager.isValid(accessToken))
-            .thenReturn(true);
+            .thenReturn(Mono.just(true));
 
 
         MailboxSession result = testee.createMailboxSession(request);

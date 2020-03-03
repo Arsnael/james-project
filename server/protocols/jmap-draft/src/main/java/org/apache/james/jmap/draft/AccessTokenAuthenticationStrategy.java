@@ -52,8 +52,8 @@ public class AccessTokenAuthenticationStrategy implements AuthenticationStrategy
 
         Optional<Username> username = authenticationExtractor.authHeaders(httpRequest)
             .map(AccessToken::fromString)
-            .filter(accessTokenManager::isValid)
-            .map(accessTokenManager::getUsernameFromToken)
+            .filter(accessToken -> accessTokenManager.isValid(accessToken).block())
+            .map(accessToken -> accessTokenManager.getUsernameFromToken(accessToken).block())
             .findFirst();
 
         if (username.isPresent()) {

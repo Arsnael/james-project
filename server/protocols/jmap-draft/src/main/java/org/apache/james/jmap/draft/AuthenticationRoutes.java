@@ -136,7 +136,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
     private Mono<Void> delete(HttpServerRequest req, HttpServerResponse resp) {
         String authorizationHeader = req.requestHeaders().get("Authorization");
 
-        return Mono.fromRunnable(() -> accessTokenManager.revoke(AccessToken.fromString(authorizationHeader)))
+        return accessTokenManager.revoke(AccessToken.fromString(authorizationHeader))
             .then(resp.status(SC_NO_CONTENT).then())
             .subscribeOn(Schedulers.elastic());
     }
@@ -223,23 +223,25 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private Mono<Void> returnAccessTokenResponse(HttpServerResponse resp, Username username) {
-        AccessTokenResponse response = AccessTokenResponse
-            .builder()
-            .accessToken(accessTokenManager.grantAccessToken(username))
-            .api(JMAPUrls.JMAP)
-            .eventSource("/notImplemented")
-            .upload(JMAPUrls.UPLOAD)
-            .download(JMAPUrls.DOWNLOAD)
-            .build();
-
-        try {
-            return resp.status(SC_CREATED)
-                .header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
-                .sendString(Mono.just(mapper.writeValueAsString(response)))
-                .then();
-        } catch (JsonProcessingException e) {
-            throw new InternalErrorException("Could not serialize access token response", e);
-        }
+        return accessTokenManager.grantAccessToken(username)
+            .map(accessToken -> AccessTokenResponse
+                .builder()
+                .accessToken(accessToken)
+                .api(JMAPUrls.JMAP)
+                .eventSource("/notImplemented")
+                .upload(JMAPUrls.UPLOAD)
+                .download(JMAPUrls.DOWNLOAD)
+                .build())
+            .flatMap(accessTokenResponse -> {
+                try {
+                    return resp.status(SC_CREATED)
+                        .header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
+                        .sendString(Mono.just(mapper.writeValueAsString(accessTokenResponse)))
+                        .then();
+                } catch (JsonProcessingException e) {
+                    throw new InternalErrorException("Could not serialize access token response", e);
+                }
+            });
     }
 
     private Mono<Void> returnUnauthorizedResponse(HttpServerResponse resp) {
