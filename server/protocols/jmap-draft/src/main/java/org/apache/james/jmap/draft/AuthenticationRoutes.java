@@ -90,7 +90,8 @@ public class AuthenticationRoutes implements JMAPRoutes {
         return builder
             .post("/authentication", this::post)
             .get("/authentication", this::returnEndPointsResponse)
-            .delete("/authentication", this::delete);
+            .delete("/authentication", this::delete)
+            .options("/authentication", CORS_CONTROL);
     }
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {

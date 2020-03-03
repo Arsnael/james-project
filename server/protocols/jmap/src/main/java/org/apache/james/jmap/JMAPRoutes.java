@@ -19,8 +19,19 @@
 
 package org.apache.james.jmap;
 
+import java.util.function.BiFunction;
+
+import org.reactivestreams.Publisher;
+
+import reactor.netty.http.server.HttpServerRequest;
+import reactor.netty.http.server.HttpServerResponse;
 import reactor.netty.http.server.HttpServerRoutes;
 
 public interface JMAPRoutes {
     HttpServerRoutes define(HttpServerRoutes builder);
+
+    BiFunction<HttpServerRequest, HttpServerResponse, Publisher<Void>> CORS_CONTROL = (req, res) -> res.header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+        .header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
+        .send();
 }
