@@ -72,15 +72,17 @@ public class AuthenticationRoutes implements JMAPRoutes {
     private final AccessTokenManager accessTokenManager;
     private final SimpleTokenFactory simpleTokenFactory;
     private final MetricFactory metricFactory;
+    private final AuthenticationReactiveFilter authenticationReactiveFilter;
 
     @Inject
-    public AuthenticationRoutes(ObjectMapper mapper, UsersRepository usersRepository, SimpleTokenManager simpleTokenManager, AccessTokenManager accessTokenManager, SimpleTokenFactory simpleTokenFactory, MetricFactory metricFactory) {
+    public AuthenticationRoutes(ObjectMapper mapper, UsersRepository usersRepository, SimpleTokenManager simpleTokenManager, AccessTokenManager accessTokenManager, SimpleTokenFactory simpleTokenFactory, MetricFactory metricFactory, AuthenticationReactiveFilter authenticationReactiveFilter) {
         this.mapper = mapper;
         this.usersRepository = usersRepository;
         this.simpleTokenManager = simpleTokenManager;
         this.accessTokenManager = accessTokenManager;
         this.simpleTokenFactory = simpleTokenFactory;
         this.metricFactory = metricFactory;
+        this.authenticationReactiveFilter = authenticationReactiveFilter;
     }
 
     @Override
@@ -112,19 +114,18 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private Mono<Void> returnEndPointsResponse(HttpServerRequest req, HttpServerResponse resp) {
-        EndPointsResponse response = EndPointsResponse
-            .builder()
-            .api(JMAPUrls.JMAP)
-            .eventSource("/notImplemented")
-            .upload(JMAPUrls.UPLOAD)
-            .download(JMAPUrls.DOWNLOAD)
-            .build();
-
         try {
-            return resp.status(SC_OK)
+            return authenticationReactiveFilter.authenticate(req)
+                .then(resp.status(SC_OK)
                 .header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
-                .sendString(Mono.just(mapper.writeValueAsString(response)))
-                .then()
+                    .sendString(Mono.just(mapper.writeValueAsString(EndPointsResponse
+                        .builder()
+                        .api(JMAPUrls.JMAP)
+                        .eventSource("/notImplemented")
+                        .upload(JMAPUrls.UPLOAD)
+                        .download(JMAPUrls.DOWNLOAD)
+                        .build())))
+                    .then())
                 .onErrorResume(BadRequestException.class, e -> handleBadRequest(resp, e))
                 .onErrorResume(InternalErrorException.class, e -> handleInternalError(resp, e))
                 .subscribeOn(Schedulers.elastic());
@@ -136,7 +137,8 @@ public class AuthenticationRoutes implements JMAPRoutes {
     private Mono<Void> delete(HttpServerRequest req, HttpServerResponse resp) {
         String authorizationHeader = req.requestHeaders().get("Authorization");
 
-        return accessTokenManager.revoke(AccessToken.fromString(authorizationHeader))
+        return authenticationReactiveFilter.authenticate(req)
+            .then(accessTokenManager.revoke(AccessToken.fromString(authorizationHeader)))
             .then(resp.status(SC_NO_CONTENT).then())
             .subscribeOn(Schedulers.elastic());
     }

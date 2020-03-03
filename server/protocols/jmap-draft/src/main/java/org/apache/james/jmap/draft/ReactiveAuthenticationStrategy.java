@@ -16,14 +16,25 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
+package org.apache.james.jmap.draft;
 
-package org.apache.james.jmap.draft.exceptions;
+import java.util.stream.Stream;
 
-public class UnauthorizedException extends RuntimeException {
-    public UnauthorizedException() {
-    }
+import org.apache.james.mailbox.MailboxSession;
 
-    public UnauthorizedException(Throwable cause) {
-        super(cause);
+import com.google.common.base.Preconditions;
+
+import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServerRequest;
+
+public interface ReactiveAuthenticationStrategy {
+    Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest);
+
+    String AUTHORIZATION_HEADERS = "Authorization";
+
+    default Stream<String> authHeaders(HttpServerRequest httpRequest) {
+        Preconditions.checkArgument(httpRequest != null, "'httpRequest' is mandatory");
+
+        return httpRequest.requestHeaders().getAll(AUTHORIZATION_HEADERS).stream();
     }
 }
