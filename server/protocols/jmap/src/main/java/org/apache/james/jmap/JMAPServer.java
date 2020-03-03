@@ -20,8 +20,8 @@
 package org.apache.james.jmap;
 
 import java.util.Optional;
+import java.util.Set;
 
-import org.apache.james.jmap.draft.AuthenticationRoute;
 import org.apache.james.util.Port;
 
 import reactor.netty.DisposableServer;
@@ -31,10 +31,12 @@ public class JMAPServer {
     private static final int RANDOM_PORT = 0;
 
     private final JMAPConfiguration configuration;
+    private final Set<JMAPRoutes> jmapRoutes;
     private Optional<DisposableServer> server;
 
-    public JMAPServer(JMAPConfiguration configuration) {
+    public JMAPServer(JMAPConfiguration configuration, Set<JMAPRoutes> jmapRoutes) {
         this.configuration = configuration;
+        this.jmapRoutes = jmapRoutes;
         this.server = Optional.empty();
     }
 
@@ -50,7 +52,7 @@ public class JMAPServer {
                 .port(configuration.getPort()
                     .map(Port::getValue)
                     .orElse(RANDOM_PORT))
-                .route(routes -> routes.post("/authentication", new AuthenticationRoute(mapper, usersRepository, simpleTokenManager, accessTokenManager, simpleTokenFactory, metricFactory)))
+                .route(routes -> jmapRoutes.forEach(jmapRoute -> jmapRoute.define(routes)))
                 .bindNow());
         }
     }

@@ -25,16 +25,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-public class JMAPServerTest {
+import com.google.common.collect.ImmutableSet;
+
+class JMAPServerTest {
     private static final JMAPConfiguration DISABLED_CONFIGURATION = JMAPConfiguration.builder().disable().build();
     private static final JMAPConfiguration TEST_CONFIGURATION = JMAPConfiguration.builder()
         .enable()
         .randomPort()
         .build();
+    private static final ImmutableSet<JMAPRoutes> NO_ROUTES = ImmutableSet.of();
 
     @Test
     void serverShouldAnswerWhenStarted() {
-        JMAPServer jmapServer = new JMAPServer(TEST_CONFIGURATION);
+        JMAPServer jmapServer = new JMAPServer(TEST_CONFIGURATION, NO_ROUTES);
         jmapServer.start();
 
         try {
@@ -52,14 +55,14 @@ public class JMAPServerTest {
 
     @Test
     void startShouldNotThrowWhenConfigurationDisabled() {
-        JMAPServer jmapServer = new JMAPServer(DISABLED_CONFIGURATION);
+        JMAPServer jmapServer = new JMAPServer(DISABLED_CONFIGURATION, NO_ROUTES);
 
         assertThatCode(jmapServer::start).doesNotThrowAnyException();
     }
 
     @Test
     void stopShouldNotThrowWhenConfigurationDisabled() {
-        JMAPServer jmapServer = new JMAPServer(DISABLED_CONFIGURATION);
+        JMAPServer jmapServer = new JMAPServer(DISABLED_CONFIGURATION, NO_ROUTES);
         jmapServer.start();
 
         assertThatCode(jmapServer::stop).doesNotThrowAnyException();
@@ -67,7 +70,7 @@ public class JMAPServerTest {
 
     @Test
     void getPortShouldThrowWhenServerIsNotStarted() {
-        JMAPServer jmapServer = new JMAPServer(TEST_CONFIGURATION);
+        JMAPServer jmapServer = new JMAPServer(TEST_CONFIGURATION, NO_ROUTES);
 
         assertThatThrownBy(jmapServer::getPort)
             .isInstanceOf(IllegalStateException.class);
@@ -75,7 +78,7 @@ public class JMAPServerTest {
 
     @Test
     void getPortShouldThrowWhenDisabledConfiguration() {
-        JMAPServer jmapServer = new JMAPServer(DISABLED_CONFIGURATION);
+        JMAPServer jmapServer = new JMAPServer(DISABLED_CONFIGURATION, NO_ROUTES);
         jmapServer.start();
 
         assertThatThrownBy(jmapServer::getPort)
