@@ -17,6 +17,9 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.draft;
+/*
+
+// TODO port to UserProvisioner
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
@@ -54,4 +57,4 @@ public class UserProvisioningFilterThreadTest {
             .runSuccessfullyWithin(Duration.ofMinutes(1));
     }
 }
-
+*/
