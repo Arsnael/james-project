@@ -35,6 +35,7 @@ public class JMAPConfiguration {
 
     public static class Builder {
         private Optional<Boolean> enabled = Optional.empty();
+        private Optional<Boolean> wiretap = Optional.empty();
         private Optional<Port> port = Optional.empty();
 
         private Builder() {
@@ -43,6 +44,15 @@ public class JMAPConfiguration {
 
         public Builder enabled(boolean enabled) {
             this.enabled = Optional.of(enabled);
+            return this;
+        }
+
+        public Builder wiretap() {
+            return wiretap(true);
+        }
+
+        public Builder wiretap(boolean enabled) {
+            this.wiretap = Optional.of(enabled);
             return this;
         }
 
@@ -66,18 +76,24 @@ public class JMAPConfiguration {
 
         public JMAPConfiguration build() {
             Preconditions.checkState(enabled.isPresent(), "You should specify if JMAP server should be started");
-            return new JMAPConfiguration(enabled.get(), port);
+            return new JMAPConfiguration(enabled.get(), wiretap.orElse(false), port);
         }
 
     }
 
     private final boolean enabled;
+    private final boolean wiretap;
     private final Optional<Port> port;
 
     @VisibleForTesting
-    JMAPConfiguration(boolean enabled, Optional<Port> port) {
+    JMAPConfiguration(boolean enabled, boolean wiretap, Optional<Port> port) {
         this.enabled = enabled;
+        this.wiretap = wiretap;
         this.port = port;
+    }
+
+    public boolean wiretapEnabled() {
+        return wiretap;
     }
 
     public boolean isEnabled() {

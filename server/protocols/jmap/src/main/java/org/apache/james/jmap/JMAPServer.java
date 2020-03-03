@@ -53,6 +53,7 @@ public class JMAPServer {
                     .map(Port::getValue)
                     .orElse(RANDOM_PORT))
                 .route(routes -> jmapRoutes.forEach(jmapRoute -> jmapRoute.define(routes)))
+                .wiretap(configuration.wiretapEnabled())
                 .bindNow());
         }
     }
