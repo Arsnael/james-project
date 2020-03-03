@@ -17,6 +17,8 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.draft;
+/*
+// todo port to DefaultMailboxesReactiveProvisioner
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -72,3 +74,4 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
             .runSuccessfullyWithin(Duration.ofMinutes(1));
     }
 }
+*/
