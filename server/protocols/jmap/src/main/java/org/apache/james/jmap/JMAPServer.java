@@ -22,18 +22,23 @@ package org.apache.james.jmap;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+
+import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.util.Port;
 
 import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
 
-public class JMAPServer {
+public class JMAPServer implements Startable {
     private static final int RANDOM_PORT = 0;
 
     private final JMAPConfiguration configuration;
     private final Set<JMAPRoutes> jmapRoutes;
     private Optional<DisposableServer> server;
 
+    @Inject
     public JMAPServer(JMAPConfiguration configuration, Set<JMAPRoutes> jmapRoutes) {
         this.configuration = configuration;
         this.jmapRoutes = jmapRoutes;
@@ -58,6 +63,7 @@ public class JMAPServer {
         }
     }
 
+    @PreDestroy
     public void stop() {
         server.ifPresent(DisposableServer::disposeNow);
     }
