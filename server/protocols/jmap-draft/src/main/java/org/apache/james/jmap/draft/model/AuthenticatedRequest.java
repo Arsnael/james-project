@@ -18,18 +18,9 @@
  ****************************************************************/
 package org.apache.james.jmap.draft.model;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.james.jmap.draft.AuthenticationFilter;
 import org.apache.james.mailbox.MailboxSession;
 
 public class AuthenticatedRequest extends InvocationRequest {
-    
-    public static AuthenticatedRequest decorate(InvocationRequest request, HttpServletRequest httpServletRequest) {
-        MailboxSession session = (MailboxSession) httpServletRequest.getAttribute(AuthenticationFilter.MAILBOX_SESSION);
-        return decorate(request, session);
-    }
-
     public static AuthenticatedRequest decorate(InvocationRequest request, MailboxSession session) {
         return new AuthenticatedRequest(request, session);
     }

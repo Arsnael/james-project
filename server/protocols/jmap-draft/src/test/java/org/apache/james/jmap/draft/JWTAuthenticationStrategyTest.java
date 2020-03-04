@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.draft;
-
+/*
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
@@ -136,3 +136,4 @@ public class JWTAuthenticationStrategyTest {
             .isInstanceOf(MailboxSessionCreationException.class);
     }
 }
+ */
