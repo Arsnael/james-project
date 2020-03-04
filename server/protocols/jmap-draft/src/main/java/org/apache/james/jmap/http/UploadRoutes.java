@@ -18,10 +18,10 @@
  ****************************************************************/
 package org.apache.james.jmap.http;
 
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE_UTF8;
 import static org.apache.james.jmap.HttpConstants.SC_BAD_REQUEST;
+import static org.apache.james.jmap.HttpConstants.SC_CREATED;
 import static org.apache.james.jmap.http.JMAPUrls.UPLOAD;
 
 import java.io.EOFException;
