@@ -22,8 +22,7 @@ import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE_UTF8;
 import static org.apache.james.jmap.HttpConstants.SC_BAD_REQUEST;
-import static org.apache.james.jmap.HttpConstants.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.james.jmap.draft.JMAPUrls.JMAP;
+import static org.apache.james.jmap.draft.JMAPUrls.UPLOAD;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -35,6 +34,7 @@ import org.apache.james.jmap.HttpConstants;
 import org.apache.james.jmap.JMAPRoutes;
 import org.apache.james.jmap.draft.exceptions.BadRequestException;
 import org.apache.james.jmap.draft.exceptions.InternalErrorException;
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.jmap.draft.model.UploadResponse;
 import org.apache.james.mailbox.AttachmentManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -76,9 +76,14 @@ public class UploadRoutes implements JMAPRoutes {
     }
 
     @Override
+    public Logger logger() {
+        return LOGGER;
+    }
+
+    @Override
     public HttpServerRoutes define(HttpServerRoutes builder) {
-        return builder.post(JMAP, this::post)
-            .options(JMAP, CORS_CONTROL);
+        return builder.post(UPLOAD, this::post)
+            .options(UPLOAD, CORS_CONTROL);
     }
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response)  {
@@ -90,6 +95,7 @@ public class UploadRoutes implements JMAPRoutes {
                 .flatMap(session -> post(request, response, contentType, session))
                 .onErrorResume(CancelledUploadException.class, e -> handleCanceledUpload(response, e))
                 .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
+                .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
                 .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
                 .subscribeOn(Schedulers.elastic());
         }
@@ -101,7 +107,7 @@ public class UploadRoutes implements JMAPRoutes {
             handle(contentType, content, session, response));
     }
 
-    public Mono<Void> handle(String contentType, InputStream content, MailboxSession mailboxSession, HttpServerResponse response) {
+    private Mono<Void> handle(String contentType, InputStream content, MailboxSession mailboxSession, HttpServerResponse response) {
         return uploadContent(contentType, content, mailboxSession)
             .flatMap(storedContent -> {
                 try {
@@ -141,11 +147,6 @@ public class UploadRoutes implements JMAPRoutes {
                 }
             }
         });
-    }
-
-    private Mono<Void> handleInternalError(HttpServerResponse response, Throwable e) {
-        LOGGER.error("Internal error", e);
-        return response.status(SC_INTERNAL_SERVER_ERROR).send();
     }
 
     private Mono<Void> handleCanceledUpload(HttpServerResponse response, CancelledUploadException e) {
