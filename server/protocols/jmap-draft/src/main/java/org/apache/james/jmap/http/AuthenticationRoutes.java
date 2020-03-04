@@ -30,6 +30,7 @@ import static org.apache.james.jmap.HttpConstants.SC_OK;
 import static org.apache.james.jmap.HttpConstants.SC_UNAUTHORIZED;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -114,7 +115,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
                     }
                 })
                 .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
-                .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e)))
+                .onErrorResume(e -> handleInternalError(response, e)))
                 .subscribeOn(Schedulers.elastic());
     }
 
@@ -151,15 +152,14 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private HttpServerRequest assertJsonContentType(HttpServerRequest req) {
-        if (! req.requestHeaders().get(CONTENT_TYPE).equals(JSON_CONTENT_TYPE_UTF8)) {
+        if (!Objects.equals(req.requestHeaders().get(CONTENT_TYPE), JSON_CONTENT_TYPE_UTF8)) {
             throw new BadRequestException("Request ContentType header must be set to: " + JSON_CONTENT_TYPE_UTF8);
         }
         return req;
     }
 
     private HttpServerRequest assertAcceptJsonOnly(HttpServerRequest req) {
-        String accept = req.requestHeaders().get(ACCEPT);
-        if (accept == null || ! accept.contains(JSON_CONTENT_TYPE)) {
+        if (!Objects.equals(req.requestHeaders().get(ACCEPT), JSON_CONTENT_TYPE)) {
             throw new BadRequestException("Request Accept header must be set to JSON content type");
         }
         return req;
