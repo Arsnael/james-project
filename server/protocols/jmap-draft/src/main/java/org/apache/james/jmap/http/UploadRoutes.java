@@ -18,10 +18,10 @@
  ****************************************************************/
 package org.apache.james.jmap.http;
 
-import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE_UTF8;
-import static org.apache.james.jmap.HttpConstants.SC_BAD_REQUEST;
-import static org.apache.james.jmap.HttpConstants.SC_CREATED;
 import static org.apache.james.jmap.http.JMAPUrls.UPLOAD;
 
 import java.io.EOFException;
@@ -89,7 +89,7 @@ public class UploadRoutes implements JMAPRoutes {
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response)  {
         String contentType = request.requestHeaders().get(CONTENT_TYPE);
         if (Strings.isNullOrEmpty(contentType)) {
-            return response.status(HttpConstants.SC_BAD_REQUEST).send();
+            return response.status(BAD_REQUEST).send();
         } else {
             return authenticationReactiveFilter.authenticate(request)
                 .flatMap(session -> post(request, response, contentType, session))
@@ -112,7 +112,7 @@ public class UploadRoutes implements JMAPRoutes {
             .flatMap(storedContent -> {
                 try {
                     return response.header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
-                        .status(SC_CREATED)
+                        .status(CREATED)
                         .sendString(Mono.just(objectMapper.writeValueAsString(storedContent)))
                         .then();
                 } catch (JsonProcessingException e) {
@@ -156,6 +156,6 @@ public class UploadRoutes implements JMAPRoutes {
 
     private Mono<Void> handleBadRequest(HttpServerResponse response, BadRequestException e) {
         LOGGER.warn("Invalid authentication request received.", e);
-        return response.status(SC_BAD_REQUEST).send();
+        return response.status(BAD_REQUEST).send();
     }
 }

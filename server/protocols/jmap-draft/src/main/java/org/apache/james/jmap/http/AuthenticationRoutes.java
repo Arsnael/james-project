@@ -19,15 +19,16 @@
 
 package org.apache.james.jmap.http;
 
-import static org.apache.james.jmap.HttpConstants.ACCEPT;
-import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.ACCEPT;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE_UTF8;
-import static org.apache.james.jmap.HttpConstants.SC_CREATED;
-import static org.apache.james.jmap.HttpConstants.SC_FORBIDDEN;
-import static org.apache.james.jmap.HttpConstants.SC_NO_CONTENT;
-import static org.apache.james.jmap.HttpConstants.SC_OK;
-import static org.apache.james.jmap.HttpConstants.SC_UNAUTHORIZED;
+import static org.apache.james.jmap.http.JMAPUrls.AUTHENTICATION;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -80,7 +81,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
         this.mapper = new MultipleObjectMapperBuilder()
             .registerClass(ContinuationTokenRequest.UNIQUE_JSON_PATH, ContinuationTokenRequest.class)
             .registerClass(AccessTokenRequest.UNIQUE_JSON_PATH, AccessTokenRequest.class)
-            .build();;
+            .build();
         this.usersRepository = usersRepository;
         this.simpleTokenManager = simpleTokenManager;
         this.accessTokenManager = accessTokenManager;
@@ -97,10 +98,10 @@ public class AuthenticationRoutes implements JMAPRoutes {
     @Override
     public HttpServerRoutes define(HttpServerRoutes builder) {
         return builder
-            .post("/authentication", this::post)
-            .get("/authentication", this::returnEndPointsResponse)
-            .delete("/authentication", this::delete)
-            .options("/authentication", CORS_CONTROL);
+            .post(AUTHENTICATION, this::post)
+            .get(AUTHENTICATION, this::returnEndPointsResponse)
+            .delete(AUTHENTICATION, this::delete)
+            .options(AUTHENTICATION, CORS_CONTROL);
     }
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {
@@ -120,14 +121,14 @@ public class AuthenticationRoutes implements JMAPRoutes {
                 })
                 .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
                 .onErrorResume(e -> handleInternalError(response, e)))
-                .subscribeOn(Schedulers.elastic());
+            .subscribeOn(Schedulers.elastic());
     }
 
     private Mono<Void> returnEndPointsResponse(HttpServerRequest req, HttpServerResponse resp) {
         try {
             return authenticationReactiveFilter.authenticate(req)
-                .then(resp.status(SC_OK)
-                .header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
+                .then(resp.status(OK)
+                    .header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
                     .sendString(Mono.just(mapper.writeValueAsString(EndPointsResponse
                         .builder()
                         .api(JMAPUrls.JMAP)
@@ -150,7 +151,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
 
         return authenticationReactiveFilter.authenticate(req)
             .then(accessTokenManager.revoke(AccessToken.fromString(authorizationHeader)))
-            .then(resp.status(SC_NO_CONTENT).then())
+            .then(resp.status(NO_CONTENT).then())
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(resp, e))
             .subscribeOn(Schedulers.elastic());
     }
@@ -247,7 +248,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
                 .build())
             .flatMap(accessTokenResponse -> {
                 try {
-                    return resp.status(SC_CREATED)
+                    return resp.status(CREATED)
                         .header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
                         .sendString(Mono.just(mapper.writeValueAsString(accessTokenResponse)))
                         .then();
@@ -258,10 +259,10 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private Mono<Void> returnUnauthorizedResponse(HttpServerResponse resp) {
-        return resp.status(SC_UNAUTHORIZED).send().then();
+        return resp.status(UNAUTHORIZED).send().then();
     }
 
     private Mono<Void> returnRestartAuthentication(HttpServerResponse resp) {
-        return resp.status(SC_FORBIDDEN).send().then();
+        return resp.status(FORBIDDEN).send().then();
     }
 }

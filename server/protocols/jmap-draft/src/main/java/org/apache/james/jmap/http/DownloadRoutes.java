@@ -18,9 +18,9 @@
  ****************************************************************/
 package org.apache.james.jmap.http;
 
-import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
-import static org.apache.james.jmap.HttpConstants.SC_NOT_FOUND;
-import static org.apache.james.jmap.HttpConstants.SC_OK;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.james.jmap.http.JMAPUrls.DOWNLOAD;
 
 import java.io.IOException;
@@ -113,8 +113,8 @@ public class DownloadRoutes implements JMAPRoutes {
             .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-download-post",
                 respondAttachmentAccessToken(session, downloadPath, response)
                     .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
-                    .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
-                    .subscribeOn(Schedulers.elastic())));
+                    .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))))
+            .subscribeOn(Schedulers.elastic());
     }
 
     private Mono<Void> getOneParam(HttpServerRequest request, HttpServerResponse response) {
@@ -135,19 +135,19 @@ public class DownloadRoutes implements JMAPRoutes {
             .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-download-get",
                 download(session, downloadPath, response)
                     .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
-                    .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
-                    .subscribeOn(Schedulers.elastic())));
+                    .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))))
+            .subscribeOn(Schedulers.elastic());
     }
 
     private Mono<Void> respondAttachmentAccessToken(MailboxSession mailboxSession, DownloadPath downloadPath, HttpServerResponse resp) {
         String blobId = downloadPath.getBlobId();
         try {
             if (! attachmentExists(mailboxSession, blobId)) {
-                return resp.status(SC_NOT_FOUND).send();
+                return resp.status(NOT_FOUND).send();
             }
             AttachmentAccessToken attachmentAccessToken = simpleTokenFactory.generateAttachmentAccessToken(mailboxSession.getUser().asString(), blobId);
             return resp.header(CONTENT_TYPE, TEXT_PLAIN_CONTENT_TYPE)
-                .status(SC_OK)
+                .status(OK)
                 .sendString(Mono.just(attachmentAccessToken.serialize()))
                 .then();
         } catch (MailboxException e) {
@@ -172,13 +172,13 @@ public class DownloadRoutes implements JMAPRoutes {
             return addContentDispositionHeader(downloadPath.getName(), response)
                 .header("Content-Length", String.valueOf(blob.getSize()))
                 .header(CONTENT_TYPE, blob.getContentType())
-                .status(SC_OK)
+                .status(OK)
                 .send(ReactorUtils.toChunks(blob.getStream(), BUFFER_SIZE)
                     .map(Unpooled::wrappedBuffer))
                 .then();
         } catch (BlobNotFoundException e) {
             LOGGER.info("Attachment '{}' not found", blobId, e);
-            return response.status(SC_NOT_FOUND).send();
+            return response.status(NOT_FOUND).send();
         } catch (MailboxException | IOException e) {
             throw new InternalErrorException("Error while downloading", e);
         }

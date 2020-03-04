@@ -18,9 +18,9 @@
  ****************************************************************/
 package org.apache.james.jmap.http;
 
-import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE;
-import static org.apache.james.jmap.HttpConstants.SC_OK;
 import static org.apache.james.jmap.http.JMAPUrls.JMAP;
 
 import java.io.IOException;
@@ -85,14 +85,18 @@ public class JMAPApiRoutes implements JMAPRoutes {
     }
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {
-        return metricFactory.runPublishingTimerMetric("JMAP-request",
-            authenticationReactiveFilter.authenticate(request)
-                .flatMap(session -> Flux.merge(
-                        userProvisioner.provisionUser(session),
-                        defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
-                    .then()
-                    .thenReturn(session))
-                .flatMap(session -> post(request, response, session)));
+        return authenticationReactiveFilter.authenticate(request)
+            .flatMap(session -> Flux.merge(
+                userProvisioner.provisionUser(session),
+                defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
+                .then()
+                .thenReturn(session))
+            .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-request",
+                post(request, response, session)))
+            .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
+            .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
+            .onErrorResume(e -> handleInternalError(response, e))
+            .subscribeOn(Schedulers.elastic());
     }
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response, MailboxSession session) {
@@ -103,11 +107,7 @@ public class JMAPApiRoutes implements JMAPRoutes {
                 .concatMap(this::handle)
                 .map(InvocationResponse::asProtocolSpecification);
 
-        return sendResponses(response, responses)
-            .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
-            .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
-            .onErrorResume(e -> handleInternalError(response, e))
-            .subscribeOn(Schedulers.elastic());
+        return sendResponses(response, responses);
     }
 
     private Mono<Void> sendResponses(HttpServerResponse response, Flux<Object[]> responses) {
@@ -119,18 +119,16 @@ public class JMAPApiRoutes implements JMAPRoutes {
                     throw new InternalErrorException("error serialising JMAP API response json");
                 }
             })
-            .flatMap(json -> response.status(SC_OK)
+            .flatMap(json -> response.status(OK)
                 .header(CONTENT_TYPE, JSON_CONTENT_TYPE)
                 .sendString(Mono.just(json))
                 .then());
     }
 
     private Flux<? extends InvocationResponse> handle(AuthenticatedRequest request) {
-        try {
-            return Flux.fromStream(requestHandler.handle(request));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return Mono.fromCallable(() -> requestHandler.handle(request))
+            .flatMapMany(Flux::fromStream)
+            .subscribeOn(Schedulers.elastic());
     }
 
     private Flux<JsonNode[]> requestAsJsonStream(HttpServerRequest req) {

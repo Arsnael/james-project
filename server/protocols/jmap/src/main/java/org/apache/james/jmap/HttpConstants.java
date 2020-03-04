@@ -23,16 +23,4 @@ public interface HttpConstants {
     String JSON_CONTENT_TYPE = "application/json";
     String JSON_CONTENT_TYPE_UTF8 = "application/json; charset=UTF-8";
     String TEXT_PLAIN_CONTENT_TYPE = "text/plain";
-    String CONTENT_TYPE = "ContentType";
-    String ACCEPT = "Accept";
-
-
-    int SC_OK = 200;
-    int SC_CREATED = 201;
-    int SC_NO_CONTENT = 204;
-    int SC_BAD_REQUEST = 400;
-    int SC_UNAUTHORIZED = 401;
-    int SC_FORBIDDEN = 403;
-    int SC_NOT_FOUND = 403;
-    int SC_INTERNAL_SERVER_ERROR = 500;
 }

@@ -19,9 +19,9 @@
 
 package org.apache.james.jmap;
 
-import static org.apache.james.jmap.HttpConstants.SC_BAD_REQUEST;
-import static org.apache.james.jmap.HttpConstants.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.james.jmap.HttpConstants.SC_UNAUTHORIZED;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 import java.util.function.BiFunction;
 
@@ -45,16 +45,16 @@ public interface JMAPRoutes {
 
     default Mono<Void> handleInternalError(HttpServerResponse response, Throwable e) {
         logger().error("Internal error", e);
-        return response.status(SC_INTERNAL_SERVER_ERROR).send();
+        return response.status(INTERNAL_SERVER_ERROR).send();
     }
 
     default Mono<Void> handleBadRequest(HttpServerResponse response, Exception e) {
         logger().warn("Invalid request received.", e);
-        return response.status(SC_BAD_REQUEST).send();
+        return response.status(BAD_REQUEST).send();
     }
 
     default Mono<Void> handleAuthenticationFailure(HttpServerResponse response, Exception e) {
         logger().warn("Unauthorized", e);
-        return response.status(SC_UNAUTHORIZED).send();
+        return response.status(UNAUTHORIZED).send();
     }
 }
