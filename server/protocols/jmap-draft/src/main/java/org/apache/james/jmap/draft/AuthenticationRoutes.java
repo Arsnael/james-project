@@ -23,10 +23,8 @@ import static org.apache.james.jmap.HttpConstants.ACCEPT;
 import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE_UTF8;
-import static org.apache.james.jmap.HttpConstants.SC_BAD_REQUEST;
 import static org.apache.james.jmap.HttpConstants.SC_CREATED;
 import static org.apache.james.jmap.HttpConstants.SC_FORBIDDEN;
-import static org.apache.james.jmap.HttpConstants.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.james.jmap.HttpConstants.SC_NO_CONTENT;
 import static org.apache.james.jmap.HttpConstants.SC_OK;
 import static org.apache.james.jmap.HttpConstants.SC_UNAUTHORIZED;
@@ -43,6 +41,7 @@ import org.apache.james.jmap.draft.api.SimpleTokenFactory;
 import org.apache.james.jmap.draft.api.SimpleTokenManager;
 import org.apache.james.jmap.draft.exceptions.BadRequestException;
 import org.apache.james.jmap.draft.exceptions.InternalErrorException;
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.jmap.draft.model.AccessTokenRequest;
 import org.apache.james.jmap.draft.model.AccessTokenResponse;
 import org.apache.james.jmap.draft.model.ContinuationTokenRequest;
@@ -64,7 +63,7 @@ import reactor.netty.http.server.HttpServerResponse;
 import reactor.netty.http.server.HttpServerRoutes;
 
 public class AuthenticationRoutes implements JMAPRoutes {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationServlet.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationRoutes.class);
 
     private final ObjectMapper mapper;
     private final UsersRepository usersRepository;
@@ -83,6 +82,11 @@ public class AuthenticationRoutes implements JMAPRoutes {
         this.simpleTokenFactory = simpleTokenFactory;
         this.metricFactory = metricFactory;
         this.authenticationReactiveFilter = authenticationReactiveFilter;
+    }
+
+    @Override
+    public Logger logger() {
+        return LOGGER;
     }
 
     @Override
@@ -129,6 +133,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
                     .then())
                 .onErrorResume(BadRequestException.class, e -> handleBadRequest(resp, e))
                 .onErrorResume(InternalErrorException.class, e -> handleInternalError(resp, e))
+                .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(resp, e))
                 .subscribeOn(Schedulers.elastic());
         } catch (JsonProcessingException e) {
             throw new InternalErrorException("Error serializing endpoint response", e);
@@ -141,6 +146,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
         return authenticationReactiveFilter.authenticate(req)
             .then(accessTokenManager.revoke(AccessToken.fromString(authorizationHeader)))
             .then(resp.status(SC_NO_CONTENT).then())
+            .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(resp, e))
             .subscribeOn(Schedulers.elastic());
     }
 
@@ -253,15 +259,5 @@ public class AuthenticationRoutes implements JMAPRoutes {
 
     private Mono<Void> returnRestartAuthentication(HttpServerResponse resp) {
         return resp.status(SC_FORBIDDEN).send().then();
-    }
-
-    private Mono<Void> handleInternalError(HttpServerResponse response, InternalErrorException e) {
-        LOGGER.error("Internal error", e);
-        return response.status(SC_INTERNAL_SERVER_ERROR).send();
-    }
-
-    private Mono<Void> handleBadRequest(HttpServerResponse response, BadRequestException e) {
-        LOGGER.warn("Invalid authentication request received.", e);
-        return response.status(SC_BAD_REQUEST).send();
     }
 }
