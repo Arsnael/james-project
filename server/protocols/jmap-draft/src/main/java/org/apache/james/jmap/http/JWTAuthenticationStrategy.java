@@ -36,7 +36,7 @@ import com.google.common.annotations.VisibleForTesting;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
-public class JWTReactiveAuthenticationStrategy implements ReactiveAuthenticationStrategy {
+public class JWTAuthenticationStrategy implements AuthenticationStrategy {
 
     @VisibleForTesting static final String AUTHORIZATION_HEADER_PREFIX = "Bearer ";
     private final JwtTokenVerifier tokenManager;
@@ -45,7 +45,7 @@ public class JWTReactiveAuthenticationStrategy implements ReactiveAuthentication
 
     @Inject
     @VisibleForTesting
-    JWTReactiveAuthenticationStrategy(JwtTokenVerifier tokenManager, MailboxManager mailboxManager, UsersRepository usersRepository) {
+    JWTAuthenticationStrategy(JwtTokenVerifier tokenManager, MailboxManager mailboxManager, UsersRepository usersRepository) {
         this.tokenManager = tokenManager;
         this.mailboxManager = mailboxManager;
         this.usersRepository = usersRepository;

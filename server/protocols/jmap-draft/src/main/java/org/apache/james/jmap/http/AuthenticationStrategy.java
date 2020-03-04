@@ -18,11 +18,23 @@
  ****************************************************************/
 package org.apache.james.jmap.http;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.stream.Stream;
 
 import org.apache.james.mailbox.MailboxSession;
 
-public interface AuthenticationStrategy {
+import com.google.common.base.Preconditions;
 
-    MailboxSession createMailboxSession(HttpServletRequest httpRequest);
+import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServerRequest;
+
+public interface AuthenticationStrategy {
+    Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest);
+
+    String AUTHORIZATION_HEADERS = "Authorization";
+
+    default Stream<String> authHeaders(HttpServerRequest httpRequest) {
+        Preconditions.checkArgument(httpRequest != null, "'httpRequest' is mandatory");
+
+        return httpRequest.requestHeaders().getAll(AUTHORIZATION_HEADERS).stream();
+    }
 }

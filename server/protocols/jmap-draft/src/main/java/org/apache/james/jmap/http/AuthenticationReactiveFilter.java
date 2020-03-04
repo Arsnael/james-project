@@ -33,12 +33,12 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
 public class AuthenticationReactiveFilter {
-    private final List<ReactiveAuthenticationStrategy> authMethods;
+    private final List<AuthenticationStrategy> authMethods;
     private final MetricFactory metricFactory;
 
     @Inject
     @VisibleForTesting
-    AuthenticationReactiveFilter(List<ReactiveAuthenticationStrategy> authMethods, MetricFactory metricFactory) {
+    AuthenticationReactiveFilter(List<AuthenticationStrategy> authMethods, MetricFactory metricFactory) {
         this.authMethods = authMethods;
         this.metricFactory = metricFactory;
     }
@@ -51,7 +51,7 @@ public class AuthenticationReactiveFilter {
                 .switchIfEmpty(Mono.error(new UnauthorizedException())));
     }
 
-    private Mono<MailboxSession> createSession(ReactiveAuthenticationStrategy authenticationMethod, HttpServerRequest httpRequest) {
+    private Mono<MailboxSession> createSession(AuthenticationStrategy authenticationMethod, HttpServerRequest httpRequest) {
         try {
             return authenticationMethod.createMailboxSession(httpRequest);
         } catch (Exception e) {

@@ -23,9 +23,10 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import org.apache.james.core.Username;
-import org.apache.james.jmap.api.access.AccessToken;
-import org.apache.james.jmap.draft.api.AccessTokenManager;
-import org.apache.james.jmap.draft.exceptions.NoValidAuthHeaderException;
+import org.apache.james.jmap.draft.api.SimpleTokenManager;
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
+import org.apache.james.jmap.draft.model.AttachmentAccessToken;
+import org.apache.james.jmap.draft.utils.DownloadPath;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 
@@ -34,28 +35,39 @@ import com.google.common.annotations.VisibleForTesting;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
-public class AccessTokenReactiveAuthenticationStrategy implements ReactiveAuthenticationStrategy {
-    private final AccessTokenManager accessTokenManager;
+public class QueryParameterAccessTokenAuthenticationStrategy implements AuthenticationStrategy {
+    private static final String AUTHENTICATION_PARAMETER = "access_token";
+
+    private final SimpleTokenManager tokenManager;
     private final MailboxManager mailboxManager;
 
     @Inject
     @VisibleForTesting
-    AccessTokenReactiveAuthenticationStrategy(AccessTokenManager accessTokenManager, MailboxManager mailboxManager) {
-        this.accessTokenManager = accessTokenManager;
+    QueryParameterAccessTokenAuthenticationStrategy(SimpleTokenManager tokenManager, MailboxManager mailboxManager) {
+        this.tokenManager = tokenManager;
         this.mailboxManager = mailboxManager;
     }
 
     @Override
-    public Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest) throws NoValidAuthHeaderException {
-        Optional<Username> username = authHeaders(httpRequest)
-            .map(AccessToken::fromString)
-            .filter(accessToken -> accessTokenManager.isValid(accessToken).block())
-            .map(accessToken -> accessTokenManager.getUsernameFromToken(accessToken).block())
-            .findFirst();
+    public Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest) {
+        return Mono.just(getAccessToken(httpRequest)
+            .filter(tokenManager::isValid)
+            .map(AttachmentAccessToken::getUsername)
+            .map(Username::of)
+            .map(mailboxManager::createSystemSession)
+            .orElseThrow(UnauthorizedException::new));
+    }
 
-        if (username.isPresent()) {
-            return Mono.just(mailboxManager.createSystemSession(username.get()));
+    private Optional<AttachmentAccessToken> getAccessToken(HttpServerRequest httpRequest) {
+        try {
+            return Optional.of(AttachmentAccessToken.from(httpRequest.param(AUTHENTICATION_PARAMETER), getBlobId(httpRequest)));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
         }
-        throw new NoValidAuthHeaderException();
+    }
+
+    private String getBlobId(HttpServerRequest httpRequest) {
+        String pathInfo = httpRequest.path();
+        return DownloadPath.from(pathInfo).getBlobId();
     }
 }
