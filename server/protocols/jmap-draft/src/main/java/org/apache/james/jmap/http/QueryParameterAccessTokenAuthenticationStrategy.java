@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.jmap.http;
 
+import static org.apache.james.jmap.http.DownloadRoutes.BLOB_ID_PATH_PARAM;
+
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -26,7 +28,6 @@ import org.apache.james.core.Username;
 import org.apache.james.jmap.draft.api.SimpleTokenManager;
 import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.jmap.draft.model.AttachmentAccessToken;
-import org.apache.james.jmap.draft.utils.DownloadPath;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 
@@ -60,14 +61,10 @@ public class QueryParameterAccessTokenAuthenticationStrategy implements Authenti
 
     private Optional<AttachmentAccessToken> getAccessToken(HttpServerRequest httpRequest) {
         try {
-            return Optional.of(AttachmentAccessToken.from(httpRequest.param(AUTHENTICATION_PARAMETER), getBlobId(httpRequest)));
+            return Optional.ofNullable(httpRequest.param(BLOB_ID_PATH_PARAM))
+                .map(blobId -> AttachmentAccessToken.from(httpRequest.param(AUTHENTICATION_PARAMETER), blobId));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
-    }
-
-    private String getBlobId(HttpServerRequest httpRequest) {
-        String pathInfo = httpRequest.path();
-        return DownloadPath.from(pathInfo).getBlobId();
     }
 }

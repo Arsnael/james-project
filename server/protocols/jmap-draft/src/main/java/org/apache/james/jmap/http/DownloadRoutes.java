@@ -60,7 +60,7 @@ import reactor.netty.http.server.HttpServerRoutes;
 public class DownloadRoutes implements JMAPRoutes {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadRoutes.class);
     private static final String TEXT_PLAIN_CONTENT_TYPE = "text/plain";
-    private static final String BLOB_ID_PATH_PARAM = "blobId";
+    static final String BLOB_ID_PATH_PARAM = "blobId";
     private static final String NAME_PATH_PARAM = "name";
     private static final String DOWNLOAD_ONE_PARAM = String.format("%s/{%s}", DOWNLOAD, BLOB_ID_PATH_PARAM);
     private static final String DOWNLOAD_TWO_PARAM = String.format("%s/{%s}/{%s}", DOWNLOAD, BLOB_ID_PATH_PARAM, NAME_PATH_PARAM);
