@@ -43,6 +43,7 @@ import org.apache.james.jmap.draft.api.SimpleTokenManager;
 import org.apache.james.jmap.draft.exceptions.BadRequestException;
 import org.apache.james.jmap.draft.exceptions.InternalErrorException;
 import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
+import org.apache.james.jmap.draft.json.MultipleObjectMapperBuilder;
 import org.apache.james.jmap.draft.model.AccessTokenRequest;
 import org.apache.james.jmap.draft.model.AccessTokenResponse;
 import org.apache.james.jmap.draft.model.ContinuationTokenRequest;
@@ -75,8 +76,11 @@ public class AuthenticationRoutes implements JMAPRoutes {
     private final AuthenticationReactiveFilter authenticationReactiveFilter;
 
     @Inject
-    public AuthenticationRoutes(ObjectMapper mapper, UsersRepository usersRepository, SimpleTokenManager simpleTokenManager, AccessTokenManager accessTokenManager, SimpleTokenFactory simpleTokenFactory, MetricFactory metricFactory, AuthenticationReactiveFilter authenticationReactiveFilter) {
-        this.mapper = mapper;
+    public AuthenticationRoutes(UsersRepository usersRepository, SimpleTokenManager simpleTokenManager, AccessTokenManager accessTokenManager, SimpleTokenFactory simpleTokenFactory, MetricFactory metricFactory, AuthenticationReactiveFilter authenticationReactiveFilter) {
+        this.mapper = new MultipleObjectMapperBuilder()
+            .registerClass(ContinuationTokenRequest.UNIQUE_JSON_PATH, ContinuationTokenRequest.class)
+            .registerClass(AccessTokenRequest.UNIQUE_JSON_PATH, AccessTokenRequest.class)
+            .build();;
         this.usersRepository = usersRepository;
         this.simpleTokenManager = simpleTokenManager;
         this.accessTokenManager = accessTokenManager;
@@ -111,7 +115,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
                     } else if (objectRequest instanceof AccessTokenRequest) {
                         return handleAccessTokenRequest((AccessTokenRequest) objectRequest, response);
                     } else {
-                        throw new RuntimeException();
+                        throw new RuntimeException(objectRequest.getClass() + " " + objectRequest);
                     }
                 })
                 .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))

@@ -46,16 +46,10 @@ public class AuthenticationReactiveFilter {
     public Mono<MailboxSession> authenticate(HttpServerRequest request) {
         return metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
             Flux.fromStream(authMethods.stream())
-                .flatMap(auth -> createSession(auth, request))
+                .flatMap(auth -> auth.createMailboxSession(request))
+                .onErrorResume(any -> Mono.empty())
+                .take(1)
                 .singleOrEmpty()
                 .switchIfEmpty(Mono.error(new UnauthorizedException())));
-    }
-
-    private Mono<MailboxSession> createSession(AuthenticationStrategy authenticationMethod, HttpServerRequest httpRequest) {
-        try {
-            return authenticationMethod.createMailboxSession(httpRequest);
-        } catch (Exception e) {
-            return Mono.empty();
-        }
     }
 }
