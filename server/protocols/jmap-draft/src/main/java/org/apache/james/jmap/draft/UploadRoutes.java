@@ -38,7 +38,6 @@ import org.apache.james.jmap.draft.exceptions.InternalErrorException;
 import org.apache.james.jmap.draft.model.UploadResponse;
 import org.apache.james.mailbox.AttachmentManager;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.ReactorUtils;
@@ -122,7 +121,7 @@ public class UploadRoutes implements JMAPRoutes {
                 .bytes(bytes)
                 .type(contentType)
                 .build())
-            .flatMap(attachment -> storeAttachment(session, attachment)
+            .flatMap(attachment -> Mono.from(attachmentManager.storeAttachment(attachment, session))
                 .thenReturn(UploadResponse.builder()
                     .blobId(attachment.getAttachmentId().getId())
                     .type(attachment.getType())
@@ -140,16 +139,6 @@ public class UploadRoutes implements JMAPRoutes {
                 } else {
                     throw new InternalErrorException("Error while uploading content", e);
                 }
-            }
-        });
-    }
-
-    private Mono<Object> storeAttachment(MailboxSession session, Attachment attachment) {
-        return Mono.fromRunnable(() -> {
-            try {
-                attachmentManager.storeAttachment(attachment, session);
-            } catch (MailboxException e) {
-                throw new InternalErrorException("Error while uploading content", e);
             }
         });
     }

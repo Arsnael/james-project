@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
 import org.slf4j.Logger;
@@ -66,8 +65,6 @@ public class UploadServlet extends HttpServlet {
                 } else {
                     internalServerError(resp, e);
                 }
-            } catch (MailboxException e) {
-                internalServerError(resp, e);
             } finally {
                 timeMetric.stopAndPublish();
             }

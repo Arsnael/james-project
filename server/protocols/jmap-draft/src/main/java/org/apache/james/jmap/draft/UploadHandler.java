@@ -30,11 +30,12 @@ import org.apache.james.jmap.draft.json.ObjectMapperFactory;
 import org.apache.james.jmap.draft.model.UploadResponse;
 import org.apache.james.mailbox.AttachmentManager;
 import org.apache.james.mailbox.MailboxSession;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Attachment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
+
+import reactor.core.publisher.Mono;
 
 public class UploadHandler {
     private final AttachmentManager attachmentManager;
@@ -46,17 +47,17 @@ public class UploadHandler {
         this.objectMapper = objectMapperFactory.forWriting();
     }
 
-    public void handle(String contentType, InputStream content, MailboxSession mailboxSession, HttpServletResponse response) throws IOException, MailboxException {
+    public void handle(String contentType, InputStream content, MailboxSession mailboxSession, HttpServletResponse response) throws IOException {
         UploadResponse storedContent = uploadContent(contentType, content, mailboxSession);
         buildResponse(response, storedContent);
     }
 
-    private UploadResponse uploadContent(String contentType, InputStream inputStream, MailboxSession session) throws IOException, MailboxException {
+    private UploadResponse uploadContent(String contentType, InputStream inputStream, MailboxSession session) throws IOException {
         Attachment attachment = Attachment.builder()
                 .bytes(ByteStreams.toByteArray(inputStream))
                 .type(contentType)
                 .build();
-        attachmentManager.storeAttachment(attachment, session);
+        Mono.from(attachmentManager.storeAttachment(attachment, session)).block();
         return UploadResponse.builder()
                 .blobId(attachment.getAttachmentId().getId())
                 .type(attachment.getType())
