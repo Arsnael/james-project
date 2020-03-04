@@ -21,7 +21,6 @@ package org.apache.james.jmap.http;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.api.access.AccessToken;
-import org.apache.james.jmap.api.access.exceptions.NotAnAccessTokenException;
 import org.apache.james.jmap.draft.api.AccessTokenManager;
 import org.apache.james.jmap.draft.exceptions.NoValidAuthHeaderException;
 import org.apache.james.mailbox.MailboxManager;

@@ -27,7 +27,6 @@ import static org.apache.james.jmap.http.JMAPUrls.DOWNLOAD;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 

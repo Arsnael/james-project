@@ -30,7 +30,6 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
-import org.apache.james.jmap.HttpConstants;
 import org.apache.james.jmap.JMAPRoutes;
 import org.apache.james.jmap.draft.exceptions.BadRequestException;
 import org.apache.james.jmap.draft.exceptions.InternalErrorException;
