@@ -150,8 +150,8 @@ public class AuthenticationRoutes implements JMAPRoutes {
         String authorizationHeader = req.requestHeaders().get("Authorization");
 
         return authenticationReactiveFilter.authenticate(req)
-            .then(accessTokenManager.revoke(AccessToken.fromString(authorizationHeader)))
-            .then(resp.status(NO_CONTENT).then())
+            .flatMap(session -> accessTokenManager.revoke(AccessToken.fromString(authorizationHeader))
+                .then(resp.status(NO_CONTENT).send().then()))
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(resp, e))
             .subscribeOn(Schedulers.elastic());
     }
@@ -164,7 +164,8 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private HttpServerRequest assertAcceptJsonOnly(HttpServerRequest req) {
-        if (!Objects.equals(req.requestHeaders().get(ACCEPT), JSON_CONTENT_TYPE)) {
+        String accept = req.requestHeaders().get(ACCEPT);
+        if (accept == null || ! accept.contains(JSON_CONTENT_TYPE)) {
             throw new BadRequestException("Request Accept header must be set to JSON content type");
         }
         return req;
@@ -178,18 +179,19 @@ public class AuthenticationRoutes implements JMAPRoutes {
                 } catch (IOException e) {
                     throw new BadRequestException("Request can't be deserialized", e);
                 }
-            });
+            })
+            .switchIfEmpty(Mono.error(new BadRequestException("Empty body")));
     }
 
     private Mono<Void> handleContinuationTokenRequest(ContinuationTokenRequest request, HttpServerResponse resp) {
-        resp.header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8);
         try {
             ContinuationTokenResponse continuationTokenResponse = ContinuationTokenResponse
                 .builder()
                 .continuationToken(simpleTokenFactory.generateContinuationToken(request.getUsername()))
                 .methods(ContinuationTokenResponse.AuthenticationMethod.PASSWORD)
                 .build();
-            return resp.sendString(Mono.just(mapper.writeValueAsString(continuationTokenResponse)))
+            return resp.header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
+                .sendString(Mono.just(mapper.writeValueAsString(continuationTokenResponse)))
                 .then();
         } catch (Exception e) {
             throw new InternalErrorException("Error while responding to continuation token", e);
