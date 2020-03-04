@@ -21,15 +21,21 @@ package org.apache.james.jmap.http;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.apache.james.jmap.HttpConstants.TEXT_PLAIN_CONTENT_TYPE;
 import static org.apache.james.jmap.http.JMAPUrls.DOWNLOAD;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import javax.inject.Inject;
 
 import org.apache.james.jmap.JMAPRoutes;
 import org.apache.james.jmap.draft.api.SimpleTokenFactory;
+import org.apache.james.jmap.draft.exceptions.BadRequestException;
 import org.apache.james.jmap.draft.exceptions.InternalErrorException;
 import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.jmap.draft.model.AttachmentAccessToken;
@@ -59,7 +65,6 @@ import reactor.netty.http.server.HttpServerRoutes;
 
 public class DownloadRoutes implements JMAPRoutes {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadRoutes.class);
-    private static final String TEXT_PLAIN_CONTENT_TYPE = "text/plain";
     static final String BLOB_ID_PATH_PARAM = "blobId";
     private static final String NAME_PATH_PARAM = "name";
     private static final String DOWNLOAD_ONE_PARAM = String.format("%s/{%s}", DOWNLOAD, BLOB_ID_PATH_PARAM);
@@ -111,9 +116,9 @@ public class DownloadRoutes implements JMAPRoutes {
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response, DownloadPath downloadPath) {
         return authenticationReactiveFilter.authenticate(request)
             .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-download-post",
-                respondAttachmentAccessToken(session, downloadPath, response)
-                    .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
-                    .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))))
+                respondAttachmentAccessToken(session, downloadPath, response))
+            .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
+            .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e)))
             .subscribeOn(Schedulers.elastic());
     }
 
@@ -125,17 +130,21 @@ public class DownloadRoutes implements JMAPRoutes {
 
     private Mono<Void> getTwoParam(HttpServerRequest request, HttpServerResponse response) {
         String blobId = request.param(BLOB_ID_PATH_PARAM);
-        String name = request.param(NAME_PATH_PARAM);
-        DownloadPath downloadPath = DownloadPath.of(blobId, name);
-        return get(request, response, downloadPath);
+        try {
+            String name = URLDecoder.decode(request.param(NAME_PATH_PARAM), StandardCharsets.UTF_8.toString());
+            DownloadPath downloadPath = DownloadPath.of(blobId, name);
+            return get(request, response, downloadPath);
+        } catch (UnsupportedEncodingException e) {
+            throw new BadRequestException("Wrong url encoding", e);
+        }
     }
 
     private Mono<Void> get(HttpServerRequest request, HttpServerResponse response, DownloadPath downloadPath) {
         return authenticationReactiveFilter.authenticate(request)
             .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-download-get",
-                download(session, downloadPath, response)
-                    .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
-                    .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))))
+                download(session, downloadPath, response))
+            .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e)))
+            .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
             .subscribeOn(Schedulers.elastic());
     }
 
