@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.draft;
 
-import javax.servlet.http.HttpServletRequest;
+package org.apache.james.jmap.http;
 
-import org.apache.james.mailbox.MailboxSession;
+public interface JMAPUrls {
 
-public interface AuthenticationStrategy {
-
-    MailboxSession createMailboxSession(HttpServletRequest httpRequest);
+    String JMAP = "/jmap";
+    String AUTHENTICATION = "/authentication";
+    String DOWNLOAD = "/download";
+    String UPLOAD = "/upload";
 }

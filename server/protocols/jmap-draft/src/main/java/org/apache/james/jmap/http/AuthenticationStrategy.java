@@ -16,25 +16,13 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.draft;
+package org.apache.james.jmap.http;
 
-import java.util.stream.Stream;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.james.mailbox.MailboxSession;
 
-import com.google.common.base.Preconditions;
+public interface AuthenticationStrategy {
 
-import reactor.core.publisher.Mono;
-import reactor.netty.http.server.HttpServerRequest;
-
-public interface ReactiveAuthenticationStrategy {
-    Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest);
-
-    String AUTHORIZATION_HEADERS = "Authorization";
-
-    default Stream<String> authHeaders(HttpServerRequest httpRequest) {
-        Preconditions.checkArgument(httpRequest != null, "'httpRequest' is mandatory");
-
-        return httpRequest.requestHeaders().getAll(AUTHORIZATION_HEADERS).stream();
-    }
+    MailboxSession createMailboxSession(HttpServletRequest httpRequest);
 }

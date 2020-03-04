@@ -16,46 +16,46 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.draft;
+package org.apache.james.jmap.http;
 
-import java.util.Optional;
+import java.util.List;
 
 import javax.inject.Inject;
 
-import org.apache.james.core.Username;
-import org.apache.james.jmap.api.access.AccessToken;
-import org.apache.james.jmap.draft.api.AccessTokenManager;
-import org.apache.james.jmap.draft.exceptions.NoValidAuthHeaderException;
-import org.apache.james.mailbox.MailboxManager;
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.metrics.api.MetricFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
-public class AccessTokenReactiveAuthenticationStrategy implements ReactiveAuthenticationStrategy {
-    private final AccessTokenManager accessTokenManager;
-    private final MailboxManager mailboxManager;
+public class AuthenticationReactiveFilter {
+    private final List<ReactiveAuthenticationStrategy> authMethods;
+    private final MetricFactory metricFactory;
 
     @Inject
     @VisibleForTesting
-    AccessTokenReactiveAuthenticationStrategy(AccessTokenManager accessTokenManager, MailboxManager mailboxManager) {
-        this.accessTokenManager = accessTokenManager;
-        this.mailboxManager = mailboxManager;
+    AuthenticationReactiveFilter(List<ReactiveAuthenticationStrategy> authMethods, MetricFactory metricFactory) {
+        this.authMethods = authMethods;
+        this.metricFactory = metricFactory;
     }
 
-    @Override
-    public Mono<MailboxSession> createMailboxSession(HttpServerRequest httpRequest) throws NoValidAuthHeaderException {
-        Optional<Username> username = authHeaders(httpRequest)
-            .map(AccessToken::fromString)
-            .filter(accessToken -> accessTokenManager.isValid(accessToken).block())
-            .map(accessToken -> accessTokenManager.getUsernameFromToken(accessToken).block())
-            .findFirst();
+    public Mono<MailboxSession> authenticate(HttpServerRequest request) {
+        return metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
+            Flux.fromStream(authMethods.stream())
+                .flatMap(auth -> createSession(auth, request))
+                .singleOrEmpty()
+                .switchIfEmpty(Mono.error(new UnauthorizedException())));
+    }
 
-        if (username.isPresent()) {
-            return Mono.just(mailboxManager.createSystemSession(username.get()));
+    private Mono<MailboxSession> createSession(ReactiveAuthenticationStrategy authenticationMethod, HttpServerRequest httpRequest) {
+        try {
+            return authenticationMethod.createMailboxSession(httpRequest);
+        } catch (Exception e) {
+            return Mono.empty();
         }
-        throw new NoValidAuthHeaderException();
     }
 }

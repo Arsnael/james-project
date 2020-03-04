@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.jmap.draft;
+package org.apache.james.jmap.http;
 
 import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE;
 import static org.apache.james.jmap.HttpConstants.SC_OK;
-import static org.apache.james.jmap.draft.JMAPUrls.JMAP;
+import static org.apache.james.jmap.http.JMAPUrls.JMAP;
 
 import java.io.IOException;
 

@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.jmap.draft;
+package org.apache.james.jmap.http;
 
 import static org.apache.james.jmap.HttpConstants.ACCEPT;
 import static org.apache.james.jmap.HttpConstants.CONTENT_TYPE;
