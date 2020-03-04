@@ -103,8 +103,8 @@ public class UploadRoutes implements JMAPRoutes {
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response, String contentType, MailboxSession session) {
         InputStream content = ReactorUtils.toInputStream(request.receive().asByteBuffer());
-        return metricFactory.runPublishingTimerMetric("JMAP-upload-post",
-            handle(contentType, content, session, response));
+        return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-upload-post",
+            handle(contentType, content, session, response)));
     }
 
     private Mono<Void> handle(String contentType, InputStream content, MailboxSession mailboxSession, HttpServerResponse response) {

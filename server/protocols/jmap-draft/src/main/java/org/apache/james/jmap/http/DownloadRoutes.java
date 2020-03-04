@@ -115,8 +115,8 @@ public class DownloadRoutes implements JMAPRoutes {
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response, DownloadPath downloadPath) {
         return authenticationReactiveFilter.authenticate(request)
-            .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-download-post",
-                respondAttachmentAccessToken(session, downloadPath, response))
+            .flatMap(session -> Mono.from(metricFactory.runPublishingTimerMetric("JMAP-download-post",
+                respondAttachmentAccessToken(session, downloadPath, response)))
             .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e))
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e)))
             .subscribeOn(Schedulers.elastic());
@@ -141,8 +141,8 @@ public class DownloadRoutes implements JMAPRoutes {
 
     private Mono<Void> get(HttpServerRequest request, HttpServerResponse response, DownloadPath downloadPath) {
         return authenticationReactiveFilter.authenticate(request)
-            .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-download-get",
-                download(session, downloadPath, response))
+            .flatMap(session -> Mono.from(metricFactory.runPublishingTimerMetric("JMAP-download-get",
+                download(session, downloadPath, response)))
             .onErrorResume(InternalErrorException.class, e -> handleInternalError(response, e)))
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
             .subscribeOn(Schedulers.elastic());

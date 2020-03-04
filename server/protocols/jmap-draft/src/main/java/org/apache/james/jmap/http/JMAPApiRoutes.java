@@ -91,8 +91,8 @@ public class JMAPApiRoutes implements JMAPRoutes {
                 defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
                 .then()
                 .thenReturn(session))
-            .flatMap(session -> metricFactory.runPublishingTimerMetric("JMAP-request",
-                post(request, response, session)))
+            .flatMap(session -> Mono.from(metricFactory.runPublishingTimerMetric("JMAP-request",
+                post(request, response, session))))
             .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
             .onErrorResume(UnauthorizedException.class, e -> handleAuthenticationFailure(response, e))
             .onErrorResume(e -> handleInternalError(response, e))

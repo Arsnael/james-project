@@ -105,7 +105,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {
-        return metricFactory.runPublishingTimerMetric("JMAP-authentication-post",
+        return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-authentication-post",
             Mono.just(request)
                 .map(this::assertJsonContentType)
                 .map(this::assertAcceptJsonOnly)
@@ -120,7 +120,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
                     }
                 })
                 .onErrorResume(BadRequestException.class, e -> handleBadRequest(response, e))
-                .onErrorResume(e -> handleInternalError(response, e)))
+                .onErrorResume(e -> handleInternalError(response, e))))
             .subscribeOn(Schedulers.elastic());
     }
 

@@ -44,12 +44,12 @@ public class AuthenticationReactiveFilter {
     }
 
     public Mono<MailboxSession> authenticate(HttpServerRequest request) {
-        return metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
+        return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
             Flux.fromStream(authMethods.stream())
                 .flatMap(auth -> auth.createMailboxSession(request))
                 .onErrorResume(any -> Mono.empty())
                 .take(1)
                 .singleOrEmpty()
-                .switchIfEmpty(Mono.error(new UnauthorizedException())));
+                .switchIfEmpty(Mono.error(new UnauthorizedException()))));
     }
 }
