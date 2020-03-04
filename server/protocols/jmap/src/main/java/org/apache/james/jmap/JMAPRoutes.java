@@ -19,10 +19,16 @@
 
 package org.apache.james.jmap;
 
+import static org.apache.james.jmap.HttpConstants.SC_BAD_REQUEST;
+import static org.apache.james.jmap.HttpConstants.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.james.jmap.HttpConstants.SC_UNAUTHORIZED;
+
 import java.util.function.BiFunction;
 
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
 
+import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 import reactor.netty.http.server.HttpServerRoutes;
@@ -34,4 +40,21 @@ public interface JMAPRoutes {
         .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
         .header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
         .send();
+
+    Logger logger();
+
+    default Mono<Void> handleInternalError(HttpServerResponse response, Throwable e) {
+        logger().error("Internal error", e);
+        return response.status(SC_INTERNAL_SERVER_ERROR).send();
+    }
+
+    default Mono<Void> handleBadRequest(HttpServerResponse response, Exception e) {
+        logger().warn("Invalid request received.", e);
+        return response.status(SC_BAD_REQUEST).send();
+    }
+
+    default Mono<Void> handleAuthenticationFailure(HttpServerResponse response, Exception e) {
+        logger().warn("Unauthorized", e);
+        return response.status(SC_UNAUTHORIZED).send();
+    }
 }
