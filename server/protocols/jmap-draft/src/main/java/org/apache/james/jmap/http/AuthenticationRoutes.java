@@ -235,7 +235,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
                 LOGGER.error("Error while trying to validate authentication for user '{}'", username, e);
                 return false;
             }
-        });
+        }).subscribeOn(Schedulers.elastic());
     }
 
     private Mono<Void> returnAccessTokenResponse(HttpServerResponse resp, Username username) {
