@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.smtpserver;
 
+import static org.apache.james.rrt.api.RecipientRewriteTableConfiguration.DEFAULT_ENABLED_MAPPING_LIMIT;
+import static org.apache.james.rrt.api.RecipientRewriteTableConfiguration.RECURSIVE_MAPPING_ENABLE;
 import static org.apache.mailet.base.MailAddressFixture.SENDER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -34,6 +36,7 @@ import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.utils.BaseFakeSMTPSession;
+import org.apache.james.rrt.api.RecipientRewriteTableConfiguration;
 import org.apache.james.rrt.lib.MappingSource;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.apache.james.smtpserver.fastfail.ValidRcptHandler;
@@ -68,6 +71,7 @@ public class ValidRcptHandlerTest {
 
         memoryRecipientRewriteTable = new MemoryRecipientRewriteTable();
         memoryRecipientRewriteTable.setDomainList(memoryDomainList);
+        memoryRecipientRewriteTable.setConfiguration(new RecipientRewriteTableConfiguration(RECURSIVE_MAPPING_ENABLE, DEFAULT_ENABLED_MAPPING_LIMIT));
 
         handler = new ValidRcptHandler(users, memoryRecipientRewriteTable, memoryDomainList);
 
