@@ -48,7 +48,6 @@ public class AuthenticationReactiveFilter {
             Flux.fromStream(authMethods.stream())
                 .flatMap(auth -> auth.createMailboxSession(request))
                 .onErrorContinue((throwable, nothing) -> { })
-                .take(1)
                 .singleOrEmpty()
                 .switchIfEmpty(Mono.error(new UnauthorizedException()))));
     }
