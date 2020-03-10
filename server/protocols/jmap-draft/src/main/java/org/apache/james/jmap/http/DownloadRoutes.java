@@ -150,7 +150,7 @@ public class DownloadRoutes implements JMAPRoutes {
     private Mono<Void> respondAttachmentAccessToken(MailboxSession mailboxSession, DownloadPath downloadPath, HttpServerResponse resp) {
         String blobId = downloadPath.getBlobId();
         try {
-            if (! attachmentExists(mailboxSession, blobId)) {
+            if (!attachmentExists(mailboxSession, blobId)) {
                 return resp.status(NOT_FOUND).send();
             }
             AttachmentAccessToken attachmentAccessToken = simpleTokenFactory.generateAttachmentAccessToken(mailboxSession.getUser().asString(), blobId);
