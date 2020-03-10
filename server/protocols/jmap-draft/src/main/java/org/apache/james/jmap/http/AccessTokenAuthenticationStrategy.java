@@ -50,7 +50,7 @@ public class AccessTokenAuthenticationStrategy implements AuthenticationStrategy
             .filterWhen(accessTokenManager::isValid)
             .flatMap(accessTokenManager::getUsernameFromToken)
             .map(mailboxManager::createSystemSession)
-            .onErrorResume(any -> Mono.empty())
-            .singleOrEmpty();
+            .singleOrEmpty()
+            .switchIfEmpty(Mono.error(new NoValidAuthHeaderException()));
     }
 }
