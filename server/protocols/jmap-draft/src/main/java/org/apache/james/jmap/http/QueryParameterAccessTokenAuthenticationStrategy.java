@@ -24,13 +24,13 @@ import javax.inject.Inject;
 
 import org.apache.james.core.Username;
 import org.apache.james.jmap.draft.api.SimpleTokenManager;
+import org.apache.james.jmap.draft.exceptions.UnauthorizedException;
 import org.apache.james.jmap.draft.model.AttachmentAccessToken;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import io.netty.handler.codec.http.QueryStringDecoder;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
@@ -54,15 +54,13 @@ public class QueryParameterAccessTokenAuthenticationStrategy implements Authenti
             .map(AttachmentAccessToken::getUsername)
             .map(Username::of)
             .map(mailboxManager::createSystemSession)
-            .onErrorResume(any -> Mono.empty());
+            .switchIfEmpty(Mono.error(new UnauthorizedException()));
     }
 
     private Mono<AttachmentAccessToken> getAccessToken(HttpServerRequest httpRequest) {
         try {
-            QueryStringDecoder query = new QueryStringDecoder(httpRequest.uri());
-
             return Mono.justOrEmpty(httpRequest.param(BLOB_ID_PATH_PARAM))
-                .map(blobId -> AttachmentAccessToken.from(query.parameters().get(AUTHENTICATION_PARAMETER).get(0), blobId));
+                .map(blobId -> AttachmentAccessToken.from(httpRequest.param(AUTHENTICATION_PARAMETER), blobId));
         } catch (IllegalArgumentException e) {
             return Mono.empty();
         }
