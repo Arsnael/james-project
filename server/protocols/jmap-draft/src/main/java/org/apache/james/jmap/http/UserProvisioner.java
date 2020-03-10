@@ -48,14 +48,13 @@ public class UserProvisioner {
     }
 
     public Mono<Void> provisionUser(MailboxSession session) {
-        if (!usersRepository.isReadOnly()) {
+        if (session != null && !usersRepository.isReadOnly()) {
             return Mono.fromRunnable(() -> createAccountIfNeeded(session));
         }
         return Mono.empty();
     }
-    
-    @VisibleForTesting
-    void createAccountIfNeeded(MailboxSession session) {
+
+    private void createAccountIfNeeded(MailboxSession session) {
         TimeMetric timeMetric = metricFactory.timer("JMAP-user-provisioning");
         try {
             Username username = session.getUser();
