@@ -17,8 +17,6 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.http;
-/*
-// todo port to DefaultMailboxesReactiveProvisioner
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -42,11 +40,11 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefaultMailboxesProvisioningFilterThreadTest {
+public class DefaultMailboxesReactiveProvisionerThreadTest {
 
     private static final Username USERNAME = Username.of("username");
 
-    private DefaultMailboxesProvisioningFilter sut;
+    private DefaultMailboxesReactiveProvisioner testee;
     private MailboxSession session;
     private MailboxManager mailboxManager;
     private SubscriptionManager subscriptionManager;
@@ -56,7 +54,7 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
         session = MailboxSessionUtil.create(USERNAME);
         mailboxManager = mock(MailboxManager.class);
         subscriptionManager = mock(SubscriptionManager.class);
-        sut = new DefaultMailboxesProvisioningFilter(mailboxManager, subscriptionManager, new RecordingMetricFactory());
+        testee = new DefaultMailboxesReactiveProvisioner(mailboxManager, subscriptionManager, new RecordingMetricFactory());
     }
 
     @Test
@@ -69,9 +67,8 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
 
         ConcurrentTestRunner
             .builder()
-            .operation((threadNumber, step) -> sut.createMailboxesIfNeeded(session))
+            .operation((threadNumber, step) -> testee.createMailboxesIfNeeded(session).block())
             .threadCount(2)
             .runSuccessfullyWithin(Duration.ofMinutes(1));
     }
 }
-*/
