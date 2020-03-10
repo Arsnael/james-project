@@ -17,24 +17,13 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.http;
-/*
 
-// TODO port to UserProvisioner
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainList;
@@ -47,45 +36,35 @@ import org.apache.james.user.memory.MemoryUsersRepository;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UserProvisioningFilterTest {
+public class UserProvisionerTest {
     private static final Username USERNAME = Username.of("username");
     private static final Username USERNAME_WITH_DOMAIN = Username.of("username@james.org");
     private static final DomainList NO_DOMAIN_LIST = null;
 
-    private UserProvisioningFilter sut;
+    private UserProvisioner testee;
     private MemoryUsersRepository usersRepository;
-    private HttpServletRequest request;
-    private HttpServletResponse response;
-    private FilterChain chain;
 
     @Before
     public void setup() throws Exception {
         usersRepository = MemoryUsersRepository.withoutVirtualHosting(NO_DOMAIN_LIST);
-        sut = new UserProvisioningFilter(usersRepository, new RecordingMetricFactory());
-        request = mock(HttpServletRequest.class);
-        response = mock(HttpServletResponse.class);
-        chain = mock(FilterChain.class);
+        testee = new UserProvisioner(usersRepository, new RecordingMetricFactory());
     }
 
     @Test
-    public void filterShouldDoNothingOnNullSession() throws IOException, ServletException, UsersRepositoryException {
-        sut.doFilter(request, response, chain);
+    public void filterShouldDoNothingOnNullSession() throws UsersRepositoryException {
+        testee.provisionUser(null).block();
 
-        verify(chain).doFilter(request, response);
         assertThat(usersRepository.list()).toIterable()
             .isEmpty();
     }
 
     @Test
-    public void filterShouldAddUsernameWhenNoVirtualHostingAndMailboxSessionContainsUsername() throws Exception {
+    public void filterShouldAddUsernameWhenNoVirtualHostingAndMailboxSessionContainsUsername() throws UsersRepositoryException {
         usersRepository.setEnableVirtualHosting(false);
         MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME);
-        when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
-            .thenReturn(mailboxSession);
 
-        sut.doFilter(request, response, chain);
+        testee.provisionUser(mailboxSession).block();
 
-        verify(chain).doFilter(request, response);
         assertThat(usersRepository.list()).toIterable()
             .contains(USERNAME);
     }
@@ -94,42 +73,22 @@ public class UserProvisioningFilterTest {
     public void filterShouldFailOnInvalidVirtualHosting() {
         usersRepository.setEnableVirtualHosting(false);
         MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME_WITH_DOMAIN);
-        when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
-            .thenReturn(mailboxSession);
 
-        assertThatThrownBy(() -> sut.doFilter(request, response, chain))
+        assertThatThrownBy(() -> testee.provisionUser(mailboxSession).block())
             .hasCauseInstanceOf(UsersRepositoryException.class);
     }
 
     @Test
-    public void filterShouldNotTryToAddUserWhenReadOnlyUsersRepository() throws Exception {
+    public void filterShouldNotTryToAddUserWhenReadOnlyUsersRepository() {
         UsersRepository usersRepository = mock(UsersRepository.class);
         when(usersRepository.isReadOnly()).thenReturn(true);
-        sut = new UserProvisioningFilter(usersRepository, new RecordingMetricFactory());
+        testee = new UserProvisioner(usersRepository, new RecordingMetricFactory());
 
         MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME_WITH_DOMAIN);
-        when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
-            .thenReturn(mailboxSession);
 
-        sut.doFilter(request, response, chain);
+        testee.provisionUser(mailboxSession).block();
 
         verify(usersRepository).isReadOnly();
         verifyNoMoreInteractions(usersRepository);
     }
-
-    @Test
-    public void filterShouldChainCallsWhenReadOnlyUsersRepository() throws Exception {
-        UsersRepository usersRepository = mock(UsersRepository.class);
-        when(usersRepository.isReadOnly()).thenReturn(true);
-        sut = new UserProvisioningFilter(usersRepository, new RecordingMetricFactory());
-
-        MailboxSession mailboxSession = MailboxSessionUtil.create(USERNAME_WITH_DOMAIN);
-        when(request.getAttribute(AuthenticationFilter.MAILBOX_SESSION))
-            .thenReturn(mailboxSession);
-
-        sut.doFilter(request, response, chain);
-
-        verify(chain).doFilter(eq(request), any());
-    }
 }
- */
