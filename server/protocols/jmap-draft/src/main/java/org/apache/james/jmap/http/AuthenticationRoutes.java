@@ -165,7 +165,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
 
     private HttpServerRequest assertAcceptJsonOnly(HttpServerRequest req) {
         String accept = req.requestHeaders().get(ACCEPT);
-        if (accept == null || ! accept.contains(JSON_CONTENT_TYPE)) {
+        if (accept == null || !accept.contains(JSON_CONTENT_TYPE)) {
             throw new BadRequestException("Request Accept header must be set to JSON content type");
         }
         return req;
