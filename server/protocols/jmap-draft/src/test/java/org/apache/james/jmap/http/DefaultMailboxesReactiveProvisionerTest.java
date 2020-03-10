@@ -17,8 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.http;
-/*
-// todo port to DefaultMailboxesReactiveProvisioner
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
@@ -39,26 +38,26 @@ import org.junit.Test;
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 
-public class DefaultMailboxesProvisioningFilterTest {
+public class DefaultMailboxesReactiveProvisionerTest {
 
     public static final Username USERNAME = Username.of("username");
-    private DefaultMailboxesProvisioningFilter testee;
+    private DefaultMailboxesReactiveProvisioner testee;
     private MailboxSession session;
     private InMemoryMailboxManager mailboxManager;
     private StoreSubscriptionManager subscriptionManager;
 
     @Before
-    public void before() throws Exception {
+    public void before() {
         session = MailboxSessionUtil.create(USERNAME);
 
         mailboxManager = InMemoryIntegrationResources.defaultResources().getMailboxManager();
         subscriptionManager = new StoreSubscriptionManager(mailboxManager.getMapperFactory());
-        testee = new DefaultMailboxesProvisioningFilter(mailboxManager, subscriptionManager, new RecordingMetricFactory());
+        testee = new DefaultMailboxesReactiveProvisioner(mailboxManager, subscriptionManager, new RecordingMetricFactory());
     }
 
     @Test
     public void createMailboxesIfNeededShouldCreateSystemMailboxes() throws Exception {
-        testee.createMailboxesIfNeeded(session);
+        testee.createMailboxesIfNeeded(session).block();
 
         assertThat(mailboxManager.list(session))
             .containsOnlyElementsOf(DefaultMailboxes.DEFAULT_MAILBOXES
@@ -74,14 +73,14 @@ public class DefaultMailboxesProvisioningFilterTest {
             .filter(mailbox -> !DefaultMailboxes.SPAM.equals(mailbox))
             .forEach(Throwing.consumer(mailbox -> mailboxManager.createMailbox(MailboxPath.forUser(USERNAME, mailbox), session)));
 
-        testee.createMailboxesIfNeeded(session);
+        testee.createMailboxesIfNeeded(session).block();
 
         assertThat(mailboxManager.list(session)).contains(MailboxPath.forUser(USERNAME, DefaultMailboxes.SPAM));
     }
 
     @Test
     public void createMailboxesIfNeededShouldSubscribeMailboxes() throws Exception {
-        testee.createMailboxesIfNeeded(session);
+        testee.createMailboxesIfNeeded(session).block();
 
         assertThat(subscriptionManager.subscriptions(session))
             .containsOnlyElementsOf(DefaultMailboxes.DEFAULT_MAILBOXES);
@@ -90,7 +89,7 @@ public class DefaultMailboxesProvisioningFilterTest {
     @Test
     public void createMailboxesIfNeededShouldNotGenerateExceptionsInConcurrentEnvironment() throws Exception {
         ConcurrentTestRunner.builder()
-            .operation((threadNumber, step) -> testee.createMailboxesIfNeeded(session))
+            .operation((threadNumber, step) -> testee.createMailboxesIfNeeded(session).block())
             .threadCount(10)
             .runSuccessfullyWithin(Duration.ofSeconds(10));
 
@@ -102,4 +101,3 @@ public class DefaultMailboxesProvisioningFilterTest {
     }
 
 }
-*/
