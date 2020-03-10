@@ -18,17 +18,16 @@
  ****************************************************************/
 
 package org.apache.james.jmap.http;
-/*
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.james.core.Username;
 import org.apache.james.jmap.draft.api.SimpleTokenFactory;
+import org.apache.james.jmap.draft.exceptions.InternalErrorException;
 import org.apache.james.jmap.draft.utils.DownloadPath;
 import org.apache.james.mailbox.BlobManager;
 import org.apache.james.mailbox.MailboxSession;
@@ -37,7 +36,9 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.metrics.tests.RecordingMetricFactory;
 import org.junit.Test;
 
-public class DownloadServletTest {
+import reactor.netty.http.server.HttpServerResponse;
+
+public class DownloadRoutesTest {
 
     @Test
     public void downloadMayFailWhenUnknownErrorOnAttachmentManager() throws Exception {
@@ -45,14 +46,13 @@ public class DownloadServletTest {
         BlobManager mockedBlobManager = mock(BlobManager.class);
         when(mockedBlobManager.retrieve(any(), eq(mailboxSession)))
             .thenThrow(new MailboxException());
+        AuthenticationReactiveFilter mockedAuthFilter = mock(AuthenticationReactiveFilter.class);
         SimpleTokenFactory nullSimpleTokenFactory = null;
 
-        DownloadServlet testee = new DownloadServlet(mockedBlobManager, nullSimpleTokenFactory, new RecordingMetricFactory());
+        DownloadRoutes testee = new DownloadRoutes(mockedBlobManager, nullSimpleTokenFactory, new RecordingMetricFactory(), mockedAuthFilter);
 
-        HttpServletResponse resp = mock(HttpServletResponse.class);
-        testee.download(mailboxSession, DownloadPath.from("/blobId"), resp);
-
-        verify(resp).setStatus(500);
+        HttpServerResponse resp = mock(HttpServerResponse.class);
+        assertThatThrownBy(() -> testee.download(mailboxSession, DownloadPath.ofBlobId("blobId"), resp).block())
+            .isInstanceOf(InternalErrorException.class);
     }
 }
-*/

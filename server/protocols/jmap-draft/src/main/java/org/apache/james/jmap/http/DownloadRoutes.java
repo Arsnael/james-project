@@ -172,7 +172,8 @@ public class DownloadRoutes implements JMAPRoutes {
         }
     }
 
-    private Mono<Void> download(MailboxSession mailboxSession, DownloadPath downloadPath, HttpServerResponse response) {
+    @VisibleForTesting
+    Mono<Void> download(MailboxSession mailboxSession, DownloadPath downloadPath, HttpServerResponse response) {
         String blobId = downloadPath.getBlobId();
         try {
             Blob blob = blobManager.retrieve(BlobId.fromString(blobId), mailboxSession);
