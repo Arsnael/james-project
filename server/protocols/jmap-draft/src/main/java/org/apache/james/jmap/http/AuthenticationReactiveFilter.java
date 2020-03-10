@@ -47,7 +47,7 @@ public class AuthenticationReactiveFilter {
         return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-authentication-filter",
             Flux.fromStream(authMethods.stream())
                 .flatMap(auth -> auth.createMailboxSession(request))
-                .onErrorResume(any -> Mono.empty())
+                .onErrorContinue((throwable, nothing) -> { })
                 .take(1)
                 .singleOrEmpty()
                 .switchIfEmpty(Mono.error(new UnauthorizedException()))));
