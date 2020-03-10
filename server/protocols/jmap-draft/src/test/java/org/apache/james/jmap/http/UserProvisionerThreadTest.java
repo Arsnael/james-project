@@ -17,9 +17,6 @@
  * under the License.                                           *
  ****************************************************************/
 package org.apache.james.jmap.http;
-/*
-
-// TODO port to UserProvisioner
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
@@ -34,10 +31,10 @@ import org.apache.james.util.concurrency.ConcurrentTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UserProvisioningFilterThreadTest {
+public class UserProvisionerThreadTest {
     private static final DomainList NO_DOMAIN_LIST = null;
 
-    private UserProvisioningFilter sut;
+    private UserProvisioner testee;
     private MemoryUsersRepository usersRepository;
     private MailboxSession session;
 
@@ -45,16 +42,15 @@ public class UserProvisioningFilterThreadTest {
     public void before() {
         usersRepository = MemoryUsersRepository.withoutVirtualHosting(NO_DOMAIN_LIST);
         session = MailboxSessionUtil.create(Username.of("username"));
-        sut = new UserProvisioningFilter(usersRepository, new RecordingMetricFactory());
+        testee = new UserProvisioner(usersRepository, new RecordingMetricFactory());
     }
 
     @Test
     public void testConcurrentAccessToFilterShouldNotThrow() throws ExecutionException, InterruptedException {
         ConcurrentTestRunner
             .builder()
-            .operation((threadNumber, step) -> sut.createAccountIfNeeded(session))
+            .operation((threadNumber, step) -> testee.provisionUser(session))
             .threadCount(2)
             .runSuccessfullyWithin(Duration.ofMinutes(1));
     }
 }
-*/
