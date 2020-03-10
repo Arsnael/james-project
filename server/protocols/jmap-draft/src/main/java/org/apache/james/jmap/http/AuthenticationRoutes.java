@@ -105,7 +105,7 @@ public class AuthenticationRoutes implements JMAPRoutes {
     }
 
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {
-        return Mono.from(metricFactory.runPublishingTimerMetric("JMAP-authentication-post",
+        return Mono.from(metricFactory.runPublishingTimerMetricLogP99("JMAP-authentication-post",
             Mono.just(request)
                 .map(this::assertJsonContentType)
                 .map(this::assertAcceptJsonOnly)
