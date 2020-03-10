@@ -87,8 +87,8 @@ public class JMAPApiRoutes implements JMAPRoutes {
     private Mono<Void> post(HttpServerRequest request, HttpServerResponse response) {
         return authenticationReactiveFilter.authenticate(request)
             .flatMap(session -> Flux.merge(
-                userProvisioner.provisionUser(session),
-                defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
+                    userProvisioner.provisionUser(session),
+                    defaultMailboxesProvisioner.createMailboxesIfNeeded(session))
                 .then()
                 .thenReturn(session))
             .flatMap(session -> Mono.from(metricFactory.runPublishingTimerMetric("JMAP-request",
