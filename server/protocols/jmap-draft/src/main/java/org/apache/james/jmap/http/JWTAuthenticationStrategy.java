@@ -68,7 +68,8 @@ public class JWTAuthenticationStrategy implements AuthenticationStrategy {
         Stream<MailboxSession> mailboxSessionStream = userLoginStream
                 .map(mailboxManager::createSystemSession);
 
-        return Mono.justOrEmpty(mailboxSessionStream.findFirst());
+        return Mono.justOrEmpty(mailboxSessionStream.findFirst())
+            .switchIfEmpty(Mono.error(new NoValidAuthHeaderException()));
     }
 
     private Stream<String> extractTokensFromAuthHeaders(Stream<String> authHeaders) {
