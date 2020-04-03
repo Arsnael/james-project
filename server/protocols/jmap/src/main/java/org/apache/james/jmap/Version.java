@@ -19,18 +19,24 @@
 
 package org.apache.james.jmap;
 
-import java.util.Arrays;
+import java.util.List;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
-public enum Version {
-    DRAFT("draft"),
-    RFC8621("rfc-8621");
+public class Version {
+    public static final Version DRAFT = new Version("draft");
+    public static final Version RFC8621 = new Version("rfc-8621");
+
+    private static final List<Version> AVAILABLE_VERSIONS = ImmutableList.of(
+        DRAFT,
+        RFC8621
+    );
 
     public static Version of(String version) {
         Preconditions.checkNotNull(version);
 
-        return Arrays.stream(values())
+        return AVAILABLE_VERSIONS.stream()
             .filter(jmapVersion -> jmapVersion.version.equalsIgnoreCase(version))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException(version + " is not a supported version"));
