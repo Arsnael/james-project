@@ -56,15 +56,19 @@ public class JMAPRoutesHandler {
     }
 
     private Version extractRequestVersionHeader(HttpServerRequest request) {
-        return request.requestHeaders()
-            .getAll(ACCEPT)
-            .stream()
-            .flatMap(this::extractValueParameters)
+        return asVersion(request)
             .filter(nameValuePair -> nameValuePair.getName().equals(JMAP_VERSION_HEADER))
             .map(NameValuePair::getValue)
             .map(Version::of)
             .findFirst()
             .orElse(Version.DRAFT);
+    }
+
+    private Stream<NameValuePair> asVersion(HttpServerRequest request) {
+        return request.requestHeaders()
+            .getAll(ACCEPT)
+            .stream()
+            .flatMap(this::extractValueParameters);
     }
 
     private Stream<NameValuePair> extractValueParameters(String value) {
