@@ -52,8 +52,8 @@ import reactor.netty.http.server.HttpServerResponse;
 
 class JMAPServerTest {
     private static final String ACCEPT_JMAP_VERSION_HEADER = "application/json; jmapVersion=";
-    private static final String ACCEPT_DRAFT_VERSION_HEADER = ACCEPT_JMAP_VERSION_HEADER + Version.DRAFT.getVersion();
-    private static final String ACCEPT_RFC8621_VERSION_HEADER = ACCEPT_JMAP_VERSION_HEADER + Version.RFC8621.getVersion();
+    private static final String ACCEPT_DRAFT_VERSION_HEADER = ACCEPT_JMAP_VERSION_HEADER + Version.DRAFT.asString();
+    private static final String ACCEPT_RFC8621_VERSION_HEADER = ACCEPT_JMAP_VERSION_HEADER + Version.RFC8621.asString();
 
     private static final JMAPConfiguration DISABLED_CONFIGURATION = JMAPConfiguration.builder().disable().build();
     private static final JMAPConfiguration TEST_CONFIGURATION = JMAPConfiguration.builder()
@@ -162,7 +162,7 @@ class JMAPServerTest {
                 .get()
             .then()
                 .statusCode(HttpResponseStatus.OK.code())
-                .body("Version", is(Version.DRAFT.getVersion()));
+                .body("Version", is(Version.DRAFT.asString()));
         }
 
         @Test
@@ -174,7 +174,7 @@ class JMAPServerTest {
                 .get()
             .then()
                 .statusCode(HttpResponseStatus.OK.code())
-                .body("Version", is(Version.RFC8621.getVersion()));
+                .body("Version", is(Version.RFC8621.asString()));
         }
 
         @Test
@@ -186,7 +186,7 @@ class JMAPServerTest {
                 .post()
             .then()
                 .statusCode(HttpResponseStatus.OK.code())
-                .body("Version", is(Version.DRAFT.getVersion()));
+                .body("Version", is(Version.DRAFT.asString()));
         }
 
         @Test
@@ -240,7 +240,7 @@ class JMAPServerTest {
         private Mono<Void> sendVersionResponse(HttpServerResponse response) {
             return response.status(HttpResponseStatus.OK)
                 .header(CONTENT_TYPE, JSON_CONTENT_TYPE_UTF8)
-                .sendString(Mono.just(String.format("{\"Version\":\"%s\"}", version.getVersion())))
+                .sendString(Mono.just(String.format("{\"Version\":\"%s\"}", version.asString())))
                 .then();
         }
     }
