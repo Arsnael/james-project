@@ -31,6 +31,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.jmap.JMAPConfiguration;
 import org.apache.james.jmap.JMAPServer;
+import org.apache.james.jmap.Version;
+import org.apache.james.jmap.VersionParser;
 import org.apache.james.jmap.draft.methods.RequestHandler;
 import org.apache.james.jmap.draft.send.PostDequeueDecoratorFactory;
 import org.apache.james.jmap.draft.utils.JsoupHtmlTextExtractor;
@@ -56,6 +58,7 @@ import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
@@ -151,6 +154,16 @@ public class JMAPModule extends AbstractModule {
 
     private Optional<String> loadPublicKey(FileSystem fileSystem, Optional<String> jwtPublickeyPemUrl) {
         return jwtPublickeyPemUrl.map(Throwing.function(url -> FileUtils.readFileToString(fileSystem.getFile(url), StandardCharsets.US_ASCII)));
+    }
+
+    @Provides
+    @Singleton
+    VersionParser versionParser() {
+        return new VersionParser(supportedVersions());
+    }
+
+    private ImmutableSet<Version> supportedVersions() {
+        return ImmutableSet.of(Version.DRAFT);
     }
 
     @Singleton
