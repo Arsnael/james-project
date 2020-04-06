@@ -24,7 +24,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 class VersionTest {
+    @Test
+    void shouldRespectBeanContract() {
+        EqualsVerifier.forClass(Version.class)
+            .verify();
+    }
+
     @Test
     void ofShouldReturnCorrectValue() {
         String version = "rfc-8621";

@@ -20,6 +20,7 @@
 package org.apache.james.jmap;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -48,7 +49,22 @@ public class Version {
         this.version = version;
     }
 
-    public String getVersion() {
+    public String asString() {
         return version;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof Version) {
+            Version version = (Version) o;
+
+            return Objects.equals(this.version, version.version);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(version);
     }
 }
