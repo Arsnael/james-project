@@ -109,7 +109,6 @@ public class JMAPModule extends AbstractModule {
 
         Multibinder<Version> supportedVersions = Multibinder.newSetBinder(binder(), Version.class);
         supportedVersions.addBinding().toInstance(Version.DRAFT);
-        supportedVersions.addBinding().toInstance(Version.RFC8621);
     }
 
     @Provides
