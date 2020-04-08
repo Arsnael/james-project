@@ -36,7 +36,7 @@ import com.google.common.base.Preconditions;
 import reactor.netty.http.server.HttpServerRequest;
 
 public class VersionParser {
-    private static String JMAP_VERSION_HEADER = "jmapVersion";
+    private static final String JMAP_VERSION_HEADER = "jmapVersion";
 
     private final Set<Version> supportedVersions;
 
