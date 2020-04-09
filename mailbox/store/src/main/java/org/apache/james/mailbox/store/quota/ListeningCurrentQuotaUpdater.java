@@ -125,7 +125,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
 
     private Optional<QuotaOperation> computeQuotaOperation(MetaDataHoldingEvent metaDataHoldingEvent, QuotaRoot quotaRoot) {
         long size = totalSize(metaDataHoldingEvent);
-        long count = (long) metaDataHoldingEvent.getUids().size();
+        long count = Integer.toUnsignedLong(metaDataHoldingEvent.getUids().size());
 
         if (count != 0 && size != 0) {
             return Optional.of(new QuotaOperation(quotaRoot, QuotaCountUsage.count(count), QuotaSizeUsage.size(size)));
