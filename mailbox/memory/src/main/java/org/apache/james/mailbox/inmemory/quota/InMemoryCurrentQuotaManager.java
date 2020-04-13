@@ -20,7 +20,6 @@
 package org.apache.james.mailbox.inmemory.quota;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 
@@ -41,14 +40,14 @@ import com.google.common.cache.LoadingCache;
 
 public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
 
-    private final LoadingCache<QuotaRoot, Entry> quotaCache;
+    private final LoadingCache<QuotaRoot, CurrentQuotas> quotaCache;
 
     @Inject
     public InMemoryCurrentQuotaManager(CurrentQuotaCalculator quotaCalculator, SessionProvider sessionProvider) {
-        this.quotaCache = CacheBuilder.newBuilder().build(new CacheLoader<QuotaRoot, Entry>() {
+        this.quotaCache = CacheBuilder.newBuilder().build(new CacheLoader<QuotaRoot, CurrentQuotas>() {
             @Override
-            public Entry load(QuotaRoot quotaRoot) throws Exception {
-                return new Entry(quotaCalculator.recalculateCurrentQuotas(quotaRoot, sessionProvider.createSystemSession(Username.of(quotaRoot.getValue()))));
+            public CurrentQuotas load(QuotaRoot quotaRoot) throws Exception {
+                return quotaCalculator.recalculateCurrentQuotas(quotaRoot, sessionProvider.createSystemSession(Username.of(quotaRoot.getValue())));
             }
         });
     }
@@ -66,7 +65,7 @@ public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
     @Override
     public QuotaCountUsage getCurrentMessageCount(QuotaRoot quotaRoot) throws MailboxException {
         try {
-            return QuotaCountUsage.count(quotaCache.get(quotaRoot).getCount().get());
+            return quotaCache.get(quotaRoot).count();
         } catch (ExecutionException e) {
             throw new MailboxException("Exception caught", e);
         }
@@ -75,7 +74,7 @@ public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
     @Override
     public QuotaSizeUsage getCurrentStorage(QuotaRoot quotaRoot) throws MailboxException {
         try {
-            return QuotaSizeUsage.size(quotaCache.get(quotaRoot).getSize().get());
+            return quotaCache.get(quotaRoot).size();
         } catch (ExecutionException e) {
             throw new MailboxException("Exception caught", e);
         }
@@ -83,29 +82,13 @@ public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
 
     private void updateQuota(QuotaRoot quotaRoot, long count, long size) throws MailboxException {
         try {
-            Entry entry = quotaCache.get(quotaRoot);
-            entry.getCount().addAndGet(count);
-            entry.getSize().addAndGet(size);
+            CurrentQuotas currentQuotas = quotaCache.get(quotaRoot);
+            long updatedCount = currentQuotas.count().asLong() + count;
+            long updatedSize = currentQuotas.size().asLong() + size;
+
+            quotaCache.put(quotaRoot, new CurrentQuotas(QuotaCountUsage.count(updatedCount), QuotaSizeUsage.size(updatedSize)));
         } catch (ExecutionException e) {
             throw new MailboxException("Exception caught", e);
-        }
-    }
-
-    static class Entry {
-        private final AtomicLong count;
-        private final AtomicLong size;
-
-        public Entry(CurrentQuotas currentQuotas) {
-            this.count = new AtomicLong(currentQuotas.count().asLong());
-            this.size = new AtomicLong(currentQuotas.size().asLong());
-        }
-
-        public AtomicLong getCount() {
-            return count;
-        }
-
-        public AtomicLong getSize() {
-            return size;
         }
     }
 }
