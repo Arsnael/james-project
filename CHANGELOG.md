@@ -17,6 +17,7 @@ of tasks being currently executed.
 - JAMES-3105 WebAdmin offline task to recompute mailbox counters on top of Cassandra products
 - JAMES-3072 Webadmin endpoint to export mailbox backup
 - JAMES-3117 Add PeriodicalHealthChecks for periodical calling all health checks
+- JAMES-3138 Webadmin endpoint to recompute users current quotas on top of Guice products
 
 ### Changed
 - Switch to Java 11 for build and run
