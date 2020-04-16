@@ -21,7 +21,7 @@ package org.apache.james.mailbox.inmemory.quota;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
 
 import javax.inject.Inject;
 
@@ -56,12 +56,12 @@ public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
 
     @Override
     public void increase(QuotaOperation quotaOperation) throws MailboxException {
-        updateQuota(quotaOperation.quotaRoot(), new CurrentQuotas(quotaOperation.count(), quotaOperation.size()), CurrentQuotas::increase);
+        updateQuota(quotaOperation.quotaRoot(), quota -> quota.increase(new CurrentQuotas(quotaOperation.count(), quotaOperation.size()));
     }
 
     @Override
     public void decrease(QuotaOperation quotaOperation) throws MailboxException {
-        updateQuota(quotaOperation.quotaRoot(), new CurrentQuotas(quotaOperation.count(), quotaOperation.size()), CurrentQuotas::decrease);
+        updateQuota(quotaOperation.quotaRoot(), quota -> quota.decrease(new CurrentQuotas(quotaOperation.count(), quotaOperation.size()));
     }
 
     @Override
@@ -82,9 +82,9 @@ public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
         }
     }
 
-    private void updateQuota(QuotaRoot quotaRoot, CurrentQuotas updateQuota, BinaryOperator<CurrentQuotas> quotaFunction) throws MailboxException {
+    private void updateQuota(QuotaRoot quotaRoot, UnaryOperator<CurrentQuotas> quotaFunction) throws MailboxException {
         try {
-            quotaCache.get(quotaRoot).accumulateAndGet(updateQuota, quotaFunction);
+            quotaCache.get(quotaRoot).updateAndGet(quotaFunction);
         } catch (ExecutionException e) {
             throw new MailboxException("Exception caught", e);
         }
