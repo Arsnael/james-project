@@ -56,12 +56,12 @@ public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
 
     @Override
     public void increase(QuotaOperation quotaOperation) throws MailboxException {
-        updateQuota(quotaOperation.quotaRoot(), quota -> quota.increase(new CurrentQuotas(quotaOperation.count(), quotaOperation.size()));
+        updateQuota(quotaOperation.quotaRoot(), quota -> quota.increase(new CurrentQuotas(quotaOperation.count(), quotaOperation.size())));
     }
 
     @Override
     public void decrease(QuotaOperation quotaOperation) throws MailboxException {
-        updateQuota(quotaOperation.quotaRoot(), quota -> quota.decrease(new CurrentQuotas(quotaOperation.count(), quotaOperation.size()));
+        updateQuota(quotaOperation.quotaRoot(), quota -> quota.decrease(new CurrentQuotas(quotaOperation.count(), quotaOperation.size())));
     }
 
     @Override
