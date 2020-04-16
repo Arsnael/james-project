@@ -89,7 +89,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
 
     private void handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) {
         computeQuotaOperation(expunged, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
-            currentQuotaManager.decrease(quotaOperation);
+            currentQuotaManager.decrease(quotaOperation).block();
 
             eventBus.dispatch(
                 EventFactory.quotaUpdated()
@@ -107,7 +107,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
 
     private void handleAddedEvent(Added added, QuotaRoot quotaRoot) {
         computeQuotaOperation(added, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
-            currentQuotaManager.increase(quotaOperation);
+            currentQuotaManager.increase(quotaOperation).block();
 
             eventBus.dispatch(
                 EventFactory.quotaUpdated()
@@ -144,8 +144,9 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
         boolean mailboxContainedMessages = mailboxDeletionEvent.getDeletedMessageCount().asLong() > 0;
         if (mailboxContainedMessages) {
             currentQuotaManager.decrease(new QuotaOperation(mailboxDeletionEvent.getQuotaRoot(),
-                mailboxDeletionEvent.getDeletedMessageCount(),
-                mailboxDeletionEvent.getTotalDeletedSize()));
+                    mailboxDeletionEvent.getDeletedMessageCount(),
+                    mailboxDeletionEvent.getTotalDeletedSize()))
+                .block();
         }
     }
 
