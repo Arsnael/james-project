@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.store.quota;
 
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.QuotaOperation;
 import org.apache.james.mailbox.quota.CurrentQuotaManager;
 
@@ -27,8 +26,8 @@ import reactor.core.publisher.Mono;
 
 public interface StoreCurrentQuotaManager extends CurrentQuotaManager {
 
-    Mono<Void> increase(QuotaOperation quotaOperation) throws MailboxException;
+    Mono<Void> increase(QuotaOperation quotaOperation);
 
-    Mono<Void> decrease(QuotaOperation quotaOperation) throws MailboxException;
+    Mono<Void> decrease(QuotaOperation quotaOperation);
 
 }
