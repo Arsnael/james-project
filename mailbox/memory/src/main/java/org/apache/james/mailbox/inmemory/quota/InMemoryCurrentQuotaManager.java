@@ -68,22 +68,22 @@ public class InMemoryCurrentQuotaManager implements StoreCurrentQuotaManager {
     @Override
     public Mono<QuotaCountUsage> getCurrentMessageCount(QuotaRoot quotaRoot) {
         return Mono.fromCallable(() -> quotaCache.get(quotaRoot).get().count())
-            .onErrorMap(this::propagateException);
+            .onErrorMap(this::wrapAsMailboxException);
     }
 
     @Override
     public Mono<QuotaSizeUsage> getCurrentStorage(QuotaRoot quotaRoot) {
         return Mono.fromCallable(() -> quotaCache.get(quotaRoot).get().size())
-            .onErrorMap(this::propagateException);
+            .onErrorMap(this::wrapAsMailboxException);
     }
 
     private Mono<Void> updateQuota(QuotaRoot quotaRoot, UnaryOperator<CurrentQuotas> quotaFunction) {
         return Mono.fromCallable(() -> quotaCache.get(quotaRoot).updateAndGet(quotaFunction))
-            .onErrorMap(this::propagateException)
+            .onErrorMap(this::wrapAsMailboxException)
             .then();
     }
 
-    private Throwable propagateException(Throwable throwable) {
+    private Throwable wrapAsMailboxException(Throwable throwable) {
         return new MailboxException("Exception caught", throwable);
     }
 }
