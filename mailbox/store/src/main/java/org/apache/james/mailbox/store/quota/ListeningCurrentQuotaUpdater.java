@@ -89,36 +89,34 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
 
     private void handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) {
         computeQuotaOperation(expunged, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
-            currentQuotaManager.decrease(quotaOperation).block();
-
-            eventBus.dispatch(
-                EventFactory.quotaUpdated()
-                    .randomEventId()
-                    .user(expunged.getUsername())
-                    .quotaRoot(quotaRoot)
-                    .quotaCount(quotaManager.getMessageQuota(quotaRoot))
-                    .quotaSize(quotaManager.getStorageQuota(quotaRoot))
-                    .instant(Instant.now())
-                    .build(),
-                NO_REGISTRATION_KEYS)
+            currentQuotaManager.decrease(quotaOperation)
+                .then(eventBus.dispatch(
+                    EventFactory.quotaUpdated()
+                        .randomEventId()
+                        .user(expunged.getUsername())
+                        .quotaRoot(quotaRoot)
+                        .quotaCount(quotaManager.getMessageQuota(quotaRoot))
+                        .quotaSize(quotaManager.getStorageQuota(quotaRoot))
+                        .instant(Instant.now())
+                        .build(),
+                    NO_REGISTRATION_KEYS))
                 .block();
         }).sneakyThrow());
     }
 
     private void handleAddedEvent(Added added, QuotaRoot quotaRoot) {
         computeQuotaOperation(added, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
-            currentQuotaManager.increase(quotaOperation).block();
-
-            eventBus.dispatch(
-                EventFactory.quotaUpdated()
-                    .randomEventId()
-                    .user(added.getUsername())
-                    .quotaRoot(quotaRoot)
-                    .quotaCount(quotaManager.getMessageQuota(quotaRoot))
-                    .quotaSize(quotaManager.getStorageQuota(quotaRoot))
-                    .instant(Instant.now())
-                    .build(),
-                NO_REGISTRATION_KEYS)
+            currentQuotaManager.increase(quotaOperation)
+                .then(eventBus.dispatch(
+                    EventFactory.quotaUpdated()
+                        .randomEventId()
+                        .user(added.getUsername())
+                        .quotaRoot(quotaRoot)
+                        .quotaCount(quotaManager.getMessageQuota(quotaRoot))
+                        .quotaSize(quotaManager.getStorageQuota(quotaRoot))
+                        .instant(Instant.now())
+                        .build(),
+                    NO_REGISTRATION_KEYS))
                 .block();
         }).sneakyThrow());
     }
