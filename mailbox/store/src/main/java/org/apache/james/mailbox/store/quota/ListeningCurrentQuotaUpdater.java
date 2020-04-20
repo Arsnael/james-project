@@ -40,6 +40,8 @@ import org.apache.james.mailbox.store.event.EventFactory;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableSet;
 
+import reactor.core.publisher.Mono;
+
 public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailboxListener, QuotaUpdater {
     public static class ListeningCurrentQuotaUpdaterGroup extends Group {
 
@@ -90,7 +92,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
     private void handleExpungedEvent(Expunged expunged, QuotaRoot quotaRoot) {
         computeQuotaOperation(expunged, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
             currentQuotaManager.decrease(quotaOperation)
-                .then(eventBus.dispatch(
+                .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
                     EventFactory.quotaUpdated()
                         .randomEventId()
                         .user(expunged.getUsername())
@@ -99,7 +101,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
                         .quotaSize(quotaManager.getStorageQuota(quotaRoot))
                         .instant(Instant.now())
                         .build(),
-                    NO_REGISTRATION_KEYS))
+                    NO_REGISTRATION_KEYS)).sneakyThrow()))
                 .block();
         }).sneakyThrow());
     }
@@ -107,7 +109,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
     private void handleAddedEvent(Added added, QuotaRoot quotaRoot) {
         computeQuotaOperation(added, quotaRoot).ifPresent(Throwing.<QuotaOperation>consumer(quotaOperation -> {
             currentQuotaManager.increase(quotaOperation)
-                .then(eventBus.dispatch(
+                .then(Mono.defer(Throwing.supplier(() -> eventBus.dispatch(
                     EventFactory.quotaUpdated()
                         .randomEventId()
                         .user(added.getUsername())
@@ -116,7 +118,7 @@ public class ListeningCurrentQuotaUpdater implements MailboxListener.GroupMailbo
                         .quotaSize(quotaManager.getStorageQuota(quotaRoot))
                         .instant(Instant.now())
                         .build(),
-                    NO_REGISTRATION_KEYS))
+                    NO_REGISTRATION_KEYS)).sneakyThrow()))
                 .block();
         }).sneakyThrow());
     }
