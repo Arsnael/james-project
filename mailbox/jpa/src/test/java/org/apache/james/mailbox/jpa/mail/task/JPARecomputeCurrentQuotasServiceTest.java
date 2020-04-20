@@ -39,7 +39,6 @@ import org.apache.james.mailbox.store.mail.task.RecomputeCurrentQuotasService;
 import org.apache.james.mailbox.store.mail.task.RecomputeCurrentQuotasServiceContract;
 import org.apache.james.mailbox.store.quota.CurrentQuotaCalculator;
 import org.apache.james.mailbox.store.quota.DefaultUserQuotaRootResolver;
-import org.apache.james.mailbox.store.quota.StoreCurrentQuotaManager;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.jpa.JPAUsersRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -61,7 +60,7 @@ class JPARecomputeCurrentQuotasServiceTest implements RecomputeCurrentQuotasServ
     JPAUsersRepository usersRepository;
     StoreMailboxManager mailboxManager;
     SessionProvider sessionProvider;
-    StoreCurrentQuotaManager currentQuotaManager;
+    CurrentQuotaManager currentQuotaManager;
     UserQuotaRootResolver userQuotaRootResolver;
     RecomputeCurrentQuotasService testee;
 
