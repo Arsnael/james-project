@@ -24,6 +24,7 @@ import javax.persistence.EntityManagerFactory;
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.james.backends.jpa.JpaTestCluster;
 import org.apache.james.domainlist.api.DomainList;
+import org.apache.james.domainlist.jpa.model.JPADomain;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.jpa.JPAMailboxFixture;
@@ -41,13 +42,12 @@ import org.apache.james.mailbox.store.quota.CurrentQuotaCalculator;
 import org.apache.james.mailbox.store.quota.DefaultUserQuotaRootResolver;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.jpa.JPAUsersRepository;
+import org.apache.james.user.jpa.model.JPAUser;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 
 import com.google.common.collect.ImmutableList;
 
-@Disabled("JAMES-3138 Broken...")
 class JPARecomputeCurrentQuotasServiceTest implements RecomputeCurrentQuotasServiceContract {
 
     static final DomainList NO_DOMAIN_LIST = null;
@@ -55,6 +55,8 @@ class JPARecomputeCurrentQuotasServiceTest implements RecomputeCurrentQuotasServ
     static final JpaTestCluster JPA_TEST_CLUSTER = JpaTestCluster.create(ImmutableList.<Class<?>>builder()
         .addAll(JPAMailboxFixture.MAILBOX_PERSISTANCE_CLASSES)
         .addAll(JPAMailboxFixture.QUOTA_PERSISTANCE_CLASSES)
+        .add(JPAUser.class)
+        .add(JPADomain.class)
         .build());
 
     JPAUsersRepository usersRepository;
@@ -93,6 +95,8 @@ class JPARecomputeCurrentQuotasServiceTest implements RecomputeCurrentQuotasServ
         JPA_TEST_CLUSTER.clear(ImmutableList.<String>builder()
             .addAll(JPAMailboxFixture.MAILBOX_TABLE_NAMES)
             .addAll(JPAMailboxFixture.QUOTA_TABLES_NAMES)
+            .add("JAMES_USER")
+            .add("JAMES_DOMAIN")
             .build());
     }
 
