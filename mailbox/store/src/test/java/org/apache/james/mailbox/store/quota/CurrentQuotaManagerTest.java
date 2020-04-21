@@ -106,7 +106,7 @@ public abstract class CurrentQuotaManagerTest {
     void resetCurrentQuotasShouldNoopWhenZeroAndNoData() {
         QuotaOperation quotaOperation = new QuotaOperation(QUOTA_ROOT, QuotaCountUsage.count(0), QuotaSizeUsage.size(0));
 
-        Mono.from(testee.resetCurrentQuotas(quotaOperation)).block();
+        Mono.from(testee.setCurrentQuotas(quotaOperation)).block();
 
         assertThat(Mono.from(testee.getCurrentQuotas(QUOTA_ROOT)).block())
             .isEqualTo(CurrentQuotas.emptyQuotas());
@@ -114,7 +114,7 @@ public abstract class CurrentQuotaManagerTest {
 
     @Test
     void resetCurrentQuotasShouldReInitQuotasWhenNothing() {
-        Mono.from(testee.resetCurrentQuotas(RESET_QUOTA_OPERATION)).block();
+        Mono.from(testee.setCurrentQuotas(RESET_QUOTA_OPERATION)).block();
 
         assertThat(Mono.from(testee.getCurrentQuotas(QUOTA_ROOT)).block())
             .isEqualTo(CURRENT_QUOTAS);
@@ -124,7 +124,7 @@ public abstract class CurrentQuotaManagerTest {
     void resetCurrentQuotasShouldReInitQuotasWhenData() {
         Mono.from(testee.increase(new QuotaOperation(QUOTA_ROOT, QuotaCountUsage.count(20), QuotaSizeUsage.size(200)))).block();
 
-        Mono.from(testee.resetCurrentQuotas(RESET_QUOTA_OPERATION)).block();
+        Mono.from(testee.setCurrentQuotas(RESET_QUOTA_OPERATION)).block();
 
         assertThat(Mono.from(testee.getCurrentQuotas(QUOTA_ROOT)).block())
             .isEqualTo(CURRENT_QUOTAS);
@@ -134,8 +134,8 @@ public abstract class CurrentQuotaManagerTest {
     void resetCurrentQuotasShouldBeIdempotent() {
         Mono.from(testee.increase(new QuotaOperation(QUOTA_ROOT, QuotaCountUsage.count(20), QuotaSizeUsage.size(200)))).block();
 
-        Mono.from(testee.resetCurrentQuotas(RESET_QUOTA_OPERATION)).block();
-        Mono.from(testee.resetCurrentQuotas(RESET_QUOTA_OPERATION)).block();
+        Mono.from(testee.setCurrentQuotas(RESET_QUOTA_OPERATION)).block();
+        Mono.from(testee.setCurrentQuotas(RESET_QUOTA_OPERATION)).block();
 
         assertThat(Mono.from(testee.getCurrentQuotas(QUOTA_ROOT)).block())
             .isEqualTo(CURRENT_QUOTAS);
