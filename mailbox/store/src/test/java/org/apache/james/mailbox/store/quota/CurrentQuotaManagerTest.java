@@ -103,7 +103,7 @@ public abstract class CurrentQuotaManagerTest {
     }
 
     @Test
-    void resetCurrentQuotasShouldNoopWhenZeroAndNoData() {
+    void setCurrentQuotasShouldNoopWhenZeroAndNoData() {
         QuotaOperation quotaOperation = new QuotaOperation(QUOTA_ROOT, QuotaCountUsage.count(0), QuotaSizeUsage.size(0));
 
         Mono.from(testee.setCurrentQuotas(quotaOperation)).block();
@@ -113,7 +113,7 @@ public abstract class CurrentQuotaManagerTest {
     }
 
     @Test
-    void resetCurrentQuotasShouldReInitQuotasWhenNothing() {
+    void setCurrentQuotasShouldReInitQuotasWhenNothing() {
         Mono.from(testee.setCurrentQuotas(RESET_QUOTA_OPERATION)).block();
 
         assertThat(Mono.from(testee.getCurrentQuotas(QUOTA_ROOT)).block())
@@ -121,7 +121,7 @@ public abstract class CurrentQuotaManagerTest {
     }
 
     @Test
-    void resetCurrentQuotasShouldReInitQuotasWhenData() {
+    void setCurrentQuotasShouldReInitQuotasWhenData() {
         Mono.from(testee.increase(new QuotaOperation(QUOTA_ROOT, QuotaCountUsage.count(20), QuotaSizeUsage.size(200)))).block();
 
         Mono.from(testee.setCurrentQuotas(RESET_QUOTA_OPERATION)).block();
@@ -131,7 +131,7 @@ public abstract class CurrentQuotaManagerTest {
     }
 
     @Test
-    void resetCurrentQuotasShouldBeIdempotent() {
+    void setCurrentQuotasShouldBeIdempotent() {
         Mono.from(testee.increase(new QuotaOperation(QUOTA_ROOT, QuotaCountUsage.count(20), QuotaSizeUsage.size(200)))).block();
 
         Mono.from(testee.setCurrentQuotas(RESET_QUOTA_OPERATION)).block();
