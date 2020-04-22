@@ -43,6 +43,9 @@ import org.apache.james.mailbox.cassandra.mail.task.SolveMailboxInconsistenciesT
 import org.apache.james.mailbox.cassandra.mail.task.SolveMailboxInconsistenciesTaskDTO;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.quota.task.RecomputeCurrentQuotasService;
+import org.apache.james.mailbox.quota.task.RecomputeCurrentQuotasTaskAdditionalInformationDTO;
+import org.apache.james.mailbox.quota.task.RecomputeCurrentQuotasTaskDTO;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.rrt.cassandra.CassandraMappingsSourcesDAO;
@@ -276,6 +279,11 @@ public class TaskSerializationModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
+    public TaskDTOModule<? extends Task, ? extends TaskDTO> recomputeCurrentQuotasTask(RecomputeCurrentQuotasService service) {
+        return RecomputeCurrentQuotasTaskDTO.module(service);
+    }
+
+    @ProvidesIntoSet
     public TaskDTOModule<? extends Task, ? extends TaskDTO> messageIdReindexingTask(MessageIdReIndexingTask.Factory factory) {
         return MessageIdReindexingTaskDTO.module(factory);
     }
@@ -388,6 +396,11 @@ public class TaskSerializationModule extends AbstractModule {
     @ProvidesIntoSet
     public AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends  AdditionalInformationDTO> recomputeMailboxCountersAdditionalInformation() {
         return RecomputeMailboxCountersTaskAdditionalInformationDTO.MODULE;
+    }
+
+    @ProvidesIntoSet
+    public AdditionalInformationDTOModule<? extends TaskExecutionDetails.AdditionalInformation, ? extends  AdditionalInformationDTO> recomputeCurrentQuotasAdditionalInformation() {
+        return RecomputeCurrentQuotasTaskAdditionalInformationDTO.MODULE;
     }
 
     @ProvidesIntoSet
