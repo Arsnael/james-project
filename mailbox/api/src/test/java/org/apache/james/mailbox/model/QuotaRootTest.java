@@ -48,7 +48,7 @@ class QuotaRootTest {
         Domain domain = Domain.of("apache.org");
         QuotaRoot quotaRoot = QuotaRoot.quotaRoot(value, Optional.of(domain));
 
-        String expectedValue = value + "@" + domain.asString();
+        String expectedValue = "#private&bob@apache.org";
 
         assertThat(quotaRoot.asString()).isEqualTo(expectedValue);
     }
