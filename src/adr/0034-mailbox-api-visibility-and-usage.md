@@ -24,8 +24,10 @@ currently possible at the `Manager`'s level, which tends to violate `mailbox-api
 As a matter of fact, we have currently such uses of `mailbox-store` in James:
 
 * `mailbox-adapter` because `Authenticator` and `Authorizator` are part of the `mailbox-store`
-* `mpt-imapmailbox-jpa-lucene` for tests
-* `mpt-imapmailbox-elasticsearch` for tests
+
+The manager layer do further validation including right checking, event dispatching (resulting in message search index 
+indexing, current quota calculation mainly), quota validation. Not relying on the manager layer is thus error prone 
+and can lead to security vulnerabilities.
 
 ## Decision
 
@@ -39,8 +41,6 @@ classes.
 Regarding the modules wrongly relying already on `mailbox-store`, we can:
 
 * `mailbox-adapter`: move `Authenticator` and `Authorizator` to `mailbox-api`
-* `mpt-imapmailbox-jpa-lucene`: limit it to the test scope
-* `mpt-imapmailbox-elasticsearch`: limit it to the test scope
 
 ## Consequences
 
