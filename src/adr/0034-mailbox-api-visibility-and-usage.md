@@ -44,7 +44,7 @@ Regarding the modules wrongly relying already on `mailbox-store`, we can:
 
 ## Consequences
 
-We need to introduce some refactorings to be able to rely fully on `mailbox-api` in new emerging  cases. For example, 
+We need to introduce some refactorings to be able to rely fully on `mailbox-api` in new emerging cases. For example, 
 our `mailbox-api` still can't seem to be able to act on a single message without knowing a user it belongs to. It 
 creates some issues for rebuilding a single message fast view projection, or the reindexation of a single message.
 
