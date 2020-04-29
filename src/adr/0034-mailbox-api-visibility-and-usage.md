@@ -45,7 +45,7 @@ Regarding the modules wrongly relying already on `mailbox-store`, we can:
 ## Consequences
 
 We need to introduce some refactorings to be able to rely fully on `mailbox-api` in new emerging cases. For example, 
-our `mailbox-api` still can't seem to be able to act on a single message without knowing a user it belongs to. It 
+our `mailbox-api` still lacks APIs to handle messages by their MessageId. It 
 creates some issues for rebuilding a single message fast view projection, or the reindexation of a single message.
 
 A refactoring of the session would be thus necessary to bypass such limitation access on a single message without 
