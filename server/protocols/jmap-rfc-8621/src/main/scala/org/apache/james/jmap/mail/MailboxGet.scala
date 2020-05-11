@@ -20,10 +20,9 @@
 package org.apache.james.jmap.mail
 
 import eu.timepit.refined.types.string.NonEmptyString
+import org.apache.james.jmap.model.AccountId
 import org.apache.james.jmap.model.Id.Id
 import org.apache.james.jmap.model.State.State
-
-case class AccountId(value: Id)
 
 case class Ids(value: List[Id])
 
