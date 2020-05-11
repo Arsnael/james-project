@@ -21,10 +21,10 @@ package org.apache.james.jmap.mail
 
 import eu.timepit.refined.types.string.NonEmptyString
 import org.apache.james.jmap.model.AccountId
-import org.apache.james.jmap.model.Id.Id
 import org.apache.james.jmap.model.State.State
+import org.apache.james.mailbox.model.MailboxId
 
-case class Ids(value: List[Id])
+case class Ids(value: List[MailboxId])
 
 case class Properties(value: List[NonEmptyString])
 
@@ -32,7 +32,7 @@ case class MailboxGetRequest(accountId: AccountId,
                              ids: Ids,
                              properties: Properties)
 
-case class NotFound(value: List[Id])
+case class NotFound(value: List[MailboxId])
 
 case class MailboxGetResponse(accountId: AccountId,
                               state: State,
