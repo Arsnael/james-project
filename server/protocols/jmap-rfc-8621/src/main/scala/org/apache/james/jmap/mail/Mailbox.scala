@@ -54,17 +54,11 @@ object MailboxNamespace {
   def personal = PersonalNamespace
 }
 
-sealed trait MailboxNamespace {
-  def asString: String
-}
+sealed trait MailboxNamespace
 
-case object PersonalNamespace extends MailboxNamespace {
-  override def asString: String = "Personal"
-}
+case class PersonalNamespace() extends MailboxNamespace
 
-case class DelegatedNamespace(owner: Username) extends MailboxNamespace {
-  override def asString: String = s"Delegated[${owner.asString}]"
-}
+case class DelegatedNamespace(owner: Username) extends MailboxNamespace
 
 object SortOrder {
   private val defaultSortOrders = Map(

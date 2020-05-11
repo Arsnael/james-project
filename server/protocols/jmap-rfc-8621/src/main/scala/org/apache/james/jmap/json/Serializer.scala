@@ -23,7 +23,7 @@ import java.io.InputStream
 import java.net.URL
 
 import org.apache.james.core.{Domain, Username}
-import org.apache.james.jmap.mail.{IsSubscribed, Mailbox, MailboxNamespace, MailboxRights, MayAddItems, MayCreateChild, MayDelete, MayReadItems, MayRemoveItems, MayRename, MaySetKeywords, MaySetSeen, MaySubmit, Quota, QuotaId, QuotaRoot, Quotas, Right, Rights, SortOrder, TotalEmails, TotalThreads, UnreadEmails, UnreadThreads, Value}
+import org.apache.james.jmap.mail.{DelegatedNamespace, IsSubscribed, Mailbox, MailboxNamespace, MailboxRights, MayAddItems, MayCreateChild, MayDelete, MayReadItems, MayRemoveItems, MayRename, MaySetKeywords, MaySetSeen, MaySubmit, PersonalNamespace, Quota, QuotaId, QuotaRoot, Quotas, Right, Rights, SortOrder, TotalEmails, TotalThreads, UnreadEmails, UnreadThreads, Value}
 import org.apache.james.jmap.model
 import org.apache.james.jmap.model.CapabilityIdentifier.CapabilityIdentifier
 import org.apache.james.jmap.model.Invocation.{Arguments, MethodCallId, MethodName}
@@ -149,7 +149,9 @@ class Serializer {
   private implicit val maySubmitWrites: Writes[MaySubmit] = Json.valueWrites[MaySubmit]
   private implicit val mailboxRightsWrites: Writes[MailboxRights] = Json.writes[MailboxRights]
 
-  private implicit val mailboxNamespaceWrites: Writes[MailboxNamespace] = namespace => JsString(namespace.asString)
+  private implicit val personalNamespaceWrites: Writes[PersonalNamespace] = namespace => JsString("Personal")
+  private implicit val delegatedNamespaceWrites: Writes[DelegatedNamespace] = namespace => JsString(s"Delegated[${namespace.owner.asString}]")
+  private implicit val mailboxNamespaceWrites: Writes[MailboxNamespace] = Json.writes[MailboxNamespace]
 
   private implicit val mailboxACLWrites: Writes[MailboxACL.Right] = right => JsString(right.asCharacter.toString)
 

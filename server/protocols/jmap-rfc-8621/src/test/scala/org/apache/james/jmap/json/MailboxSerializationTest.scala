@@ -20,6 +20,7 @@
 package org.apache.james.jmap.json
 
 import eu.timepit.refined.auto._
+import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
 import org.apache.james.core.{Domain, Username}
 import org.apache.james.jmap.json.MailboxSerializationTest.MAILBOX
 import org.apache.james.jmap.mail.Mailbox.MailboxName
@@ -41,7 +42,7 @@ object MailboxSerializationTest {
   private val TOTAL_THREADS: TotalThreads = TotalThreads(58L)
   private val UNREAD_THREADS: UnreadThreads = UnreadThreads(22L)
   private val IS_SUBSCRIBED: IsSubscribed = IsSubscribed(true)
-  private val NAMESPACE: MailboxNamespace = PersonalNamespace
+  private val NAMESPACE: MailboxNamespace = PersonalNamespace()
 
   private val MY_RIGHTS: MailboxRights = MailboxRights(
     mayAddItems = MayAddItems(true),
@@ -88,7 +89,7 @@ class MailboxSerializationTest extends AnyWordSpec with Matchers {
   "Serialize Mailbox" should {
     "succeed " in {
 
-      val expectedJson = Json.prettyPrint(Json.parse(
+      val expectedJson = Json.parse(
         """{
           |  "id":"2",
           |  "name":"inbox",
@@ -126,9 +127,9 @@ class MailboxSerializationTest extends AnyWordSpec with Matchers {
           |      "Storage":{"used":19}
           |    }
           |  }
-          |}""".stripMargin))
+          |}""".stripMargin)
 
-      new Serializer().serialize(MAILBOX) should be(Json.parse(expectedJson))
+      assertThatJson(new Serializer().serialize(MAILBOX)).isEqualTo(expectedJson)
     }
   }
 }
