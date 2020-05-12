@@ -30,7 +30,7 @@ case class Properties(value: List[NonEmptyString])
 
 case class MailboxGetRequest(accountId: AccountId,
                              ids: Ids,
-                             properties: Properties)
+                             properties: Option[Properties])
 
 case class NotFound(value: List[MailboxId])
 
