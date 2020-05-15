@@ -205,7 +205,7 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
           |}
           |""".stripMargin
 
-      assertThatJson(Json.prettyPrint(SERIALIZER.serialize(actualValue))).isEqualTo(expectedJson)
+      assertThatJson(Json.stringify(SERIALIZER.serialize(actualValue))).isEqualTo(expectedJson)
     }
   }
 }

@@ -129,7 +129,7 @@ class MailboxSerializationTest extends AnyWordSpec with Matchers {
           |  }
           |}""".stripMargin
 
-      assertThatJson(Json.prettyPrint(new Serializer(new TestId.Factory).serialize(MAILBOX))).isEqualTo(expectedJson)
+      assertThatJson(Json.stringify(new Serializer(new TestId.Factory).serialize(MAILBOX))).isEqualTo(expectedJson)
     }
   }
 }
