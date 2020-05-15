@@ -34,6 +34,8 @@ import org.apache.james.mailbox.model.{MailboxACL, MailboxId}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+import scala.util.Try
+
 @Inject
 class Serializer(mailboxIdFactory: MailboxId.Factory) {
   // CreateIds
@@ -133,7 +135,7 @@ class Serializer(mailboxIdFactory: MailboxId.Factory) {
 
   private implicit val mailboxIdWrites: Writes[MailboxId] = mailboxId => JsString(mailboxId.serialize)
   private implicit val mailboxIdReads: Reads[MailboxId] = {
-    case JsString(serializedMailboxId) => JsSuccess(mailboxIdFactory.fromString(serializedMailboxId))
+    case JsString(serializedMailboxId) => Try(JsSuccess(mailboxIdFactory.fromString(serializedMailboxId))).getOrElse(JsError())
     case _ => JsError()
   }
 
@@ -200,11 +202,7 @@ class Serializer(mailboxIdFactory: MailboxId.Factory) {
 
   private implicit val mailboxWrites: Writes[Mailbox] = Json.writes[Mailbox]
 
-  private implicit val idsRead: Reads[Ids] = {
-    case JsArray(value) => JsSuccess(Ids(value.toList.collect(_.as[MailboxId])))
-    case JsNull => JsSuccess(null)
-    case _ => JsError()
-  }
+  private implicit val idsRead: Reads[Ids] = Json.valueReads[Ids]
   private implicit val propertiesRead: Reads[Properties] = Json.valueReads[Properties]
   private implicit val mailboxGetRequest: Reads[MailboxGetRequest] = Json.reads[MailboxGetRequest]
 

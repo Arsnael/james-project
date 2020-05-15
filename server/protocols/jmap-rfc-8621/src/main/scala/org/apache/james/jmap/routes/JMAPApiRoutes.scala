@@ -89,7 +89,7 @@ class JMAPApiRoutes (serializer: Serializer) extends JMAPRoutes {
           .header(CONTENT_TYPE, JSON_CONTENT_TYPE)
           .sendString(
             SMono.fromCallable(() =>
-              serializer.serialize(ResponseObject(ResponseObject.SESSION_STATE, invocations)).toString()),
+              serializer.serialize(ResponseObject(ResponseObject.SESSION_STATE, invocations)).toString),
             StandardCharsets.UTF_8
           ).`then`())
       )

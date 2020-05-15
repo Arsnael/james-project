@@ -29,7 +29,7 @@ import org.apache.james.jmap.model.AccountId
 import org.apache.james.mailbox.model.{MailboxId, TestId}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 
 object MailboxGetSerializationTest {
   private val FACTORY: MailboxId.Factory = new TestId.Factory
@@ -38,25 +38,67 @@ object MailboxGetSerializationTest {
 
   private val ACCOUNT_ID: AccountId = AccountId(id)
 
-  private val MAILBOX_ID_1: MailboxId = FACTORY.fromString("001")
-  private val MAILBOX_ID_2: MailboxId = FACTORY.fromString("002")
+  private val MAILBOX_ID_1: MailboxId = FACTORY.fromString("1")
+  private val MAILBOX_ID_2: MailboxId = FACTORY.fromString("2")
 
   private val PROPERTIES: Properties = Properties(List("name", "role"))
 }
 
 class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
   "Deserialize MailboxGetRequest" should {
+    "fail when MailboxId.Factory can't deserialize MailboxId" in {
+      SERIALIZER.deserializeMailboxGetRequest(
+        """
+          |{
+          |  "accountId": "aHR0cHM6Ly93d3cuYmFzZTY0ZW5jb2RlLm9yZy8",
+          |  "ids": ["ab#?"]
+          |}
+          |""".stripMargin) shouldBe a [JsError]
+    }
+
     "succeed when properties are missing" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Ids(List(MAILBOX_ID_1)),
-        properties = Option.empty)
+        ids = Option(Ids(List(MAILBOX_ID_1))),
+        properties = None)
 
       SERIALIZER.deserializeMailboxGetRequest(
         """
           |{
           |  "accountId": "aHR0cHM6Ly93d3cuYmFzZTY0ZW5jb2RlLm9yZy8",
-          |  "ids": ["001"]
+          |  "ids": ["1"]
+          |}
+          |""".stripMargin) should equal(JsSuccess(expectedRequestObject))
+    }
+
+    "succeed when properties are null" in {
+      val expectedRequestObject = MailboxGetRequest(
+        accountId = ACCOUNT_ID,
+        ids = Option(Ids(List(MAILBOX_ID_1))),
+        properties = None)
+
+      SERIALIZER.deserializeMailboxGetRequest(
+        """
+          |{
+          |  "accountId": "aHR0cHM6Ly93d3cuYmFzZTY0ZW5jb2RlLm9yZy8",
+          |  "ids": ["1"],
+          |  "properties": null
+          |}
+          |""".stripMargin) should equal(JsSuccess(expectedRequestObject))
+    }
+
+    "succeed when properties are empty" in {
+      val expectedRequestObject = MailboxGetRequest(
+        accountId = ACCOUNT_ID,
+        ids = Option(Ids(List(MAILBOX_ID_1))),
+        properties = Option(Properties(Nil)))
+
+      SERIALIZER.deserializeMailboxGetRequest(
+        """
+          |{
+          |  "accountId": "aHR0cHM6Ly93d3cuYmFzZTY0ZW5jb2RlLm9yZy8",
+          |  "ids": ["1"],
+          |  "properties": []
           |}
           |""".stripMargin) should equal(JsSuccess(expectedRequestObject))
     }
@@ -64,8 +106,8 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed when ids is empty" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Ids(List.empty),
-        properties = Option.empty)
+        ids = Option(Ids(Nil)),
+        properties = None)
 
       SERIALIZER.deserializeMailboxGetRequest(
         """
@@ -79,8 +121,8 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed when ids is null" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = null,
-        properties = Option.empty)
+        ids = None,
+        properties = None)
 
       SERIALIZER.deserializeMailboxGetRequest(
         """
@@ -94,14 +136,14 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Ids(List(MAILBOX_ID_1, MAILBOX_ID_2)),
+        ids = Option(Ids(List(MAILBOX_ID_1, MAILBOX_ID_2))),
         properties = Option(PROPERTIES))
 
       SERIALIZER.deserializeMailboxGetRequest(
         """
           |{
           |  "accountId": "aHR0cHM6Ly93d3cuYmFzZTY0ZW5jb2RlLm9yZy8",
-          |  "ids": ["001", "002"],
+          |  "ids": ["1", "2"],
           |  "properties": ["name", "role"]
           |}
           |""".stripMargin) should equal(JsSuccess(expectedRequestObject))
@@ -159,7 +201,7 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
           |      }
           |    }
           |  }],
-          |  "notFound": ["001", "002"]
+          |  "notFound": ["1", "2"]
           |}
           |""".stripMargin)
 
