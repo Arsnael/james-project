@@ -59,7 +59,7 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed when properties are missing" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Option(Ids(List(MAILBOX_ID_1))),
+        ids = Some(Ids(List(MAILBOX_ID_1))),
         properties = None)
 
       SERIALIZER.deserializeMailboxGetRequest(
@@ -74,7 +74,7 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed when properties are null" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Option(Ids(List(MAILBOX_ID_1))),
+        ids = Some(Ids(List(MAILBOX_ID_1))),
         properties = None)
 
       SERIALIZER.deserializeMailboxGetRequest(
@@ -90,8 +90,8 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed when properties are empty" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Option(Ids(List(MAILBOX_ID_1))),
-        properties = Option(Properties(Nil)))
+        ids = Some(Ids(List(MAILBOX_ID_1))),
+        properties = Some(Properties(Nil)))
 
       SERIALIZER.deserializeMailboxGetRequest(
         """
@@ -106,7 +106,7 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed when ids is empty" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Option(Ids(Nil)),
+        ids = Some(Ids(Nil)),
         properties = None)
 
       SERIALIZER.deserializeMailboxGetRequest(
@@ -136,8 +136,8 @@ class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
     "succeed" in {
       val expectedRequestObject = MailboxGetRequest(
         accountId = ACCOUNT_ID,
-        ids = Option(Ids(List(MAILBOX_ID_1, MAILBOX_ID_2))),
-        properties = Option(PROPERTIES))
+        ids = Some(Ids(List(MAILBOX_ID_1, MAILBOX_ID_2))),
+        properties = Some(PROPERTIES))
 
       SERIALIZER.deserializeMailboxGetRequest(
         """
