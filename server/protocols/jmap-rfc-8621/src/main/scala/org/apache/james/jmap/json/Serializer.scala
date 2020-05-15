@@ -161,7 +161,6 @@ class Serializer(mailboxIdFactory: MailboxId.Factory) {
   private implicit val mailboxNamespaceWrites: Writes[MailboxNamespace] = {
     case personal: PersonalNamespace => JsString("Personal")
     case delegated: DelegatedNamespace => JsString(s"Delegated[${delegated.owner.asString}]")
-    case _ => JsNull
   }
 
   private implicit val mailboxACLWrites: Writes[MailboxACL.Right] = right => JsString(right.asCharacter.toString)
