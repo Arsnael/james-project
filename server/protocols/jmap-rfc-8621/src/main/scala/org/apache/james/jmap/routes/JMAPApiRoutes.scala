@@ -42,8 +42,7 @@ import reactor.core.scala.publisher.{SFlux, SMono}
 import reactor.core.scheduler.Schedulers
 import reactor.netty.http.server.{HttpServerRequest, HttpServerResponse}
 
-@Inject
-class JMAPApiRoutes (serializer: Serializer) extends JMAPRoutes {
+class JMAPApiRoutes @Inject() (serializer: Serializer) extends JMAPRoutes {
   private val coreEcho = new CoreEcho
 
   override def routes(): stream.Stream[JMAPRoute] = Stream.of(
