@@ -699,6 +699,7 @@ public abstract class GetMailboxesMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("mailboxes"))
             .body(ARGUMENTS + ".list", hasSize(1))
+            .body(ARGUMENTS + ".list.id", hasItems(mailboxId.serialize()))
             .body(FIRST_MAILBOX + ".role", nullValue())
             .body(FIRST_MAILBOX + ".sortOrder", equalTo(1000));
     }
