@@ -682,7 +682,7 @@ public abstract class GetMailboxesMethodTest {
     }
 
     @Test
-    public void getMailboxesShouldReturnSharedMailboxesWithoutRole() throws Exception {
+    public void getMailboxesShouldNotExposeRoleOfSharedMailboxToSharee() throws Exception {
         MailboxPath bobMailboxPath = MailboxPath.forUser(BOB, DefaultMailboxes.INBOX);
         MailboxId mailboxId = mailboxProbe.createMailbox(bobMailboxPath);
 
@@ -697,9 +697,6 @@ public abstract class GetMailboxesMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(NAME, equalTo("mailboxes"))
-            .body(ARGUMENTS + ".list", hasSize(1))
-            .body(ARGUMENTS + ".list.id", hasItems(mailboxId.serialize()))
             .body(FIRST_MAILBOX + ".role", nullValue())
             .body(FIRST_MAILBOX + ".sortOrder", equalTo(1000));
     }
