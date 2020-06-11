@@ -24,6 +24,7 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -35,6 +36,7 @@ import org.apache.james.backends.es.DocumentId;
 import org.apache.james.backends.es.ElasticSearchIndexer;
 import org.apache.james.backends.es.RoutingKey;
 import org.apache.james.backends.es.UpdatedRepresentation;
+import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.MailboxManager.MessageCapabilities;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
 import org.apache.james.mailbox.MailboxSession;
@@ -53,6 +55,8 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,6 +221,37 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
 
     @Override
     public Mono<Flags> retrieveIndexedFlags(Mailbox mailbox, MessageUid uid) {
-        return Mono.empty();
+        RoutingKey routingKey = routingKeyFactory.from(mailbox.getMailboxId());
+
+        return elasticSearchIndexer.get(indexIdFor(mailbox, uid), routingKey)
+            .filter(GetResponse::isExists)
+            .map(GetResponse::getSourceAsMap)
+            .map(this::extractFlags)
+            .switchIfEmpty(Mono.error(new IndexNotFoundException(
+                String.format("Index for message %s in mailbox %s not found", uid.toString(), mailbox.getMailboxId().serialize()))));
+    }
+
+    private Flags extractFlags(Map<String, Object> source) {
+        FlagsBuilder flagsBuilder = FlagsBuilder.builder()
+            .isAnswered(extractFlag(source, JsonMessageConstants.IS_ANSWERED))
+            .isDeleted(extractFlag(source, JsonMessageConstants.IS_DELETED))
+            .isDraft(extractFlag(source, JsonMessageConstants.IS_DRAFT))
+            .isFlagged(extractFlag(source, JsonMessageConstants.IS_FLAGGED))
+            .isRecent(extractFlag(source, JsonMessageConstants.IS_RECENT))
+            .isSeen(!extractFlag(source, JsonMessageConstants.IS_UNREAD));
+
+        for (String userFlag : extractUserFlags(source)) {
+            flagsBuilder.add(userFlag);
+        }
+
+        return flagsBuilder.build();
+    }
+
+    private boolean extractFlag(Map<String, Object> source, String flag) {
+        return (Boolean) source.get(flag);
+    }
+
+    private List<String> extractUserFlags(Map<String, Object> source) {
+        return (List<String>) source.get("userFlags");
     }
 }
