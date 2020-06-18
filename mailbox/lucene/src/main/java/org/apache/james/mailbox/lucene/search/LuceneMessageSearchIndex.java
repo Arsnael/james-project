@@ -1325,20 +1325,21 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
      * Convert the given {@link Flag} to a String
      */
     private Optional<Flag> fromString(String flag) {
-        if ("\\ANSWERED".equals(flag)) {
-            return Optional.of(Flag.ANSWERED);
-        } else if ("\\DELETED".equals(flag)) {
-            return Optional.of(Flag.DELETED);
-        } else if ("\\DRAFT".equals(flag)) {
-            return Optional.of(Flag.DRAFT);
-        } else if ("\\FLAGGED".equals(flag)) {
-            return Optional.of(Flag.FLAGGED);
-        } else if ("\\RECENT".equals(flag)) {
-            return Optional.of(Flag.RECENT);
-        } else if ("\\FLAG".equals(flag)) {
-            return Optional.of(Flag.SEEN);
-        } else {
-            return Optional.empty();
+        switch (flag) {
+            case "\\ANSWERED":
+                return Optional.of(Flag.ANSWERED);
+            case "\\DELETED":
+                return Optional.of(Flag.DELETED);
+            case "\\DRAFT":
+                return Optional.of(Flag.DRAFT);
+            case "\\FLAGGED":
+                return Optional.of(Flag.FLAGGED);
+            case "\\RECENT":
+                return Optional.of(Flag.RECENT);
+            case "\\FLAG":
+                return Optional.of(Flag.SEEN);
+            default:
+                return Optional.empty();
         }
     }
 }
