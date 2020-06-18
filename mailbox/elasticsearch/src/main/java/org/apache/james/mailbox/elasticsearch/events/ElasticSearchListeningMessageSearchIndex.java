@@ -18,6 +18,13 @@
  ****************************************************************/
 package org.apache.james.mailbox.elasticsearch.events;
 
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_ANSWERED;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_DELETED;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_DRAFT;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_FLAGGED;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_RECENT;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.IS_UNREAD;
+import static org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants.MAILBOX_ID;
 import static org.apache.james.util.ReactorUtils.publishIfPresent;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
@@ -43,7 +50,6 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.SessionProvider;
 import org.apache.james.mailbox.elasticsearch.MailboxElasticSearchConstants;
-import org.apache.james.mailbox.elasticsearch.json.JsonMessageConstants;
 import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
 import org.apache.james.mailbox.events.Group;
@@ -182,7 +188,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
     @Override
     public Mono<Void> deleteAll(MailboxSession session, MailboxId mailboxId) {
         TermQueryBuilder queryBuilder = termQuery(
-            JsonMessageConstants.MAILBOX_ID,
+            MAILBOX_ID,
             mailboxId.serialize());
 
         return elasticSearchIndexer
@@ -233,12 +239,12 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
 
     private Flags extractFlags(Map<String, Object> source) {
         FlagsBuilder flagsBuilder = FlagsBuilder.builder()
-            .isAnswered(extractFlag(source, JsonMessageConstants.IS_ANSWERED))
-            .isDeleted(extractFlag(source, JsonMessageConstants.IS_DELETED))
-            .isDraft(extractFlag(source, JsonMessageConstants.IS_DRAFT))
-            .isFlagged(extractFlag(source, JsonMessageConstants.IS_FLAGGED))
-            .isRecent(extractFlag(source, JsonMessageConstants.IS_RECENT))
-            .isSeen(!extractFlag(source, JsonMessageConstants.IS_UNREAD));
+            .isAnswered(extractFlag(source, IS_ANSWERED))
+            .isDeleted(extractFlag(source, IS_DELETED))
+            .isDraft(extractFlag(source, IS_DRAFT))
+            .isFlagged(extractFlag(source, IS_FLAGGED))
+            .isRecent(extractFlag(source, IS_RECENT))
+            .isSeen(!extractFlag(source, IS_UNREAD));
 
         for (String userFlag : extractUserFlags(source)) {
             flagsBuilder.add(userFlag);
