@@ -372,7 +372,7 @@ class MailboxesRoutesTest {
                 searchIndex.update(systemSession, mailbox, ImmutableList.of(updatedFlags)).block();
 
                 String taskId = with()
-                    .post("/mailboxes?task=reIndex&mode=correct")
+                    .post("/mailboxes?task=reIndex&mode=fixOutdated")
                     .jsonPath()
                     .get("taskId");
 
@@ -419,7 +419,7 @@ class MailboxesRoutesTest {
                 searchIndex.update(systemSession, mailbox, ImmutableList.of(updatedFlags)).block();
 
                 String taskId = with()
-                    .post("/mailboxes?task=reIndex&mode=correct")
+                    .post("/mailboxes?task=reIndex&mode=fixOutdated")
                     .jsonPath()
                     .get("taskId");
 
@@ -447,7 +447,7 @@ class MailboxesRoutesTest {
                 Flags initialFlags = searchIndex.retrieveIndexedFlags(mailbox, result.getUid()).block();
 
                 String taskId = with()
-                    .post("/mailboxes?task=reIndex&mode=correct")
+                    .post("/mailboxes?task=reIndex&mode=fixOutdated")
                     .jsonPath()
                     .get("taskId");
 
@@ -486,7 +486,7 @@ class MailboxesRoutesTest {
                 searchIndex.add(systemSession, mailbox, message).block();
 
                 String taskId = with()
-                    .post("/mailboxes?task=reIndex&mode=correct")
+                    .post("/mailboxes?task=reIndex&mode=fixOutdated")
                     .jsonPath()
                     .get("taskId");
 
@@ -745,7 +745,7 @@ class MailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post("/mailboxes/" + mailboxId.serialize())
                     .jsonPath()
                     .get("taskId");
@@ -794,7 +794,7 @@ class MailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post("/mailboxes/" + mailboxId.serialize())
                     .jsonPath()
                     .get("taskId");
@@ -824,7 +824,7 @@ class MailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post("/mailboxes/" + mailboxId.serialize())
                     .jsonPath()
                     .get("taskId");
@@ -865,7 +865,7 @@ class MailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post("/mailboxes/" + mailboxId.serialize())
                     .jsonPath()
                     .get("taskId");

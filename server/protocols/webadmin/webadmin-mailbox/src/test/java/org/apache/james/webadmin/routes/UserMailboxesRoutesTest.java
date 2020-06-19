@@ -1393,7 +1393,7 @@ class UserMailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post()
                     .jsonPath()
                     .get("taskId");
@@ -1442,7 +1442,7 @@ class UserMailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post()
                     .jsonPath()
                     .get("taskId");
@@ -1472,7 +1472,7 @@ class UserMailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post()
                     .jsonPath()
                     .get("taskId");
@@ -1513,7 +1513,7 @@ class UserMailboxesRoutesTest {
 
                 String taskId = with()
                     .queryParam("task", "reIndex")
-                    .queryParam("mode", "correct")
+                    .queryParam("mode", "fixOutdated")
                     .post()
                     .jsonPath()
                     .get("taskId");
