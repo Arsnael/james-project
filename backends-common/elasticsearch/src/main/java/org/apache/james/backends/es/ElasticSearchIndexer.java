@@ -124,13 +124,14 @@ public class ElasticSearchIndexer {
     }
 
     public Mono<GetResponse> get(DocumentId id, RoutingKey routingKey) {
-        Preconditions.checkNotNull(id);
-        Preconditions.checkNotNull(routingKey);
-
-        return client.get(new GetRequest(aliasName.getValue())
-                .type(NodeMappingFactory.DEFAULT_MAPPING_NAME)
-                .id(id.asString())
-                .routing(routingKey.asString()),
-            RequestOptions.DEFAULT);
+        return Mono.fromRunnable(() -> {
+                Preconditions.checkNotNull(id);
+                Preconditions.checkNotNull(routingKey);
+            })
+            .then(client.get(new GetRequest(aliasName.getValue())
+                    .type(NodeMappingFactory.DEFAULT_MAPPING_NAME)
+                    .id(id.asString())
+                    .routing(routingKey.asString()),
+                RequestOptions.DEFAULT));
     }
 }
