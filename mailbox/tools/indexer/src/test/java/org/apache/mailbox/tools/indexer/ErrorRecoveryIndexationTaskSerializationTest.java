@@ -101,7 +101,7 @@ class ErrorRecoveryIndexationTaskSerializationTest {
     @Test
     void additionalInformationWithCorrectModeShouldBeSerializable() throws Exception {
         RunningOptions runningOptions = RunningOptions.builder()
-            .mode(Optional.of(RunningOptions.Mode.CORRECT))
+            .mode(Optional.of(RunningOptions.Mode.FIX_OUTDATED))
             .build();
         ReprocessingContextInformationForErrorRecoveryIndexationTask details = new ReprocessingContextInformationForErrorRecoveryIndexationTask(successfullyReprocessedMailCount, failedReprocessedMailCount, executionFailures, TIMESTAMP, runningOptions);
         JsonSerializationVerifier.dtoModule(ReprocessingContextInformationForErrorRecoveryIndexationTask.module(mailboxIdFactory))

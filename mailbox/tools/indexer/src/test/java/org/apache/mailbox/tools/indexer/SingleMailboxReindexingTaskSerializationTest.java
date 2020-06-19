@@ -88,7 +88,7 @@ class SingleMailboxReindexingTaskSerializationTest {
     @Test
     void additionalInformationShouldBeSerializable() throws Exception {
         RunningOptions runningOptions = RunningOptions.builder()
-            .mode(Optional.of(RunningOptions.Mode.CORRECT))
+            .mode(Optional.of(RunningOptions.Mode.FIX_OUTDATED))
             .build();
         SingleMailboxReindexingTask.AdditionalInformation details = new SingleMailboxReindexingTask.AdditionalInformation(mailboxId, successfullyReprocessedMailCount, failedReprocessedMailCount, reIndexingExecutionFailures, TIMESTAMP, runningOptions);
 

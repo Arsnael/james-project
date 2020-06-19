@@ -90,7 +90,7 @@ class FullReindexingTaskSerializationTest {
     @Test
     void additionalInformationShouldBeSerializable() throws Exception {
         RunningOptions runningOptions = RunningOptions.builder()
-            .mode(Optional.of(RunningOptions.Mode.CORRECT))
+            .mode(Optional.of(RunningOptions.Mode.FIX_OUTDATED))
             .build();
         ReprocessingContextInformationForFullReindexingTask details = new ReprocessingContextInformationForFullReindexingTask(successfullyReprocessedMailCount, failedReprocessedMailCount, reIndexingExecutionFailures, TIMESTAMP, runningOptions);
 

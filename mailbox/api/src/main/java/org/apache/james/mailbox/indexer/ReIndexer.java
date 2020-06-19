@@ -63,8 +63,8 @@ public interface ReIndexer {
         }
 
         public enum Mode {
-            REBUILD,
-            CORRECT
+            REBUILD_ALL,
+            FIX_OUTDATED
         }
 
         public static Optional<Mode> parseMode(String optionalMode) {
@@ -72,7 +72,7 @@ public interface ReIndexer {
                 .map(mode -> Mode.valueOf(mode.toUpperCase()));
         }
 
-        public static final Mode DEFAULT_MODE = Mode.REBUILD;
+        public static final Mode DEFAULT_MODE = Mode.REBUILD_ALL;
         public static final RunningOptions DEFAULT = new RunningOptions(50, DEFAULT_MODE);
 
         private final int messagesPerSecond;

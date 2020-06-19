@@ -90,7 +90,7 @@ class UserReindexingTaskSerializationTest {
     @Test
     void additionalInformationShouldBeSerializable() throws Exception {
         RunningOptions runningOptions = RunningOptions.builder()
-            .mode(Optional.of(RunningOptions.Mode.CORRECT))
+            .mode(Optional.of(RunningOptions.Mode.FIX_OUTDATED))
             .build();
         UserReindexingTask.AdditionalInformation details = new UserReindexingTask.AdditionalInformation(USERNAME, successfullyReprocessedMailCount, failedReprocessedMailCount, reIndexingExecutionFailures, TIMESTAMP, runningOptions);
         JsonSerializationVerifier.dtoModule(UserReindexingTaskAdditionalInformationDTO.module(new TestId.Factory()))
