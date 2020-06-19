@@ -222,7 +222,7 @@ public class ReIndexerPerformer {
                     .onErrorResume(e -> {
                         LOGGER.warn("Failed to re-index {}", mailboxId, e);
                         return Mono.just(Either.left(new MailboxFailure(mailboxId)));
-                    })));
+                    }), MAILBOX_CONCURRENCY));
 
         return reIndexMessages(entriesToIndex, runningOptions, reprocessingContext);
     }
@@ -269,7 +269,7 @@ public class ReIndexerPerformer {
     }
 
     private Mono<Void> updateSearchIndex(Mailbox mailbox, MailboxSession mailboxSession, RunningOptions runningOptions) {
-        if (runningOptions.getMode() == RunningOptions.Mode.REBUILD) {
+        if (runningOptions.getMode() == RunningOptions.Mode.REBUILD_ALL) {
             return messageSearchIndex.deleteAll(mailboxSession, mailbox.getMailboxId());
         }
         return Mono.empty();
@@ -300,7 +300,7 @@ public class ReIndexerPerformer {
     }
 
     private Mono<Either<Failure, Result>> reIndex(ReIndexingEntry entry, RunningOptions runningOptions) {
-        if (runningOptions.getMode() == RunningOptions.Mode.CORRECT) {
+        if (runningOptions.getMode() == RunningOptions.Mode.FIX_OUTDATED) {
             return correctIfNeeded(entry);
         }
         return index(entry);
