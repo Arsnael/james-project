@@ -20,6 +20,7 @@
 package org.apache.james.mailbox.indexer;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.james.core.Username;
 import org.apache.james.mailbox.MessageUid;
@@ -63,13 +64,29 @@ public interface ReIndexer {
         }
 
         public enum Mode {
-            REBUILD_ALL,
-            FIX_OUTDATED
+            REBUILD_ALL("rebuildAll"),
+            FIX_OUTDATED("fixOutdated");
+
+            private final String value;
+
+            Mode(String value) {
+                this.value = value;
+            }
+
+            String getValue() {
+                return value;
+            }
+
+            static Optional<Mode> fromString(String optionalMode) {
+                return Stream.of(values())
+                    .filter(mode -> mode.getValue().equalsIgnoreCase(optionalMode))
+                    .findFirst();
+            }
         }
 
         public static Optional<Mode> parseMode(String optionalMode) {
             return Optional.ofNullable(optionalMode)
-                .map(mode -> Mode.valueOf(mode.toUpperCase()));
+                .flatMap(Mode::fromString);
         }
 
         public static final Mode DEFAULT_MODE = Mode.REBUILD_ALL;
