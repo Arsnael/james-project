@@ -111,9 +111,9 @@ import org.apache.mailbox.tools.indexer.ReIndexerPerformer;
 import org.apache.mailbox.tools.indexer.UserReindexingTask;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -1486,7 +1486,7 @@ class UserMailboxesRoutesTest {
                     .isEqualTo(initialFlags);
             }
 
-            @Ignore("JAMES-3202 Limitation of the current correct mode reindexation. We only check metadata and fix "
+            @Disabled("JAMES-3202 Limitation of the current correct mode reindexation. We only check metadata and fix "
                 + "inconsistencies with ES, but we don't check for inconsistencies from ES to metadata")
             @Test
             void userReprocessingWithCorrectModeShouldRemoveOrphanMessagesInES() throws Exception {
