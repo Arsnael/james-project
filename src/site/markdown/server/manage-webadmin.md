@@ -412,12 +412,14 @@ The kind of task scheduled depends on the action parameter. See below for detail
 This task is only available on top of Guice Cassandra products.
 
 ```
-curl -XPOST /mailboxes?task=SolveInconsistencies
+curl -XPOST -H "I-KNOW-WHAT-I-M-DOING: ALL-SERVICES-ARE-OFFLINE" /mailboxes?task=SolveInconsistencies
 ```
 
 Will schedule a task for fixing inconsistencies for the mailbox deduplicated object stored in Cassandra.
 
 [More details about endpoints returning a task](#Endpoints_returning_a_task).
+
+The `I-KNOW-WHAT-I-M-DOING` header is mandatory (you can read more information about it in the warning section below).
 
 The scheduled task will have the following type `solve-mailbox-inconsistencies` and the following `additionalInformation`:
 
