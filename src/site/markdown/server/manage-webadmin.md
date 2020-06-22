@@ -412,7 +412,7 @@ The kind of task scheduled depends on the action parameter. See below for detail
 This task is only available on top of Guice Cassandra products.
 
 ```
-curl -XPOST -H "I-KNOW-WHAT-I-M-DOING: ALL-SERVICES-ARE-OFFLINE" /mailboxes?task=SolveInconsistencies
+curl -XPOST /mailboxes?task=SolveInconsistencies
 ```
 
 Will schedule a task for fixing inconsistencies for the mailbox deduplicated object stored in Cassandra.
