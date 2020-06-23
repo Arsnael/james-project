@@ -90,7 +90,9 @@ public interface ReIndexer {
         }
 
         public static final Mode DEFAULT_MODE = Mode.REBUILD_ALL;
-        public static final RunningOptions DEFAULT = new RunningOptions(50, DEFAULT_MODE);
+        public static final RunningOptions DEFAULT = builder().messagesPerSeconds(Optional.of(50))
+            .mode(Optional.of(DEFAULT_MODE))
+            .build();
 
         private final int messagesPerSecond;
         private final Mode mode;
