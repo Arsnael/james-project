@@ -19,6 +19,8 @@
 
 package org.apache.james.jmap.rfc8621.distributed;
 
+import java.util.UUID;
+
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
@@ -26,6 +28,8 @@ import org.apache.james.DockerElasticSearchExtension;
 import org.apache.james.JamesServerBuilder;
 import org.apache.james.JamesServerExtension;
 import org.apache.james.jmap.rfc8621.contract.MailboxGetMethodContract;
+import org.apache.james.mailbox.cassandra.ids.CassandraId;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.modules.AwsS3BlobStoreExtension;
 import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
@@ -47,5 +51,10 @@ public class DistributedMailboxGetMethodTest implements MailboxGetMethodContract
         .server(configuration -> CassandraRabbitMQJamesServerMain.createServer(configuration)
             .overrideWith(new TestJMAPServerModule()))
         .build();
+
+    @Override
+    public MailboxId randomMailboxId() {
+        return CassandraId.of(UUID.randomUUID());
+    }
 
 }
