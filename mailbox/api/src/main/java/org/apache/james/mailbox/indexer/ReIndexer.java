@@ -53,7 +53,7 @@ public interface ReIndexer {
 
             public RunningOptions build() {
                 return new RunningOptions(
-                    messagesPerSecond.orElse(DEFAULT.getMessagesPerSecond()),
+                    messagesPerSecond.orElse(DEFAULT_MESSAGES_PER_SECONDS),
                     mode.orElse(DEFAULT_MODE)
                 );
             }
@@ -89,8 +89,10 @@ public interface ReIndexer {
                 .flatMap(Mode::fromString);
         }
 
-        public static final Mode DEFAULT_MODE = Mode.REBUILD_ALL;
-        public static final RunningOptions DEFAULT = builder().messagesPerSeconds(Optional.of(50))
+        private static final Mode DEFAULT_MODE = Mode.REBUILD_ALL;
+        private static final int DEFAULT_MESSAGES_PER_SECONDS = 50;
+
+        public static final RunningOptions DEFAULT = builder().messagesPerSeconds(Optional.of(DEFAULT_MESSAGES_PER_SECONDS))
             .mode(Optional.of(DEFAULT_MODE))
             .build();
 
