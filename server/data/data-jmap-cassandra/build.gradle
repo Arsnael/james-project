@@ -13,10 +13,15 @@ dependencies {
     implementation project(':james-backends-common:apache-james-backends-cassandra')
     implementation project(':apache-james-mailbox:apache-james-mailbox-cassandra')
     implementation project(':event-sourcing:event-sourcing-event-store-cassandra')
+    implementation project(':james-json')
     implementation project(':james-server:james-server-data-jmap')
 
+    implementation 'com.datastax.cassandra:cassandra-driver-core:3.7.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
     implementation 'com.google.guava:guava:25.1-jre'
+    implementation 'io.projectreactor:reactor-core:3.3.4.RELEASE'
     implementation 'javax.inject:javax.inject:1'
+    implementation 'org.scala-lang:scala-library:2.13.1'
     implementation 'org.slf4j:slf4j-api:1.7.27'
 
     testImplementation project(':james-backends-common:apache-james-backends-cassandra')
