@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.time.Instant;
-import java.util.Optional;
 
 import org.apache.james.JsonSerializationVerifier;
 import org.apache.james.core.Username;
@@ -90,7 +89,7 @@ class UserReindexingTaskSerializationTest {
     @Test
     void additionalInformationShouldBeSerializable() throws Exception {
         RunningOptions runningOptions = RunningOptions.builder()
-            .mode(Optional.of(RunningOptions.Mode.FIX_OUTDATED))
+            .mode(RunningOptions.Mode.FIX_OUTDATED)
             .build();
         UserReindexingTask.AdditionalInformation details = new UserReindexingTask.AdditionalInformation(USERNAME, successfullyReprocessedMailCount, failedReprocessedMailCount, reIndexingExecutionFailures, TIMESTAMP, runningOptions);
         JsonSerializationVerifier.dtoModule(UserReindexingTaskAdditionalInformationDTO.module(new TestId.Factory()))

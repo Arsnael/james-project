@@ -46,9 +46,17 @@ public interface ReIndexer {
                 return this;
             }
 
+            public Builder messagesPerSeconds(int messagesPerSecond) {
+                return messagesPerSeconds(Optional.of(messagesPerSecond));
+            }
+
             public Builder mode(Optional<Mode> mode) {
                 this.mode = mode;
                 return this;
+            }
+
+            public Builder mode(Mode mode) {
+                return mode(Optional.of(mode));
             }
 
             public RunningOptions build() {
@@ -92,9 +100,7 @@ public interface ReIndexer {
         private static final Mode DEFAULT_MODE = Mode.REBUILD_ALL;
         private static final int DEFAULT_MESSAGES_PER_SECONDS = 50;
 
-        public static final RunningOptions DEFAULT = builder().messagesPerSeconds(Optional.of(DEFAULT_MESSAGES_PER_SECONDS))
-            .mode(Optional.of(DEFAULT_MODE))
-            .build();
+        public static final RunningOptions DEFAULT = builder().build();
 
         private final int messagesPerSecond;
         private final Mode mode;
