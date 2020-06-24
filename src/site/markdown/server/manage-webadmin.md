@@ -589,7 +589,7 @@ This optional parameter must have a strictly positive integer as a value and be 
 
 An admin can also specify the reindexing mode it wants to use when running the task:
 
- - `mode` the reindexing mode used. There is 2 for the moment:
+ - `mode` the reindexing mode used. There are 2 modes for the moment:
    - `rebuildAll` allows to rebuild all indexes. This is the default mode.
    - `fixOutdated` will check for outdated indexed document and reindex only those.
    
@@ -643,7 +643,7 @@ This optional parameter must have a strictly positive integer as a value and be 
 
 An admin can also specify the reindexing mode it wants to use when running the task:
 
- - `mode` the reindexing mode used. There is 2 for the moment:
+ - `mode` the reindexing mode used. There are 2 modes for the moment:
    - `rebuildAll` allows to rebuild all indexes. This is the default mode.
    - `fixOutdated` will check for outdated indexed document and reindex only those.
    
@@ -703,7 +703,7 @@ This optional parameter must have a strictly positive integer as a value and be 
 
 An admin can also specify the reindexing mode it wants to use when running the task:
 
- - `mode` the reindexing mode used. There is 2 for the moment:
+ - `mode` the reindexing mode used. There are 2 modes for the moment:
    - `rebuildAll` allows to rebuild all indexes. This is the default mode.
    - `fixOutdated` will check for outdated indexed document and reindex only those.
    
@@ -854,7 +854,7 @@ This optional parameter must have a strictly positive integer as a value and be 
 
 An admin can also specify the reindexing mode it wants to use when running the task:
 
- - `mode` the reindexing mode used. There is 2 for the moment:
+ - `mode` the reindexing mode used. There are 2 modes for the moment:
    - `rebuildAll` allows to rebuild all indexes. This is the default mode.
    - `fixOutdated` will check for outdated indexed document and reindex only those.
    
@@ -1056,7 +1056,7 @@ This optional parameter must have a strictly positive integer as a value and be 
 
 An admin can also specify the reindexing mode it wants to use when running the task:
 
- - `mode` the reindexing mode used. There is 2 for the moment:
+ - `mode` the reindexing mode used. There are 2 modes for the moment:
    - `rebuildAll` allows to rebuild all indexes. This is the default mode.
    - `fixOutdated` will check for outdated indexed document and reindex only those.
    
