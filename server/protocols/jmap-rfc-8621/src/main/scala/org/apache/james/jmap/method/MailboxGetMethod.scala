@@ -27,6 +27,7 @@ import org.apache.james.jmap.model.Invocation.{Arguments, MethodName}
 import org.apache.james.jmap.model.State.INSTANCE
 import org.apache.james.jmap.model.{Invocation, MailboxFactory}
 import org.apache.james.jmap.utils.quotas.{QuotaLoader, QuotaLoaderWithPreloadedDefaultFactory}
+import org.apache.james.mailbox.exception.MailboxNotFoundException
 import org.apache.james.mailbox.model.search.MailboxQuery
 import org.apache.james.mailbox.model.{MailboxId, MailboxMetaData}
 import org.apache.james.mailbox.{MailboxManager, MailboxSession}
@@ -77,17 +78,21 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
 
   private def getMailboxes(mailboxGetRequest: MailboxGetRequest, mailboxSession: MailboxSession): SFlux[MailboxGetResults] = mailboxGetRequest.ids match {
     case None => getAllMailboxes(mailboxSession).map(MailboxGetResults.found)
-    case Some(ids) =>
-      getAllMailboxes(mailboxSession)
-        .collectSeq()
-        .flatMapMany(mailboxes => SFlux.merge(Seq(
-          SFlux.fromIterable(mailboxes)
-            .filter(mailbox => ids.value.contains(mailbox.id))
-            .map(MailboxGetResults.found),
-          SFlux.fromIterable(ids.value)
-            .filter(id => !mailboxes.map(_.id).contains(id))
-            .map(MailboxGetResults.notFound))))
+    case Some(ids) => SFlux.fromIterable(ids.value)
+      .flatMap(id => getMailboxByIdOrThrow(id, mailboxSession))
   }
+
+  private def getMailboxByIdOrThrow(mailboxId: MailboxId, mailboxSession: MailboxSession): SMono[MailboxGetResults] =
+    quotaFactory.loadFor(mailboxSession)
+      .subscribeOn(Schedulers.elastic)
+      .flatMap(quotaLoader => mailboxFactory.create(mailboxId, mailboxSession, quotaLoader)
+        .flatMap {
+          case Left(error) => error match {
+            case _: MailboxNotFoundException => SMono.just(MailboxGetResults.notFound(mailboxId))
+            case error => SMono.raiseError(error)
+          }
+          case scala.Right(mailbox) => SMono.just(MailboxGetResults.found(mailbox))
+        })
 
   private def getAllMailboxes(mailboxSession: MailboxSession): SFlux[Mailbox] = {
     quotaFactory.loadFor(mailboxSession)
