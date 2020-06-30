@@ -45,11 +45,11 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
   override val methodName: MethodName = MethodName("Mailbox/get")
 
   object MailboxGetResults {
-    def found(mailbox: Mailbox): MailboxGetResults = MailboxGetResults(List(mailbox), NotFound(Nil))
-    def notFound(mailboxId: MailboxId): MailboxGetResults = MailboxGetResults(Nil, NotFound(List(mailboxId)))
+    def found(mailbox: Mailbox): MailboxGetResults = MailboxGetResults(Set(mailbox), NotFound(Set.empty))
+    def notFound(mailboxId: MailboxId): MailboxGetResults = MailboxGetResults(Set.empty, NotFound(Set(mailboxId)))
   }
 
-  case class MailboxGetResults(mailboxes: List[Mailbox], notFound: NotFound) {
+  case class MailboxGetResults(mailboxes: Set[Mailbox], notFound: NotFound) {
     def merge(other: MailboxGetResults): MailboxGetResults = MailboxGetResults(this.mailboxes ++ other.mailboxes, this.notFound.merge(other.notFound))
   }
 
@@ -57,11 +57,11 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
     metricFactory.decoratePublisherWithTimerMetricLogP99(JMAP_RFC8621_PREFIX + methodName.value,
       asMailboxGetRequest(invocation.arguments)
         .flatMap(mailboxGetRequest => getMailboxes(mailboxGetRequest, mailboxSession)
-          .reduce(MailboxGetResults(Nil, NotFound(Nil)), (result1: MailboxGetResults, result2: MailboxGetResults) => result1.merge(result2))
+          .reduce(MailboxGetResults(Set.empty, NotFound(Set.empty)), (result1: MailboxGetResults, result2: MailboxGetResults) => result1.merge(result2))
           .map(mailboxes => MailboxGetResponse(
             accountId = mailboxGetRequest.accountId,
             state = INSTANCE,
-            list = mailboxes.mailboxes.sortBy(_.sortOrder),
+            list = mailboxes.mailboxes.toList.sortBy(_.sortOrder),
             notFound = mailboxes.notFound))
           .map(mailboxGetResponse => Invocation(
             methodName = methodName,
@@ -79,10 +79,10 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
   private def getMailboxes(mailboxGetRequest: MailboxGetRequest, mailboxSession: MailboxSession): SFlux[MailboxGetResults] = mailboxGetRequest.ids match {
     case None => getAllMailboxes(mailboxSession).map(MailboxGetResults.found)
     case Some(ids) => SFlux.fromIterable(ids.value)
-      .flatMap(id => getMailboxByIdOrThrow(id, mailboxSession))
+      .flatMap(id => getMailboxResultById(id, mailboxSession))
   }
 
-  private def getMailboxByIdOrThrow(mailboxId: MailboxId, mailboxSession: MailboxSession): SMono[MailboxGetResults] =
+  private def getMailboxResultById(mailboxId: MailboxId, mailboxSession: MailboxSession): SMono[MailboxGetResults] =
     quotaFactory.loadFor(mailboxSession)
       .subscribeOn(Schedulers.elastic)
       .flatMap(quotaLoader => mailboxFactory.create(mailboxId, mailboxSession, quotaLoader)
