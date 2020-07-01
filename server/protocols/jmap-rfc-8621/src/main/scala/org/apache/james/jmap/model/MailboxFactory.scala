@@ -116,7 +116,7 @@ class MailboxFactory @Inject() (subscriptionManager: SubscriptionManager, mailbo
   def create(mailboxMetaData: MailboxMetaData,
              mailboxSession: MailboxSession,
              allMailboxesMetadata: Seq[MailboxMetaData],
-             quotaLoader: QuotaLoader): SMono[Either[Exception, Mailbox]] = {
+             quotaLoader: QuotaLoader): SMono[Mailbox] = {
 
     val id: MailboxId = mailboxMetaData.getId
 
@@ -146,9 +146,9 @@ class MailboxFactory @Inject() (subscriptionManager: SubscriptionManager, mailbo
     val isSubscribed: IsSubscribed = retrieveIsSubscribed(mailboxMetaData.getPath, mailboxSession)
 
     MailboxValidation.validate(name, unreadEmails, unreadThreads, totalEmails, totalThreads) match {
-      case Left(error) => SMono.just(Left(error))
+      case Left(error) => SMono.raiseError(error)
       case scala.Right(mailboxValidation) => SMono.fromPublisher(quotas)
-        .map(quotas => scala.Right(
+        .map(quotas =>
           Mailbox(
             id = id,
             name = mailboxValidation.mailboxName,
@@ -163,11 +163,11 @@ class MailboxFactory @Inject() (subscriptionManager: SubscriptionManager, mailbo
             namespace = namespace,
             rights = rights,
             quotas = quotas,
-            isSubscribed = isSubscribed)))
+            isSubscribed = isSubscribed))
     }
   }
 
-  def create(id: MailboxId, mailboxSession: MailboxSession, quotaLoader: QuotaLoader): SMono[Either[Exception, Mailbox]] = {
+  def create(id: MailboxId, mailboxSession: MailboxSession, quotaLoader: QuotaLoader): SMono[Mailbox] = {
     try {
       val messageManager: MessageManager = mailboxManager.getMailbox(id, mailboxSession)
       val resolvedACL = messageManager.getResolvedAcl(mailboxSession)
@@ -196,9 +196,9 @@ class MailboxFactory @Inject() (subscriptionManager: SubscriptionManager, mailbo
       val isSubscribed: IsSubscribed = retrieveIsSubscribed(messageManager.getMailboxPath, mailboxSession)
 
       MailboxValidation.validate(name, unreadEmails, unreadThreads, totalEmails, totalThreads) match {
-        case Left(error) => SMono.just(Left(error))
+        case Left(error) => SMono.raiseError(error)
         case scala.Right(mailboxValidation) => SMono.fromPublisher(quotas)
-          .map(quotas => scala.Right(
+          .map(quotas =>
             Mailbox(
               id = id,
               name = mailboxValidation.mailboxName,
@@ -213,10 +213,10 @@ class MailboxFactory @Inject() (subscriptionManager: SubscriptionManager, mailbo
               namespace = namespace,
               rights = rights,
               quotas = quotas,
-              isSubscribed = isSubscribed)))
+              isSubscribed = isSubscribed))
       }
     } catch {
-      case error: Exception => SMono.just(Left(error))
+      case error: Exception => SMono.raiseError(error)
     }
   }
 }

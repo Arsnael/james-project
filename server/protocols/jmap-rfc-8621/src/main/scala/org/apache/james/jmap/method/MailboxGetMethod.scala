@@ -84,15 +84,13 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
 
   private def getMailboxResultById(mailboxId: MailboxId, mailboxSession: MailboxSession): SMono[MailboxGetResults] =
     quotaFactory.loadFor(mailboxSession)
-      .subscribeOn(Schedulers.elastic)
       .flatMap(quotaLoader => mailboxFactory.create(mailboxId, mailboxSession, quotaLoader)
-        .flatMap {
-          case Left(error) => error match {
-            case _: MailboxNotFoundException => SMono.just(MailboxGetResults.notFound(mailboxId))
-            case error => SMono.raiseError(error)
-          }
-          case scala.Right(mailbox) => SMono.just(MailboxGetResults.found(mailbox))
+        .map(MailboxGetResults.found)
+        .onErrorResume {
+          case _: MailboxNotFoundException => SMono.just(MailboxGetResults.notFound(mailboxId))
+          case error => SMono.raiseError(error)
         })
+      .subscribeOn(Schedulers.elastic)
 
   private def getAllMailboxes(mailboxSession: MailboxSession): SFlux[Mailbox] = {
     quotaFactory.loadFor(mailboxSession)
@@ -101,7 +99,7 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
         getAllMailboxesMetaData(mailboxSession).flatMapMany(mailboxesMetaData =>
           SFlux.fromIterable(mailboxesMetaData)
             .flatMap(mailboxMetaData =>
-              getMailboxOrThrow(mailboxMetaData = mailboxMetaData,
+              getMailboxResult(mailboxMetaData = mailboxMetaData,
                 mailboxSession = mailboxSession,
                 allMailboxesMetadata = mailboxesMetaData,
                 quotaLoader = quotaLoader))))
@@ -111,7 +109,7 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
     SFlux.fromPublisher(mailboxManager.search(MailboxQuery.builder.matchesAllMailboxNames.build, mailboxSession))
       .collectSeq()
 
-  private def getMailboxOrThrow(mailboxSession: MailboxSession,
+  private def getMailboxResult(mailboxSession: MailboxSession,
                                 allMailboxesMetadata: Seq[MailboxMetaData],
                                 mailboxMetaData: MailboxMetaData,
                                 quotaLoader: QuotaLoader): SMono[Mailbox] =
@@ -119,8 +117,4 @@ class MailboxGetMethod @Inject() (serializer: Serializer,
       mailboxSession = mailboxSession,
       allMailboxesMetadata = allMailboxesMetadata,
       quotaLoader = quotaLoader)
-      .flatMap {
-        case Left(error) => SMono.raiseError(error)
-        case scala.Right(mailbox) => SMono.just(mailbox)
-      }
 }
