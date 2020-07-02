@@ -19,8 +19,6 @@
 
 package org.apache.james.jmap.rfc8621.distributed;
 
-import java.util.UUID;
-
 import org.apache.james.CassandraExtension;
 import org.apache.james.CassandraRabbitMQJamesConfiguration;
 import org.apache.james.CassandraRabbitMQJamesServerMain;
@@ -35,6 +33,8 @@ import org.apache.james.modules.RabbitMQExtension;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.blobstore.BlobStoreConfiguration;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.datastax.driver.core.utils.UUIDs;
 
 public class DistributedMailboxGetMethodTest implements MailboxGetMethodContract {
     @RegisterExtension
@@ -54,7 +54,7 @@ public class DistributedMailboxGetMethodTest implements MailboxGetMethodContract
 
     @Override
     public MailboxId randomMailboxId() {
-        return CassandraId.of(UUID.randomUUID());
+        return CassandraId.of(UUIDs.timeBased());
     }
 
 }
