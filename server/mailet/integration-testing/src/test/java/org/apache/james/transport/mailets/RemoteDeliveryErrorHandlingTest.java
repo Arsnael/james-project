@@ -44,7 +44,6 @@ import org.apache.james.mock.smtp.server.model.SMTPCommand;
 import org.apache.james.mock.smtp.server.testing.MockSmtpServerExtension;
 import org.apache.james.mock.smtp.server.testing.MockSmtpServerExtension.DockerMockSmtp;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
-import org.apache.james.probe.DataProbe;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.utils.DataProbeImpl;
@@ -66,11 +65,11 @@ import io.restassured.specification.RequestSpecification;
 
 public class RemoteDeliveryErrorHandlingTest {
     private static final String FROM = "from@" + DEFAULT_DOMAIN;
-    public static final String RECIPIENT_DOMAIN = "test.com";
+    private static final String RECIPIENT_DOMAIN = "test.com";
     private static final String RECIPIENT = "touser@" + RECIPIENT_DOMAIN;
-    public static final String LOCALHOST = "localhost";
-    public static final MailRepositoryUrl REMOTE_DELIVERY_TEMPORARY_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/temporary");
-    public static final MailRepositoryUrl REMOTE_DELIVERY_PERMANENT_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/permanent");
+    private static final String LOCALHOST = "localhost";
+    private static final MailRepositoryUrl REMOTE_DELIVERY_TEMPORARY_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/temporary");
+    private static final MailRepositoryUrl REMOTE_DELIVERY_PERMANENT_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/permanent");
 
     @RegisterExtension
     static MockSmtpServerExtension mockSmtpServerExtension = new MockSmtpServerExtension();
@@ -82,7 +81,6 @@ public class RemoteDeliveryErrorHandlingTest {
     SMTPMessageSenderExtension smtpSenderExtension = new SMTPMessageSenderExtension(Domain.of(DEFAULT_DOMAIN));
 
     private TemporaryJamesServer jamesServer;
-    private DataProbe dataProbe;
     private RequestSpecification webAdminApi;
 
     @BeforeEach
@@ -112,9 +110,10 @@ public class RemoteDeliveryErrorHandlingTest {
 
         jamesServer.start();
 
-        dataProbe = jamesServer.getProbe(DataProbeImpl.class);
-        dataProbe.addDomain(DEFAULT_DOMAIN);
-        dataProbe.addUser(FROM, PASSWORD);
+        jamesServer.getProbe(DataProbeImpl.class)
+            .fluent()
+            .addDomain(DEFAULT_DOMAIN)
+            .addUser(FROM, PASSWORD);
 
         webAdminApi = WebAdminUtils.spec(jamesServer.getProbe(WebAdminGuiceProbe.class).getWebAdminPort());
     }
