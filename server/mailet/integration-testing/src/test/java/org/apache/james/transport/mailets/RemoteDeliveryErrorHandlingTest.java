@@ -206,7 +206,7 @@ public class RemoteDeliveryErrorHandlingTest {
 
     @Test
     @Disabled("We need to count retries")
-    void remoteDelivery(SMTPMessageSender smtpMessageSender, DockerMockSmtp dockerMockSmtp) throws Exception {
+    void remoteDeliveryShouldStoreTemporaryFailureAsPermanentWhenExceedsMaximumRetries(SMTPMessageSender smtpMessageSender, DockerMockSmtp dockerMockSmtp) throws Exception {
         // Given a failed remote delivery
         dockerMockSmtp.getConfigurationClient()
             .addNewBehavior()
