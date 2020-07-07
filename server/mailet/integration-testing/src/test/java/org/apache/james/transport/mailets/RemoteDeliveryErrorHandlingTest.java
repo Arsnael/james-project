@@ -46,7 +46,7 @@ import org.apache.james.mock.smtp.server.testing.MockSmtpServerExtension.DockerM
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.transport.matchers.All;
-import org.apache.james.transport.matchers.AtMostFailureRetries;
+import org.apache.james.transport.matchers.AtMost;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.MailRepositoryProbeImpl;
 import org.apache.james.utils.SMTPMessageSender;
@@ -71,7 +71,7 @@ public class RemoteDeliveryErrorHandlingTest {
     private static final String LOCALHOST = "localhost";
     private static final MailRepositoryUrl REMOTE_DELIVERY_TEMPORARY_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/temporary");
     private static final MailRepositoryUrl REMOTE_DELIVERY_PERMANENT_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/permanent");
-    private static final Integer MAX_RETRIES = 1;
+    private static final Integer MAX_TRIES = 2;
 
     @RegisterExtension
     static MockSmtpServerExtension mockSmtpServerExtension = new MockSmtpServerExtension();
@@ -101,8 +101,8 @@ public class RemoteDeliveryErrorHandlingTest {
                         .addProperty("maxRetries", "1")
                         .addProperty("delayTime", "0")
                         .addProperty("bounceProcessor", "remote-delivery-error")
-                        .matcher(AtMostFailureRetries.class)
-                        .matcherCondition(MAX_RETRIES.toString()))
+                        .matcher(AtMost.class)
+                        .matcherCondition(MAX_TRIES.toString()))
                     .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(ToRepository.class)
