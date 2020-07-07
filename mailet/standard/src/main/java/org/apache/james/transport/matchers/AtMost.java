@@ -42,6 +42,13 @@ import com.google.common.collect.ImmutableList;
  * in the mail that will be incremented everything the check succeeds.
  *
  * The check fails when the defined X limit is reached.
+ *
+ * <p>The example below will match mail with at most 3 tries on the mailet</p>
+ *
+ * <pre><code>
+ * &lt;mailet match=&quot;AtMost=3&quot; class=&quot;&lt;any-class&gt;&quot;&gt;
+ * &lt;/mailet&gt;
+ * </code></pre>
  */
 public class AtMost extends GenericMatcher {
     static final AttributeName AT_MOST_TRIES = AttributeName.of("AT_MOST_TRIES");
