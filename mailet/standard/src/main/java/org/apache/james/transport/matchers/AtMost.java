@@ -35,23 +35,30 @@ import org.apache.mailet.base.MailetUtil;
 
 import com.google.common.collect.ImmutableList;
 
-public class AtMostFailureRetries extends GenericMatcher {
-    static final AttributeName MAX_FAILURE_RETRIES = AttributeName.of("MAX_FAILURE_RETRIES");
-    private Integer maxFailureRetries;
+/**
+ * Checks that a mail did at most X tries on a specific operation.
+ *
+ * If no retries have been performed previously, it sets up an attribute `AT_MOST_TRIES`
+ * in the mail that will be incremented everything the check succeeds.
+ *
+ * The check fails when the defined X limit is reached.
+ */
+public class AtMost extends GenericMatcher {
+    static final AttributeName AT_MOST_TRIES = AttributeName.of("AT_MOST_TRIES");
+    private Integer atMostRetries;
 
     @Override
     public void init() throws MessagingException {
-        Integer maxFailureRetries = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getCondition());
-        this.maxFailureRetries = maxFailureRetries;
+        this.atMostRetries = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getCondition());
     }
 
     @Override
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
-        return AttributeUtils.getValueAndCastFromMail(mail, MAX_FAILURE_RETRIES, Integer.class)
-            .or(() -> Optional.of(-1))
-            .filter(retries -> retries < maxFailureRetries)
+        return AttributeUtils.getValueAndCastFromMail(mail, AT_MOST_TRIES, Integer.class)
+            .or(() -> Optional.of(0))
+            .filter(retries -> retries < atMostRetries)
             .map(retries -> {
-                mail.setAttribute(new Attribute(MAX_FAILURE_RETRIES, AttributeValue.of(++retries)));
+                mail.setAttribute(new Attribute(AT_MOST_TRIES, AttributeValue.of(retries + 1)));
                 return mail.getRecipients();
             })
             .orElse(ImmutableList.of());
