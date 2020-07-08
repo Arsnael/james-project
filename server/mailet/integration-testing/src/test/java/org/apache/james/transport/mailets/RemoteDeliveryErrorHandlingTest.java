@@ -71,7 +71,7 @@ public class RemoteDeliveryErrorHandlingTest {
     private static final String LOCALHOST = "localhost";
     private static final MailRepositoryUrl REMOTE_DELIVERY_TEMPORARY_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/temporary");
     private static final MailRepositoryUrl REMOTE_DELIVERY_PERMANENT_ERROR_REPOSITORY = MailRepositoryUrl.from("memory://var/mail/error/remote-delivery/permanent");
-    private static final Integer MAX_TRIES = 2;
+    private static final Integer MAX_EXECUTIONS = 2;
 
     @RegisterExtension
     static MockSmtpServerExtension mockSmtpServerExtension = new MockSmtpServerExtension();
@@ -102,7 +102,7 @@ public class RemoteDeliveryErrorHandlingTest {
                         .addProperty("delayTime", "0")
                         .addProperty("bounceProcessor", "remote-delivery-error")
                         .matcher(AtMost.class)
-                        .matcherCondition(MAX_TRIES.toString()))
+                        .matcherCondition(MAX_EXECUTIONS.toString()))
                     .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
                         .mailet(ToRepository.class)
