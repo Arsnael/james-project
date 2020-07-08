@@ -36,14 +36,14 @@ import org.apache.mailet.base.MailetUtil;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Checks that a mail did at most X tries on a specific operation.
+ * Checks that a mail did at most X executions on a specific operation.
  *
- * If no retries have been performed previously, it sets up an attribute `AT_MOST_TRIES`
- * in the mail that will be incremented everything the check succeeds.
+ * If no executions have been performed previously, it sets up an attribute `AT_MOST_EXECUTIONS`
+ * in the mail that will be incremented every time the check succeeds.
  *
  * The check fails when the defined X limit is reached.
  *
- * <p>The example below will match mail with at most 3 tries on the mailet</p>
+ * <p>The example below will match a mail with at most 3 executions on the mailet</p>
  *
  * <pre><code>
  * &lt;mailet match=&quot;AtMost=3&quot; class=&quot;&lt;any-class&gt;&quot;&gt;
@@ -51,21 +51,21 @@ import com.google.common.collect.ImmutableList;
  * </code></pre>
  */
 public class AtMost extends GenericMatcher {
-    static final AttributeName AT_MOST_TRIES = AttributeName.of("AT_MOST_TRIES");
-    private Integer atMostRetries;
+    static final AttributeName AT_MOST_EXECUTIONS = AttributeName.of("AT_MOST_EXECUTIONS");
+    private Integer atMostExecutions;
 
     @Override
     public void init() throws MessagingException {
-        this.atMostRetries = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getCondition());
+        this.atMostExecutions = MailetUtil.getInitParameterAsStrictlyPositiveInteger(getCondition());
     }
 
     @Override
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
-        return AttributeUtils.getValueAndCastFromMail(mail, AT_MOST_TRIES, Integer.class)
+        return AttributeUtils.getValueAndCastFromMail(mail, AT_MOST_EXECUTIONS, Integer.class)
             .or(() -> Optional.of(0))
-            .filter(retries -> retries < atMostRetries)
-            .map(retries -> {
-                mail.setAttribute(new Attribute(AT_MOST_TRIES, AttributeValue.of(retries + 1)));
+            .filter(executions -> executions < atMostExecutions)
+            .map(executions -> {
+                mail.setAttribute(new Attribute(AT_MOST_EXECUTIONS, AttributeValue.of(executions + 1)));
                 return mail.getRecipients();
             })
             .orElse(ImmutableList.of());

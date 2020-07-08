@@ -19,7 +19,7 @@
 
 package org.apache.james.transport.matchers;
 
-import static org.apache.james.transport.matchers.AtMost.AT_MOST_TRIES;
+import static org.apache.james.transport.matchers.AtMost.AT_MOST_EXECUTIONS;
 import static org.apache.mailet.base.MailAddressFixture.RECIPIENT1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,7 +56,7 @@ class AtMostTest {
     void setup() throws MessagingException {
         this.matcher = new AtMost();
         FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
-            .matcherName("AtMostFailureRetries")
+            .matcherName("AtMost")
             .condition(CONDITION)
             .build();
 
@@ -75,7 +75,7 @@ class AtMostTest {
     @Test
     void shouldMatchWhenNoRetries() throws MessagingException {
         Mail mail = createMail();
-        mail.setAttribute(new Attribute(AT_MOST_TRIES, AttributeValue.of(0)));
+        mail.setAttribute(new Attribute(AT_MOST_EXECUTIONS, AttributeValue.of(0)));
 
         Collection<MailAddress> actual = matcher.match(mail);
 
@@ -85,7 +85,7 @@ class AtMostTest {
     @Test
     void shouldNotMatchWhenOverAtMost() throws MessagingException {
         Mail mail = createMail();
-        mail.setAttribute(new Attribute(AT_MOST_TRIES, AttributeValue.of(3)));
+        mail.setAttribute(new Attribute(AT_MOST_EXECUTIONS, AttributeValue.of(3)));
 
         Collection<MailAddress> actual = matcher.match(mail);
 
@@ -95,7 +95,7 @@ class AtMostTest {
     @Test
     void shouldNotMatchWhenEqualToAtMost() throws MessagingException {
         Mail mail = createMail();
-        mail.setAttribute(new Attribute(AT_MOST_TRIES, AttributeValue.of(2)));
+        mail.setAttribute(new Attribute(AT_MOST_EXECUTIONS, AttributeValue.of(2)));
 
         Collection<MailAddress> actual = matcher.match(mail);
 
@@ -105,7 +105,7 @@ class AtMostTest {
     @Test
     void shouldThrowWithEmptyCondition() {
         FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
-            .matcherName("AtMostFailureRetries")
+            .matcherName("AtMost")
             .build();
 
         assertThatThrownBy(() -> matcher.init(matcherConfig))
@@ -115,7 +115,7 @@ class AtMostTest {
     @Test
     void shouldThrowWithInvalidCondition() {
         FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
-            .matcherName("AtMostFailureRetries")
+            .matcherName("AtMost")
             .condition("invalid")
             .build();
 
@@ -126,7 +126,7 @@ class AtMostTest {
     @Test
     void shouldThrowWithNegativeCondition() {
         FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
-            .matcherName("AtMostFailureRetries")
+            .matcherName("AtMost")
             .condition("-1")
             .build();
 
@@ -137,7 +137,7 @@ class AtMostTest {
     @Test
     void shouldThrowWithConditionToZero() {
         FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
-            .matcherName("AtMostFailureRetries")
+            .matcherName("AtMost")
             .condition("0")
             .build();
 
