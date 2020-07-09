@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * <p>
- * Checks if the mail has a permanent remote delivery failure attribute set to false (meaning it's a temporary error)
+ * Checks if the mail has a temporary remote delivery failure attribute set to false (meaning it's a temporary error)
  * </p>
  *
  * Example:
