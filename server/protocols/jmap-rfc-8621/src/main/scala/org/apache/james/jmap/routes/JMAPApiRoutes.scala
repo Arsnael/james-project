@@ -32,8 +32,8 @@ import org.apache.http.HttpStatus.SC_BAD_REQUEST
 import org.apache.james.jmap.HttpConstants.JSON_CONTENT_TYPE
 import org.apache.james.jmap.JMAPUrls.JMAP
 import org.apache.james.jmap.exceptions.UnauthorizedException
-import org.apache.james.jmap.http.Authenticator
 import org.apache.james.jmap.http.rfc8621.InjectionKeys
+import org.apache.james.jmap.http.{Authenticator, MailboxesProvisioner, UserProvisioning}
 import org.apache.james.jmap.json.Serializer
 import org.apache.james.jmap.method.Method
 import org.apache.james.jmap.model.CapabilityIdentifier.CapabilityIdentifier
@@ -56,6 +56,8 @@ object JMAPApiRoutes {
 
 class JMAPApiRoutes (val authenticator: Authenticator,
                      serializer: Serializer,
+                     userProvisioner: UserProvisioning,
+                     mailboxesProvisioner: MailboxesProvisioner,
                      methods: Set[Method]) extends JMAPRoutes {
 
   private val methodsByName: Map[MethodName, Method] = methods.map(method => method.methodName -> method).toMap
@@ -63,8 +65,10 @@ class JMAPApiRoutes (val authenticator: Authenticator,
   @Inject
   def this(@Named(InjectionKeys.RFC_8621) authenticator: Authenticator,
            serializer: Serializer,
+           userProvisioner: UserProvisioning,
+           mailboxesProvisioner: MailboxesProvisioner,
            javaMethods: java.util.Set[Method]) {
-    this(authenticator, serializer, javaMethods.asScala.toSet)
+    this(authenticator, serializer, userProvisioner, mailboxesProvisioner, javaMethods.asScala.toSet)
   }
 
   override def routes(): stream.Stream[JMAPRoute] = Stream.of(
@@ -79,8 +83,12 @@ class JMAPApiRoutes (val authenticator: Authenticator,
 
   private def post(httpServerRequest: HttpServerRequest, httpServerResponse: HttpServerResponse): Mono[Void] =
     SMono(authenticator.authenticate(httpServerRequest))
-      .flatMap((mailboxSession: MailboxSession) => this.requestAsJsonStream(httpServerRequest)
-        .flatMap(requestObject => this.process(requestObject, httpServerResponse, mailboxSession)))
+      .flatMap((mailboxSession: MailboxSession) => SFlux.merge(Seq(
+          userProvisioner.provisionUser(mailboxSession),
+          mailboxesProvisioner.createMailboxesIfNeeded(mailboxSession)))
+        .`then`
+        .`then`(this.requestAsJsonStream(httpServerRequest)
+          .flatMap(requestObject => this.process(requestObject, httpServerResponse, mailboxSession))))
       .onErrorResume(throwable => handleError(throwable, httpServerResponse))
       .subscribeOn(Schedulers.elastic)
       .asJava()
