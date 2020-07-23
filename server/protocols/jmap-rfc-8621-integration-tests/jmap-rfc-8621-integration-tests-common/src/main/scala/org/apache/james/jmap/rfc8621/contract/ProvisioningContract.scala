@@ -27,10 +27,9 @@ import org.apache.james.GuiceJamesServer
 import org.apache.james.jmap.rfc8621.contract.Fixture._
 import org.apache.james.jmap.rfc8621.contract.tags.CategoryTags
 import org.apache.james.mailbox.DefaultMailboxes
-import org.apache.james.modules.MailboxProbeImpl
 import org.apache.james.utils.DataProbeImpl
 import org.assertj.core.api.Assertions.assertThat
-import org.hamcrest.Matchers.hasSize
+import org.hamcrest.Matchers.{equalTo, hasSize}
 import org.junit.jupiter.api.{BeforeEach, Tag, Test}
 
 object ProvisioningContract {
@@ -77,19 +76,11 @@ trait ProvisioningContract {
     .`then`
       .statusCode(SC_OK)
       .body(s"$ARGUMENTS.list", hasSize(6))
-  }
-
-  @Tag(CategoryTags.BASIC_FEATURE)
-  @Test
-  def provisionMailboxesShouldSubscribeToThem(server: GuiceJamesServer): Unit = {
-    `given`
-      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
-      .header(BOB_BASIC_AUTH_HEADER)
-      .body(GET_ALL_MAILBOXES_REQUEST)
-    .when
-      .post
-
-    assertThat(server.getProbe(classOf[MailboxProbeImpl]).listSubscriptions(BOB.asString))
-      .containsAll(DefaultMailboxes.DEFAULT_MAILBOXES)
+      .body(s"$ARGUMENTS.list[0].name", equalTo(DefaultMailboxes.INBOX))
+      .body(s"$ARGUMENTS.list[1].name", equalTo(DefaultMailboxes.DRAFTS))
+      .body(s"$ARGUMENTS.list[2].name", equalTo(DefaultMailboxes.OUTBOX))
+      .body(s"$ARGUMENTS.list[3].name", equalTo(DefaultMailboxes.SENT))
+      .body(s"$ARGUMENTS.list[4].name", equalTo(DefaultMailboxes.TRASH))
+      .body(s"$ARGUMENTS.list[5].name", equalTo(DefaultMailboxes.SPAM))
   }
 }
