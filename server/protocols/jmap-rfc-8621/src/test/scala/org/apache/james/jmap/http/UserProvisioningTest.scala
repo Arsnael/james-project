@@ -69,7 +69,8 @@ class UserProvisioningTest {
       .contains(USERNAME)
   }
 
-  @Test def filterShouldFailOnInvalidVirtualHosting(): Unit = {
+  @Test
+  def filterShouldFailOnInvalidVirtualHosting(): Unit = {
     usersRepository.setEnableVirtualHosting(false)
     val mailboxSession: MailboxSession = MailboxSessionUtil.create(USERNAME_WITH_DOMAIN)
 
@@ -77,7 +78,8 @@ class UserProvisioningTest {
       .hasCauseInstanceOf(classOf[UsersRepositoryException])
   }
 
-  @Test def filterShouldNotTryToAddUserWhenReadOnlyUsersRepository(): Unit = {
+  @Test
+  def filterShouldNotTryToAddUserWhenReadOnlyUsersRepository(): Unit = {
     val usersRepository: UsersRepository = mock(classOf[UsersRepository])
     when(usersRepository.isReadOnly).thenReturn(true)
     testee = new UserProvisioning(usersRepository, new RecordingMetricFactory)
