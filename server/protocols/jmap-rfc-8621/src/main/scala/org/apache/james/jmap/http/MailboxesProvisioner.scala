@@ -39,10 +39,8 @@ class MailboxesProvisioner @Inject() (mailboxManager: MailboxManager,
   private val LOGGER: Logger = LoggerFactory.getLogger(classOf[MailboxesProvisioner])
 
   def createMailboxesIfNeeded(session: MailboxSession): SMono[Unit] =
-    metricFactory.decorateSupplierWithTimerMetric("JMAP-RFC-8621-mailboxes-provisioning", () => {
-      val username: Username = session.getUser
-      createDefaultMailboxes(username)
-    })
+    metricFactory.decorateSupplierWithTimerMetric("JMAP-RFC-8621-mailboxes-provisioning", () =>
+      createDefaultMailboxes(session.getUser))
 
 
   private def createDefaultMailboxes(username: Username): SMono[Unit] = {
@@ -61,11 +59,11 @@ class MailboxesProvisioner @Inject() (mailboxManager: MailboxManager,
       SMono(mailboxManager.mailboxExists(mailboxPath, session))
         .map(exist => !exist)
     } catch {
-      case e: MailboxException => throw new RuntimeException(e)
+      case exception: MailboxException => SMono.raiseError(exception)
     }
   }
 
-  private def toMailboxPath(session: MailboxSession): Function[String, MailboxPath] =
+  private def toMailboxPath(session: MailboxSession): String => MailboxPath =
     (mailbox: String) => MailboxPath.forUser(session.getUser, mailbox)
 
   private def createMailbox(mailboxPath: MailboxPath, session: MailboxSession): Unit = {
