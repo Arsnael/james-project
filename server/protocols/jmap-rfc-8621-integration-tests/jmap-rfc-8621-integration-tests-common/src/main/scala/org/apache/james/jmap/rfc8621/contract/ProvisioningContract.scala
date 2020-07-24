@@ -29,7 +29,7 @@ import org.apache.james.jmap.rfc8621.contract.tags.CategoryTags
 import org.apache.james.mailbox.DefaultMailboxes
 import org.apache.james.utils.DataProbeImpl
 import org.assertj.core.api.Assertions.assertThat
-import org.hamcrest.Matchers.{equalTo, hasSize}
+import org.hamcrest.Matchers.{hasItems, hasSize}
 import org.junit.jupiter.api.{BeforeEach, Tag, Test}
 
 object ProvisioningContract {
@@ -76,11 +76,6 @@ trait ProvisioningContract {
     .`then`
       .statusCode(SC_OK)
       .body(s"$ARGUMENTS.list", hasSize(6))
-      .body(s"$ARGUMENTS.list[0].name", equalTo(DefaultMailboxes.INBOX))
-      .body(s"$ARGUMENTS.list[1].name", equalTo(DefaultMailboxes.DRAFTS))
-      .body(s"$ARGUMENTS.list[2].name", equalTo(DefaultMailboxes.OUTBOX))
-      .body(s"$ARGUMENTS.list[3].name", equalTo(DefaultMailboxes.SENT))
-      .body(s"$ARGUMENTS.list[4].name", equalTo(DefaultMailboxes.TRASH))
-      .body(s"$ARGUMENTS.list[5].name", equalTo(DefaultMailboxes.SPAM))
+      .body(s"$ARGUMENTS.list.name", hasItems(DefaultMailboxes.DEFAULT_MAILBOXES.toArray:_*))
   }
 }
