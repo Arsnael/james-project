@@ -21,6 +21,7 @@ package org.apache.james.jmap.rfc8621.contract
 
 import io.netty.handler.codec.http.HttpHeaderNames.ACCEPT
 import io.restassured.RestAssured.{`given`, _}
+import io.restassured.authentication.NoAuthScheme
 import io.restassured.http.Header
 import org.apache.http.HttpStatus.SC_OK
 import org.apache.james.GuiceJamesServer
@@ -47,6 +48,7 @@ trait ProvisioningContract {
       .addUser(BOB.asString, BOB_PASSWORD)
 
     requestSpecification = baseRequestSpecBuilder(server)
+      .setAuth(new NoAuthScheme())
       .build
   }
 
