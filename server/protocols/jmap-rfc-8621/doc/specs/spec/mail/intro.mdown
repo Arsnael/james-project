@@ -50,6 +50,10 @@ This document defines three additional capability URIs.
 
 ### urn:ietf:params:jmap:mail
 
+<aside class="notice">
+  Implemented
+</aside>
+
 This represents support for the Mailbox, Thread, Email, and SearchSnippet data types and associated API methods. The value of this property in the JMAP session *capabilities* property is an empty object.
 
 The value of this property in an account's *accountCapabilities* property is an object that MUST contain the following information on server capabilities and permissions for that account:
