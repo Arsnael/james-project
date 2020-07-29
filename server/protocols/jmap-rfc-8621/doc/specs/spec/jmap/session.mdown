@@ -27,20 +27,41 @@ A successful authenticated GET request to the JMAP Session resource MUST return 
   </aside>
 
     - **maxSizeUpload**: `UnsignedInt`
+    <aside class="warning">
+      Not enforced yet
+    </aside>
       The maximum file size, in octets, that the server will accept for a single file upload (for any purpose). Suggested minimum: 50,000,000.
     - **maxConcurrentUpload**: `UnsignedInt`
+    <aside class="warning">
+      Not enforced yet
+    </aside>
       The maximum number of concurrent requests the server will accept to the upload endpoint.  Suggested minimum: 4.
     - **maxSizeRequest**: `UnsignedInt`
+    <aside class="warning">
+      Not enforced yet
+    </aside>
       The maximum size, in octets, that the server will accept for a single
       request to the API endpoint. Suggested minimum: 10,000,000.
     - **maxConcurrentRequests**: `UnsignedInt`
+    <aside class="warning">
+      Not enforced yet
+    </aside>
       The maximum number of concurrent requests the server will accept to
       the API endpoint. Suggested minimum: 4.
     - **maxCallsInRequest**: `UnsignedInt`
+    <aside class="warning">
+      Not enforced yet
+    </aside>
       The maximum number of method calls the server will accept in a single request to the API endpoint.  Suggested minimum: 16.
     - **maxObjectsInGet**: `UnsignedInt`
+    <aside class="warning">
+      Not enforced yet
+    </aside>
       The maximum number of objects that the client may request in a single `/get` type method call. Suggested minimum: 500.
     - **maxObjectsInSet**: `UnsignedInt`
+    <aside class="warning">
+      Not enforced yet
+    </aside>
       The maximum number of objects the client may send to create, update, or destroy in a single `/set` type method call. This is the combined total, e.g., if the maximum is 10, you could not create 7 objects and destroy 6, as this would be 13 actions, which exceeds the limit. Suggested minimum: 500.
     - **collationAlgorithms**: `String[]`
       A list of identifiers for algorithms registered in the collation registry, as defined in [@!RFC4790], that the server supports for sorting when querying records.
