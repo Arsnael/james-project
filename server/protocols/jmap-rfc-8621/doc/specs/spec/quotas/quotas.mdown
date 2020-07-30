@@ -24,9 +24,13 @@ This document defines one additional capability URI.
 
 ### urn:apache:james:params:jmap:mail:quota
 
-This represents support for the Quota data type and associated API methods. Servers supporting this specification MUST add this property to the capabilities object.
+This represents support for the Quota data type and associated API methods.
+Servers supporting this specification MUST add this property to the capabilities object.
 
-This extension is specific to the Apache James server and enables to:
+This extension is specific to the Apache James server and is a temporary solution while waiting for the main work on
+quotas as part of the IETF group to be finalized as a proper RFC document.
+
+This extension enables to:
 
 * read quotas usage and limits on mailboxes.
 
