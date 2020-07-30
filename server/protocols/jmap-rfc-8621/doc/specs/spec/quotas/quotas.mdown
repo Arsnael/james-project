@@ -1,0 +1,103 @@
+# Introduction
+
+JMAP ([@!RFC8620] – JSON Meta Application Protocol) is a generic protocol for synchronising data, such as mail, calendars or contacts, between a client and a server. It is optimised for mobile and web environments, and aims to provide a consistent interface to different data types.
+
+This specification defines a data model for handling mail quotas over JMAP, allowing you to read and explain quota information.
+
+This specification does not address quota administration, which should be handled by other means.
+
+This specification is not official and proper to the James project usage at the moment.
+
+## Notational conventions
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in BCP
+14 [@!RFC2119] [@!RFC8174] when, and only when, they appear in all
+capitals, as shown here.
+
+Type signatures, examples and property descriptions in this document follow the conventions established in section 1.1 of [@!RFC8620]. Data types defined in the core specification are also used in this document.
+
+Servers MUST support all properties specified for the new data types defined in this document.
+
+## Terminology
+
+### Quota
+
+A quota is a numeric upper limit that the server is enforcing. Quotas are applied to JMAP Mailbox objects.
+
+## Addition to the capabilities object
+
+The capabilities object is returned as part of the JMAP Session object; see [@!RFC8620], section 2.
+
+This document defines one additional capability URI.
+
+### urn:apache:james:params:jmap:mail:quota
+
+This represents support for the Quota data type and associated API methods. Servers supporting this specification MUST add this property to the capabilities object.
+
+# Quotas definition
+
+The quota is an addition to the Mailbox object that displays the limit set to a mailbox usage as well as the current usage in regard to that limit.
+
+## The QuotaId Data Type
+
+The **QuotaId** is a `String` defined with the name of the **QuotaRoot** (as defined in [RFC2087](https://tools.ietf.org/html/rfc2087.html)) it represents.
+It usually represents the ID attached to one or more **Quota** objects defined for that Mailbox.
+
+## The Quotas.Type Data Type
+
+The **Quotas.Type** is a `String` that represents the type of quota. It should either be "Storage" (amount of bytes) or "Message" (number of emails).
+
+## The Value Object
+
+The **Value** object represents the usage and limit of a type of quota. It MUST contain the folowing field:
+
+* **used**: `UnsignedInt` The current usage of that type of quota on the current mailbox. Computation of this value is handled by the server.
+
+The **Value** object MAY contain the following field:
+
+* **max**: `UnsignedInt` The limit set on this type of quota on the current mailbox.
+
+## The Quota Object
+
+The **Quota** object is a `Map[Quotas.Type, Value]` representing the quotas depending from a **QuotaId**. A quota can have more than one **Quotas.Type** associated to it.
+
+## The Quotas Object
+
+The **quotas** is a `Map[QuotaId, Quota]` of all quotas applying to the Mailbox object, with each Quota associated to its QuotaId.
+This object is returned as an extra field of the Mailbox object.
+
+## Example
+
+    "quotas":{
+      "quotaRoot":{
+        "Message":{"used":18,"max":42},
+        "Storage":{"used":12,"max":74}
+      },
+      "quotaRoot2@localhost":{
+        "Message":{"used":14,"max":43},
+        "Storage":{"used":19"max":64}
+      }
+    }
+
+# Security considerations
+
+All security considerations of JMAP ([@!RFC8620]) apply to this specification.
+
+# IANA Considerations
+
+## JMAP Capability Registration for "quota"
+
+IANA will register the "quota" Apache James Capability as follows:
+
+Capability Name: `urn:apache:james:params:jmap:mail:quota`
+
+Specification document: this document
+
+Intended use: common
+
+Change Controller: Apache james
+
+Security and privacy considerations: this document, section 3.
+
