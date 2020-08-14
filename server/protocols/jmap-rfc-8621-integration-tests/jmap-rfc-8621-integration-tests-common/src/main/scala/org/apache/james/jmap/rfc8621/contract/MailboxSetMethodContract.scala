@@ -448,6 +448,7 @@ trait MailboxSetMethodContract {
          |			"created": {
          |				"C42": {
          |					"id": "$mailboxId",
+         |          "sortOrder": 1000,
          |					"totalEmails": 0,
          |					"unreadEmails": 0,
          |					"totalThreads": 0,
@@ -671,6 +672,7 @@ trait MailboxSetMethodContract {
          |			"created": {
          |				"C42": {
          |					"id": "$mailboxId",
+         |          "sortOrder": 1000,
          |					"totalEmails": 0,
          |					"unreadEmails": 0,
          |					"totalThreads": 0,
@@ -817,6 +819,7 @@ trait MailboxSetMethodContract {
          |      "created": {
          |        "C42": {
          |          "id": "$mailboxId",
+         |          "sortOrder": 1000,
          |          "isSubscribed":true,
          |          "myRights":{"mayAddItems":true,"mayCreateChild":true,"mayDelete":true,"mayReadItems":true,"mayRemoveItems":true,"mayRename":true,"maySetKeywords":true,"maySetSeen":true,"maySubmit":true},
          |          "totalEmails":0,
@@ -884,6 +887,7 @@ trait MailboxSetMethodContract {
          |      "created": {
          |        "C42": {
          |          "id": "$mailboxId",
+         |          "sortOrder": 1000,
          |          "isSubscribed":true,
          |          "myRights":{"mayAddItems":true,"mayCreateChild":true,"mayDelete":true,"mayReadItems":true,"mayRemoveItems":true,"mayRename":true,"maySetKeywords":true,"maySetSeen":true,"maySubmit":true},
          |          "totalEmails":0,
@@ -1756,6 +1760,7 @@ trait MailboxSetMethodContract {
          |                "created": {
          |                    "C42": {
          |                        "id": "$parentId",
+         |                        "sortOrder": 1000,
          |                        "totalEmails": 0,
          |                        "unreadEmails": 0,
          |                        "totalThreads": 0,
@@ -1785,6 +1790,7 @@ trait MailboxSetMethodContract {
          |                "created": {
          |                    "C43": {
          |                        "id": "$childId",
+         |                        "sortOrder": 1000,
          |                        "totalEmails": 0,
          |                        "unreadEmails": 0,
          |                        "totalThreads": 0,
@@ -1874,6 +1880,7 @@ trait MailboxSetMethodContract {
          |			"created": {
          |				"C42": {
          |					"id": "$mailboxId",
+         |          "sortOrder": 1000,
          |					"totalEmails": 0,
          |					"unreadEmails": 0,
          |					"totalThreads": 0,
