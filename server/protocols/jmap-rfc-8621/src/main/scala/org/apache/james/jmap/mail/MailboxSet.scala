@@ -33,7 +33,7 @@ import org.apache.james.jmap.model.AccountId
 import org.apache.james.jmap.model.State.State
 import org.apache.james.mailbox.Role
 import org.apache.james.mailbox.model.MailboxId
-import play.api.libs.json.{JsObject, JsString, JsValue}
+import play.api.libs.json.{JsBoolean, JsNull, JsObject, JsString, JsValue}
 
 case class MailboxSetRequest(accountId: AccountId,
                              ifInState: Option[State],
@@ -68,6 +68,7 @@ case class MailboxPatchObject(value: Map[String, JsValue]) {
   def updates: Iterable[Either[PatchUpdateValidationException, Update]] = value.map({
     case (property, newValue) => property match {
       case "/name" => NameUpdate.parse(newValue)
+      case "/isSubscribed" => IsSubscribedUpdate.parse(newValue)
       case property =>
         val refinedKey: Either[String, MailboxPatchObjectKey] = refineV(property)
         refinedKey.fold[Either[PatchUpdateValidationException, Update]](
@@ -134,8 +135,17 @@ object NameUpdate {
   }
 }
 
+object IsSubscribedUpdate {
+  def parse(newValue: JsValue): Either[PatchUpdateValidationException, Update] = newValue match {
+    case JsBoolean(value) => scala.Right(IsSubscribedUpdate(IsSubscribed(value)))
+    case JsNull => scala.Right(IsSubscribedUpdate(IsSubscribed(true)))
+    case _ => Left(InvalidUpdateException("/isSubscribed", "Expecting a JSON string as an argument"))
+  }
+}
+
 sealed trait Update
 case class NameUpdate(newName: String) extends Update
+case class IsSubscribedUpdate(isSubscribed: IsSubscribed) extends Update
 
 class PatchUpdateValidationException() extends IllegalArgumentException
 case class UnsupportedPropertyUpdatedException(property: MailboxPatchObjectKey) extends PatchUpdateValidationException
