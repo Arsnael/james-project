@@ -1031,6 +1031,7 @@ trait MailboxSetMethodContract {
         |       ["Mailbox/get",
         |         {
         |           "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+        |           "properties": ["id", "name", "rights"],
         |           "ids": ["#C42"]
         |          },
         |       "c2"]
@@ -1091,24 +1092,6 @@ trait MailboxSetMethodContract {
          |			"list": [{
          |				"id": "$mailboxId",
          |				"name": "myMailbox",
-         |				"sortOrder": 1000,
-         |				"totalEmails": 0,
-         |				"unreadEmails": 0,
-         |				"totalThreads": 0,
-         |				"unreadThreads": 0,
-         |				"myRights": {
-         |					"mayReadItems": true,
-         |					"mayAddItems": true,
-         |					"mayRemoveItems": true,
-         |					"maySetSeen": true,
-         |					"maySetKeywords": true,
-         |					"mayCreateChild": true,
-         |					"mayRename": true,
-         |					"mayDelete": true,
-         |					"maySubmit": true
-         |				},
-         |				"isSubscribed": true,
-         |        "namespace":"Personal",
          |				"rights": {
          |					"andre@domain.tld": ["l", "r"]
          |				}
@@ -1255,6 +1238,7 @@ trait MailboxSetMethodContract {
         |       ["Mailbox/get",
         |         {
         |           "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+        |           "properties": ["id", "name"],
         |           "ids": ["#C42"]
         |          },
         |       "c2"]
@@ -1314,24 +1298,7 @@ trait MailboxSetMethodContract {
          |      "state": "000001",
          |      "list": [{
          |        "id": "$mailboxId",
-         |        "name": "myMailbox",
-         |        "sortOrder": 1000,
-         |        "totalEmails": 0,
-         |        "unreadEmails": 0,
-         |        "totalThreads": 0,
-         |        "unreadThreads": 0,
-         |        "myRights": {
-         |          "mayReadItems": true,
-         |          "mayAddItems": true,
-         |          "mayRemoveItems": true,
-         |          "maySetSeen": true,
-         |          "maySetKeywords": true,
-         |          "mayCreateChild": true,
-         |          "mayRename": true,
-         |          "mayDelete": true,
-         |          "maySubmit": true
-         |        },
-         |        "isSubscribed": true
+         |        "name": "myMailbox"
          |      }],
          |      "notFound":[]
          |    }, "c2"]
@@ -2716,6 +2683,7 @@ trait MailboxSetMethodContract {
         |      ["Mailbox/get",
         |         {
         |           "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+        |           "properties": ["id", "name"],
         |           "ids": ["${mailboxId.serialize()}"]
         |          },
         |       "c2"]
@@ -2752,24 +2720,7 @@ trait MailboxSetMethodContract {
          |      "state": "000001",
          |      "list": [{
          |        "id": "1",
-         |        "name": "newName",
-         |        "sortOrder": 1000,
-         |        "totalEmails": 0,
-         |        "unreadEmails": 0,
-         |        "totalThreads": 0,
-         |        "unreadThreads": 0,
-         |        "myRights": {
-         |          "mayReadItems": true,
-         |          "mayAddItems": true,
-         |          "mayRemoveItems": true,
-         |          "maySetSeen": true,
-         |          "maySetKeywords": true,
-         |          "mayCreateChild": true,
-         |          "mayRename": true,
-         |          "mayDelete": true,
-         |          "maySubmit": true
-         |        },
-         |        "isSubscribed": false
+         |        "name": "newName"
          |      }],
          |      "notFound": []
          |    }, "c2"]
@@ -3462,6 +3413,7 @@ trait MailboxSetMethodContract {
         |       ["Mailbox/get",
         |         {
         |           "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+        |           "properties": ["id", "name", "parentId"],
         |           "ids": ["${childId.serialize()}"]
         |          },
         |       "c2"]
@@ -3499,24 +3451,7 @@ trait MailboxSetMethodContract {
          |      "list": [{
          |        "id": "${childId.serialize()}",
          |        "name": "newChild",
-         |        "parentId": "${parentId.serialize()}",
-         |        "sortOrder": 1000,
-         |        "totalEmails": 0,
-         |        "unreadEmails": 0,
-         |        "totalThreads": 0,
-         |        "unreadThreads": 0,
-         |        "myRights": {
-         |          "mayReadItems": true,
-         |          "mayAddItems": true,
-         |          "mayRemoveItems": true,
-         |          "maySetSeen": true,
-         |          "maySetKeywords": true,
-         |          "mayCreateChild": true,
-         |          "mayRename": true,
-         |          "mayDelete": true,
-         |          "maySubmit": true
-         |        },
-         |        "isSubscribed": false
+         |        "parentId": "${parentId.serialize()}"
          |      }],
          |      "notFound": []
          |    }, "c2"]
@@ -3550,6 +3485,7 @@ trait MailboxSetMethodContract {
         |       ["Mailbox/get",
         |         {
         |           "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+        |           "properties": ["id", "name", "parentId"],
         |           "ids": ["${childId.serialize()}"]
         |          },
         |       "c2"]
@@ -3587,24 +3523,7 @@ trait MailboxSetMethodContract {
          |      "list": [{
          |        "id": "${childId.serialize()}",
          |        "name": "child",
-         |        "parentId": "${parentId.serialize()}",
-         |        "sortOrder": 1000,
-         |        "totalEmails": 0,
-         |        "unreadEmails": 0,
-         |        "totalThreads": 0,
-         |        "unreadThreads": 0,
-         |        "myRights": {
-         |          "mayReadItems": true,
-         |          "mayAddItems": true,
-         |          "mayRemoveItems": true,
-         |          "maySetSeen": true,
-         |          "maySetKeywords": true,
-         |          "mayCreateChild": true,
-         |          "mayRename": true,
-         |          "mayDelete": true,
-         |          "maySubmit": true
-         |        },
-         |        "isSubscribed": false
+         |        "parentId": "${parentId.serialize()}"
          |      }],
          |      "notFound": []
          |    }, "c2"]
