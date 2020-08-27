@@ -371,7 +371,8 @@ class Serializer @Inject() (mailboxIdFactory: MailboxId.Factory) {
     mailboxCreationResponseWrites(MailboxCreationResponse.propertiesFiltered(capabilities))
   }
 
-  private implicit val utcDateWrites: Writes[UTCDate] = utcDate => JsString(utcDate.asUTC.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+  private implicit val utcDateWrites: Writes[UTCDate] =
+    utcDate => JsString(utcDate.asUTC.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX")))
 
   private implicit val vacationResponseIdWrites: Writes[VacationResponseId] = _ => JsString(VACATION_RESPONSE_ID)
   private implicit val isEnabledWrites: Writes[IsEnabled] = Json.valueWrites[IsEnabled]

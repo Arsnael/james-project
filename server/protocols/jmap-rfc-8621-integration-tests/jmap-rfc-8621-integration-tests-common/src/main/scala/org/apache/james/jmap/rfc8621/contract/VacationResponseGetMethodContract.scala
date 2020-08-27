@@ -145,8 +145,8 @@ trait VacationResponseGetMethodContract {
          |        {
          |          "id":"singleton",
          |          "isEnabled": true,
-         |          "fromDate": "2014-09-30T12:10:00Z[UTC]",
-         |          "toDate": "2016-04-15T04:56:32.224Z[UTC]",
+         |          "fromDate": "2014-09-30T12:10:00Z",
+         |          "toDate": "2016-04-15T04:56:32Z",
          |          "subject": "On vacation...",
          |          "textBody": "Test explaining my vacations",
          |          "htmlBody": "<b>Test explaining my vacations</b>"
