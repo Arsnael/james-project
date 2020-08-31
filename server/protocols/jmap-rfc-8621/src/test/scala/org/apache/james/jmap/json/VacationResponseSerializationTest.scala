@@ -31,8 +31,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
 
 object VacationResponseSerializationTest {
-  private val UTC_DATE_TIME_2016 = UTCDate(ZonedDateTime.parse("2016-10-09T08:07:06+07:00[Asia/Vientiane]"))
-  private val UTC_DATE_TIME_2017 = UTCDate(ZonedDateTime.parse("2017-10-09T08:07:06+07:00[Asia/Vientiane]"))
+  private val UTC_DATE_TIME_2016 = UTCDate(ZonedDateTime.parse("2016-10-09T01:07:06Z"))
+  private val UTC_DATE_TIME_2017 = UTCDate(ZonedDateTime.parse("2017-10-09T01:07:06Z"))
 
   private val VACATION_RESPONSE_ID: VacationResponseId = VacationResponseId()
   private val IS_ENABLED: IsEnabled = IsEnabled(true)
