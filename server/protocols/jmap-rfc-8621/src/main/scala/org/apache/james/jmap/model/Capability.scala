@@ -28,7 +28,7 @@ import org.apache.james.jmap.model.CoreCapabilityProperties.CollationAlgorithm
 import org.apache.james.jmap.model.MailCapability.EmailQuerySortOption
 import org.apache.james.jmap.model.UnsignedInt.UnsignedInt
 
-class CapabilityValidationException() extends IllegalArgumentException
+sealed trait CapabilityValidationException extends IllegalArgumentException
 case class MissingCapabilityException(capabilityIdentifier: CapabilityIdentifier) extends CapabilityValidationException
 
 object CapabilityIdentifier {
