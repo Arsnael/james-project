@@ -93,7 +93,7 @@ class VacationResponseGetMethod @Inject() (serializer: Serializer,
     }
 
   private def handleRequestValidationErrors(exception: Exception, methodCallId: MethodCallId): Publisher[Invocation] = exception match {
-    case e: MissingCapabilityException => SMono.just(Invocation.error(ErrorCode.UnknownMethod, methodCallId))
+    case _: MissingCapabilityException => SMono.just(Invocation.error(ErrorCode.UnknownMethod, methodCallId))
     case e: IllegalArgumentException => SMono.just(Invocation.error(ErrorCode.InvalidArguments, e.getMessage, methodCallId))
   }
 

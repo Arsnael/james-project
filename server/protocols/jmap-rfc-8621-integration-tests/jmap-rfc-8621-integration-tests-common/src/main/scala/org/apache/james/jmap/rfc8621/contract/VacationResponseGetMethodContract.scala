@@ -196,7 +196,7 @@ trait VacationResponseGetMethodContract {
   }
 
   @Test
-  def vacationResponseShouldReturnWhenSingletonId(): Unit = {
+  def vacationResponseShouldReturnValidResponseWhenSingletonId(): Unit = {
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
       .body(s"""{
