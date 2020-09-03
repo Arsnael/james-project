@@ -39,7 +39,7 @@ object VacationResponseGetSerializationTest {
   private val ACCOUNT_ID: AccountId = AccountId(id)
 
   private val SINGLETON_ID: UnparsedVacationResponseId = "singleton"
-  private val PROPERTIES: Properties = Properties.of("isEnabled", "fromDate")
+  private val PROPERTIES: Properties = Properties("isEnabled", "fromDate")
 }
 
 class VacationResponseGetSerializationTest extends AnyWordSpec with Matchers {

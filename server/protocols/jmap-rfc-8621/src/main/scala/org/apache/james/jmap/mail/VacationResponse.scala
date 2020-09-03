@@ -52,8 +52,8 @@ object VacationResponse {
     htmlBody = vacation.getHtmlBody.asScala.map(HtmlBody)
   )
 
-  val allProperties: Properties = Properties.of("id", "isEnabled", "fromDate", "toDate", "subject", "textBody", "htmlBody")
-  val idProperty: Properties = Properties.of("id")
+  val allProperties: Properties = Properties("id", "isEnabled", "fromDate", "toDate", "subject", "textBody", "htmlBody")
+  val idProperty: Properties = Properties("id")
 
   def propertiesFiltered(requestedProperties: Properties) : Properties = idProperty ++ requestedProperties
 }

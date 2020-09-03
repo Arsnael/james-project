@@ -42,7 +42,7 @@ object MailboxGetSerializationTest {
   private val MAILBOX_ID_1: UnparsedMailboxId = "1"
   private val MAILBOX_ID_2: UnparsedMailboxId = "2"
 
-  private val PROPERTIES: Properties = Properties.of("name", "role")
+  private val PROPERTIES: Properties = Properties("name", "role")
 }
 
 class MailboxGetSerializationTest extends AnyWordSpec with Matchers {
