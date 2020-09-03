@@ -31,9 +31,22 @@ import org.apache.james.jmap.api.vacation.{AccountId, VacationPatch}
 import org.apache.james.jmap.draft.JmapGuiceProbe
 import org.apache.james.jmap.http.UserCredential
 import org.apache.james.jmap.rfc8621.contract.Fixture.{ACCEPT_RFC8621_VERSION_HEADER, BOB, BOB_PASSWORD, DOMAIN, authScheme, baseRequestSpecBuilder}
+import org.apache.james.jmap.rfc8621.contract.VacationResponseGetMethodContract.VACATION_RESPONSE
 import org.apache.james.jmap.rfc8621.contract.tags.CategoryTags
 import org.apache.james.utils.DataProbeImpl
 import org.junit.jupiter.api.{BeforeEach, Tag, Test}
+
+object VacationResponseGetMethodContract {
+  private val VACATION_RESPONSE: VacationPatch =
+    VacationPatch.builder
+      .isEnabled(true)
+      .fromDate(ZonedDateTime.parse("2014-09-30T14:10:00+02:00"))
+      .toDate(ZonedDateTime.parse("2016-04-15T11:56:32.224+07:00[Asia/Vientiane]"))
+      .subject("On vacation...")
+      .textBody("Test explaining my vacations")
+      .htmlBody("<b>Test explaining my vacations</b>")
+      .build
+}
 
 trait VacationResponseGetMethodContract {
   @BeforeEach
@@ -99,8 +112,7 @@ trait VacationResponseGetMethodContract {
   @Tag(CategoryTags.BASIC_FEATURE)
   def vacationResponseShouldReturnStoredValue(server: GuiceJamesServer): Unit = {
     server.getProbe(classOf[JmapGuiceProbe])
-      .modifyVacation(AccountId.fromUsername(BOB),
-        createVacationResponse)
+      .modifyVacation(AccountId.fromUsername(BOB), VACATION_RESPONSE)
 
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
@@ -405,8 +417,7 @@ trait VacationResponseGetMethodContract {
   @Test
   def vacationResponseShouldReturnAllPropertiesWhenNull(server: GuiceJamesServer): Unit = {
     server.getProbe(classOf[JmapGuiceProbe])
-      .modifyVacation(AccountId.fromUsername(BOB),
-        createVacationResponse)
+      .modifyVacation(AccountId.fromUsername(BOB), VACATION_RESPONSE)
 
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
@@ -461,8 +472,7 @@ trait VacationResponseGetMethodContract {
   @Test
   def vacationResponseShouldReturnIdWhenNoPropertiesRequested(server: GuiceJamesServer): Unit = {
     server.getProbe(classOf[JmapGuiceProbe])
-      .modifyVacation(AccountId.fromUsername(BOB),
-        createVacationResponse)
+      .modifyVacation(AccountId.fromUsername(BOB), VACATION_RESPONSE)
 
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
@@ -511,8 +521,7 @@ trait VacationResponseGetMethodContract {
   @Test
   def vacationResponseShouldReturnOnlyRequestedProperties(server: GuiceJamesServer): Unit = {
     server.getProbe(classOf[JmapGuiceProbe])
-      .modifyVacation(AccountId.fromUsername(BOB),
-        createVacationResponse)
+      .modifyVacation(AccountId.fromUsername(BOB), VACATION_RESPONSE)
 
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
@@ -562,8 +571,7 @@ trait VacationResponseGetMethodContract {
   @Test
   def vacationResponseShouldAlwaysReturnIdEvenIfNotRequestedInProperties(server: GuiceJamesServer): Unit = {
     server.getProbe(classOf[JmapGuiceProbe])
-      .modifyVacation(AccountId.fromUsername(BOB),
-        createVacationResponse)
+      .modifyVacation(AccountId.fromUsername(BOB), VACATION_RESPONSE)
 
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
@@ -610,13 +618,44 @@ trait VacationResponseGetMethodContract {
          |}""".stripMargin)
   }
 
-  private def createVacationResponse: VacationPatch =
-    VacationPatch.builder
-      .isEnabled(true)
-      .fromDate(ZonedDateTime.parse("2014-09-30T14:10:00+02:00"))
-      .toDate(ZonedDateTime.parse("2016-04-15T11:56:32.224+07:00[Asia/Vientiane]"))
-      .subject("On vacation...")
-      .textBody("Test explaining my vacations")
-      .htmlBody("<b>Test explaining my vacations</b>")
-      .build
+  @Test
+  def vacationResponseShouldReturnInvalidArgumentsErrorWhenInvalidProperty(): Unit = {
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(s"""{
+               |  "using": [
+               |    "urn:ietf:params:jmap:core",
+               |    "urn:ietf:params:jmap:mail",
+               |    "urn:ietf:params:jmap:vacationresponse"],
+               |  "methodCalls": [[
+               |    "VacationResponse/get",
+               |    {
+               |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+               |      "ids": null,
+               |      "properties": ["invalidProperty"]
+               |    },
+               |    "c1"]]
+               |}""".stripMargin)
+    .when
+      .post
+    .`then`
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+      .stripMargin
+
+    assertThatJson(response).isEqualTo(
+      """{
+        |  "sessionState": "75128aab4b1b",
+        |  "methodResponses": [[
+        |    "error",
+        |    {
+        |      "type": "error",
+        |      "description": "The following properties [invalidProperty] do not exist."
+        |    },
+        |    "c1"]]
+        |}""".stripMargin)
+  }
 }

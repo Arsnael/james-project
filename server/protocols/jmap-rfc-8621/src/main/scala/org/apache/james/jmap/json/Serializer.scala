@@ -345,9 +345,8 @@ class Serializer @Inject() (mailboxIdFactory: MailboxId.Factory) {
   private implicit def vacationResponseGetResponseWrites(implicit vacationResponseWrites: Writes[VacationResponse]): Writes[VacationResponseGetResponse] =
     Json.writes[VacationResponseGetResponse]
 
-  private def vacationResponseWritesWithFilteredProperties(properties: Properties): Writes[VacationResponse] = {
+  private def vacationResponseWritesWithFilteredProperties(properties: Properties): Writes[VacationResponse] =
     vacationResponseWrites(VacationResponse.propertiesFiltered(properties))
-  }
 
   private implicit def jsErrorWrites: Writes[JsError] = Json.writes[JsError]
 
