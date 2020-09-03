@@ -26,6 +26,8 @@ import play.api.libs.json.JsObject
 
 object Properties {
   def empty(): Properties = Properties(Set())
+
+  def of(values: NonEmptyString*): Properties = Properties(values.toSet)
 }
 
 case class Properties(value: Set[NonEmptyString]) {
