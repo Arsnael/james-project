@@ -673,7 +673,7 @@ trait EmailGetMethodContract {
   }
 
   @Test
-  def requestingTheSameNotFoundIdTwiceReturnsItOnce(server: GuiceJamesServer): Unit = {
+  def requestingTheSameNotFoundIdTwiceReturnsItOnce(): Unit = {
     val messageId: MessageId = randomMessageId
     val request =
       s"""{

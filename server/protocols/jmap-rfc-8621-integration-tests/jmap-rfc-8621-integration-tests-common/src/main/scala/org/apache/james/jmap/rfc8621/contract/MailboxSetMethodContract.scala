@@ -2628,7 +2628,7 @@ trait MailboxSetMethodContract {
   }
 
   @Test
-  def creationIdReferencesShouldFailWhenNone(server: GuiceJamesServer): Unit = {
+  def creationIdReferencesShouldFailWhenNone(): Unit = {
     val request =
       s"""
         |{
