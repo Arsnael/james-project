@@ -220,7 +220,6 @@ trait VacationResponseSetMethodContract {
   }
 
   @Test
-  @Tag(CategoryTags.BASIC_FEATURE)
   def partialUpdateShouldSucceed(): Unit = {
     val request =
       s"""
