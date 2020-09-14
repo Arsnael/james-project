@@ -44,10 +44,6 @@ pipeline {
                             sh 'cp server/protocols/jmap-draft-integration-testing/rabbitmq-jmap-draft-integration-testing/src/test/resources/keystore dockerfiles/run/guice/cassandra-rabbitmq/destination/conf'
                             sh 'wget -O dockerfiles/run/guice/cassandra-rabbitmq/destination/glowroot.zip https://github.com/glowroot/glowroot/releases/download/v0.13.4/glowroot-0.13.4-dist.zip && unzip -u dockerfiles/run/guice/cassandra-rabbitmq/destination/glowroot.zip -d dockerfiles/run/guice/cassandra-rabbitmq/destination'
 
-                            if (params.PROFILE == "s3") {
-                                sh 'cp benchmarks/' + params.PROFILE + '.properties dockerfiles/run/guice/cassandra-rabbitmq/destination/conf/blob.properties'
-                            }
-
                             sh 'docker build -t james_run dockerfiles/run/guice/cassandra-rabbitmq'
                         }
                     }
@@ -72,7 +68,7 @@ pipeline {
                                     sh 'docker run -d --name=rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3.8.1-management'
 
                                     sh 'printenv | grep OS_ > env.file'
-                                    sh 'docker run -d --env-file env.file --hostname HOSTNAME -p 25:25 -p 1080:80 -p 8000:8000 -p 110:110 -p 143:143 -p 465:465 -p 587:587 -p 993:993 --link cassandra:cassandra --link rabbitmq:rabbitmq --link elasticsearch:elasticsearch --link s3:s3 --link tika:tika --name james_run -t james_run'
+                                    sh 'docker run -d --env-file env.file --hostname HOSTNAME -p 25:25 -p 1080:80 -p 8000:8000 -p 110:110 -p 143:143 -p 465:465 -p 587:587 -p 993:993 --link cassandra:cassandra --link rabbitmq:rabbitmq --link elasticsearch:elasticsearch --link s3:s3.docker.test --link tika:tika --name james_run -t james_run'
                                     break
                             }
                             def jamesCliWithOptions = 'java -jar /root/james-cli.jar -h 127.0.0.1 -p 9999'
@@ -116,7 +112,7 @@ pipeline {
             node('target') {
                 script {
                     sh 'docker logs james_run || true'
-                    sh 'docker rm -f cassandra rabbitmq elasticsearch tika james_run || true'
+                    sh 'docker rm -f cassandra rabbitmq elasticsearch tika s3 james_run || true'
                     sh 'sudo btrfs subvolume delete /srv/bench-running-docker || true'
                 }
             }
