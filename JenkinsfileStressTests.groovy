@@ -68,10 +68,11 @@ pipeline {
                                     sh 'docker run -d --name=cassandra -p 9042:9042 cassandra:3.11.3'
                                     sh 'docker run -d --name=elasticsearch -p 9200:9200 --env "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2'
                                     sh 'docker run -d --name=tika apache/tika:1.24'
+                                    sh 'docker run -d -p 8080:8000 --env "S3BACKEND=mem" --env "REMOTE_MANAGEMENT_DISABLE=1" --env "SCALITY_ACCESS_KEY_ID=accessKey1" --env "SCALITY_SECRET_ACCESS_KEY=secretKey1" --name=s3 zenko/cloudserver:8.2.6'
                                     sh 'docker run -d --name=rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3.8.1-management'
 
                                     sh 'printenv | grep OS_ > env.file'
-                                    sh 'docker run -d --env-file env.file --hostname HOSTNAME -p 25:25 -p 1080:80 -p 8000:8000 -p 110:110 -p 143:143 -p 465:465 -p 587:587 -p 993:993 --link cassandra:cassandra --link rabbitmq:rabbitmq --link elasticsearch:elasticsearch --link tika:tika --name james_run -t james_run'
+                                    sh 'docker run -d --env-file env.file --hostname HOSTNAME -p 25:25 -p 1080:80 -p 8000:8000 -p 110:110 -p 143:143 -p 465:465 -p 587:587 -p 993:993 --link cassandra:cassandra --link rabbitmq:rabbitmq --link elasticsearch:elasticsearch --link s3:s3 --link tika:tika --name james_run -t james_run'
                                     break
                             }
                             def jamesCliWithOptions = 'java -jar /root/james-cli.jar -h 127.0.0.1 -p 9999'
