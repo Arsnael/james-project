@@ -198,7 +198,7 @@ If you are using a a fresh installation of Docker, your DOCKER_HOST should be un
 
 This feature is available for three configurations :
 
- * Guice + Cassandra + RabbitMQ + Swift + ElasticSearch
+ * Guice + Cassandra + RabbitMQ + S3 + ElasticSearch
  * Guice + Cassandra + ElasticSearch
  * Guice + JPA + Lucene
  * Spring + JPA
@@ -226,9 +226,9 @@ You need a running *rabbitmq* in docker. To achieve this run:
 
     $ docker run -d --name=rabbitmq rabbitmq:3.8.1-management
 
-You need a running *s3* objectstorage in docker. To achieve this run:
+You need a running *s3* compatible objectstorage in docker. To achieve this run:
 
-    $ docker run -d -p 8080:8000 --name=s3 scality/s3server:6018536a
+    $ docker run -d -p 8080:8000 --env 'S3BACKEND=mem' --env 'REMOTE_MANAGEMENT_DISABLE=1' --env 'SCALITY_ACCESS_KEY_ID=accessKey1' --env 'SCALITY_SECRET_ACCESS_KEY=secretKey1' --name=s3 zenko/cloudserver:8.2.6
 
 You need a running *ElasticSearch* in docker. To achieve this run:
 
@@ -550,7 +550,7 @@ Where:
 - ITERATION is the release number used after the last hyphen (e.g. 3.0.1, 3.1.0, 3.2.0...)
 - BASE is the image jar and executable are copied from. Defaults to linagora/james-project
 - BASE_LDAP is the image jar and executable are copied from for a deployment with an LDAP user repository. Defaults to linagora/james-ldap-project
-- BASE_RABBITMQ is the image jar and executable are copied from for a deployment of linagora/james-project + RabbitMQ + Swift BlobStore.
+- BASE_RABBITMQ is the image jar and executable are copied from for a deployment of linagora/james-project + RabbitMQ + S3 BlobStore.
 Defaults to linagora/james-rabbitmq-project
 - TAG is the tag of these docker images. Defaults to latest.
 
