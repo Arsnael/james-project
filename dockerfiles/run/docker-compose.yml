@@ -10,8 +10,7 @@ services:
       - rabbitmq
       - s3
     entrypoint: bash -c "java -Dworking.directory=/root/ -Dlogback.configurationFile=/root/conf/logback.xml -jar james-server.jar"
-#    image: linagora/james-rabbitmq-project:latest
-    image: james_run
+    image: linagora/james-rabbitmq-project:latest
     container_name: james
     hostname: james.local
     ports:
