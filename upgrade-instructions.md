@@ -23,15 +23,14 @@ Change list:
 
 ### Swift support has been dropped
 
-Date ??/07/2020
+Date 14/09/2020
 
 JIRA: https://issues.apache.org/jira/browse/JAMES-3028
 
 Concerned product: Distributed James
 
-OpenStack's Swift support has been dropped, please use Cassandra or AWS S3 instead.
-
-The previous implementation was very complex, moreover Swift provides an AWS S3 API.
+OpenStack's Swift APIs support has been dropped, please use Cassandra or AWS S3 instead. Please note that modern Swift 
+versions support S3 APIs out of the box, thus OpenStack Swift can still be used through the S3 API.
 
 ### LDAP users repository connection pool now defaults to false
 
