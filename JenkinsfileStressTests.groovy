@@ -64,7 +64,7 @@ pipeline {
                                 case "reference":
                                     sh "cd /srv && sudo btrfs subvolume snapshot bench-snapshot-s3 bench-running-docker"
                                     sh 'docker run -d --name=cassandra -p 9042:9042 -v /srv/bench-running-docker/cassandra:/var/lib/cassandra cassandra:3.11.3'
-                                    sh 'docker run -d --name=elasticsearch -p 9200:9200 -v /srv/bench-running-docker/elasticsearch:/usr/share/elasticsearch/data/elasticsearch  --env "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2'
+                                    sh 'docker run -d --name=elasticsearch -p 9200:9200 -v /srv/bench-running-docker/elasticsearch:/usr/share/elasticsearch/data  --env "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2'
                                     sh 'docker run -d --name=tika apache/tika:1.24'
                                     sh 'docker run -d --name=s3 --env "REMOTE_MANAGEMENT_DISABLE=1" --env "SCALITY_ACCESS_KEY_ID=accessKey1" --env "SCALITY_SECRET_ACCESS_KEY=secretKey1" -v /srv/bench-running-docker/s3/localData:/usr/src/app/localData -v /srv/bench-running-docker/s3/localMetadata:/usr/src/app/localMetadata zenko/cloudserver:8.2.6'
                                     sh 'docker run -d --name=rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3.8.1-management'
