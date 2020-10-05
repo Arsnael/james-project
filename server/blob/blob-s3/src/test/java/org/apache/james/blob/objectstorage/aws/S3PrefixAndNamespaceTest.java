@@ -19,24 +19,16 @@
 
 package org.apache.james.blob.objectstorage.aws;
 
-import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.BlobStoreContract;
 import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
-import org.apache.james.blob.api.ObjectStoreException;
 import org.apache.james.server.blob.deduplication.BlobStoreFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import reactor.core.publisher.Mono;
 
 @ExtendWith(DockerAwsS3Extension.class)
 class S3PrefixAndNamespaceTest implements BlobStoreContract {
@@ -85,16 +77,5 @@ class S3PrefixAndNamespaceTest implements BlobStoreContract {
     @Override
     public BlobId.Factory blobIdFactory() {
         return new HashBlobId.Factory();
-    }
-
-    @Override
-    @Test
-    @Disabled("JAMES-3028: No exception thrown in this case...")
-    public void readBytesStreamShouldThrowWhenBucketDoesNotExist() {
-        BlobStore store = testee();
-
-        BlobId blobId = Mono.from(store.save(BucketName.DEFAULT, SHORT_BYTEARRAY, LOW_COST)).block();
-        assertThatThrownBy(() -> Mono.from(store.readBytes(CUSTOM, blobId)).block())
-            .isInstanceOf(ObjectStoreException.class);
     }
 }

@@ -212,9 +212,8 @@ public class S3BlobStoreDAO implements BlobStoreDAO, Startable, Closeable {
     @Override
     public Mono<Void> save(BucketName bucketName, BlobId blobId, InputStream inputStream) {
         Preconditions.checkNotNull(inputStream);
-        BucketName resolvedBucketName = bucketNameResolver.resolve(bucketName);
 
-        return uploadUsingFile(resolvedBucketName, blobId, inputStream);
+        return uploadUsingFile(bucketName, blobId, inputStream);
     }
 
     private Mono<Void> uploadUsingFile(BucketName bucketName, BlobId blobId, InputStream inputStream) {
@@ -274,10 +273,14 @@ public class S3BlobStoreDAO implements BlobStoreDAO, Startable, Closeable {
     public Mono<Void> deleteBucket(BucketName bucketName) {
         BucketName resolvedBucketName = bucketNameResolver.resolve(bucketName);
 
-        return emptyBucket(resolvedBucketName)
-            .onErrorResume(t -> Mono.just(resolvedBucketName))
+        return deleteResolvedBucket(resolvedBucketName);
+    }
+
+    private Mono<Void> deleteResolvedBucket(BucketName bucketName) {
+        return emptyBucket(bucketName)
+            .onErrorResume(t -> Mono.just(bucketName))
             .flatMap(ignore -> clientPool.withPoolable(client -> Mono.fromFuture(() ->
-                client.deleteBucket(builder -> builder.bucket(resolvedBucketName.asString()))))
+                client.deleteBucket(builder -> builder.bucket(bucketName.asString()))))
                 .next())
             .onErrorResume(t -> Mono.empty())
             .then();
@@ -308,7 +311,7 @@ public class S3BlobStoreDAO implements BlobStoreDAO, Startable, Closeable {
     public Mono<Void> deleteAllBuckets() {
         return clientPool.withPoolable(client -> Mono.fromFuture(client::listBuckets)
                 .flatMapIterable(ListBucketsResponse::buckets)
-                     .flatMap(bucket -> deleteBucket(BucketName.of(bucket.name()))))
+                     .flatMap(bucket -> deleteResolvedBucket(BucketName.of(bucket.name()))))
             .then();
     }
 }

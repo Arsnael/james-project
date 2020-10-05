@@ -19,25 +19,15 @@
 
 package org.apache.james.blob.objectstorage.aws;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.BlobStoreContract;
-import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.server.blob.deduplication.BlobStoreFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import reactor.core.publisher.Mono;
 
 @ExtendWith(DockerAwsS3Extension.class)
 class S3PrefixTest implements BlobStoreContract {
@@ -65,8 +55,6 @@ class S3PrefixTest implements BlobStoreContract {
             .blobIdFactory(new HashBlobId.Factory())
             .defaultBucketName()
             .passthrough();
-        // FIX: if choosing deduplication, the test `readBytesStreamShouldThrowWhenBucketDoesNotExist` fails
-        // as it doesn't throw when bucket does not exist
     }
 
     @AfterEach
@@ -87,19 +75,5 @@ class S3PrefixTest implements BlobStoreContract {
     @Override
     public BlobId.Factory blobIdFactory() {
         return new HashBlobId.Factory();
-    }
-
-    @Override
-    @Test
-    @Disabled("JAMES-3028: Blob not found exception...")
-    public void saveShouldSaveEmptyInputStream(BlobStore.StoragePolicy storagePolicy) {
-        BlobStore store = testee();
-        BucketName defaultBucketName = store.getDefaultBucketName();
-
-        BlobId blobId = Mono.from(store.save(defaultBucketName, new ByteArrayInputStream(EMPTY_BYTEARRAY), storagePolicy)).block();
-
-        byte[] bytes = Mono.from(store.readBytes(defaultBucketName, blobId)).block();
-
-        assertThat(new String(bytes, StandardCharsets.UTF_8)).isEmpty();
     }
 }
