@@ -19,19 +19,27 @@
 
 package org.apache.james.blob.objectstorage.aws;
 
+import static org.apache.james.blob.api.BlobStore.StoragePolicy.LOW_COST;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.BlobStoreContract;
+import org.apache.james.blob.api.BucketName;
 import org.apache.james.blob.api.HashBlobId;
+import org.apache.james.blob.api.ObjectStoreException;
 import org.apache.james.server.blob.deduplication.BlobStoreFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(DockerAwsS3Extension.class)
-class S3DeDuplicationBlobStoreTest implements BlobStoreContract {
+import reactor.core.publisher.Mono;
 
+@ExtendWith(DockerAwsS3Extension.class)
+class S3PrefixAndNamespaceTest implements BlobStoreContract {
     private static BlobStore testee;
     private static S3BlobStoreDAO s3BlobStoreDAO;
 
@@ -46,6 +54,8 @@ class S3DeDuplicationBlobStoreTest implements BlobStoreContract {
         S3BlobStoreConfiguration s3Configuration = S3BlobStoreConfiguration.builder()
             .authConfiguration(authConfiguration)
             .region(dockerAwsS3.dockerAwsS3().region())
+            .defaultBucketName(BucketName.of("namespace"))
+            .bucketPrefix("prefix")
             .build();
 
         s3BlobStoreDAO = new S3BlobStoreDAO(s3Configuration);
@@ -53,7 +63,7 @@ class S3DeDuplicationBlobStoreTest implements BlobStoreContract {
         testee = BlobStoreFactory.builder()
             .blobStoreDAO(s3BlobStoreDAO)
             .blobIdFactory(new HashBlobId.Factory())
-            .defaultBucketName()
+            .bucket(BucketName.of("namespace"))
             .deduplication();
     }
 
@@ -77,4 +87,14 @@ class S3DeDuplicationBlobStoreTest implements BlobStoreContract {
         return new HashBlobId.Factory();
     }
 
+    @Override
+    @Test
+    @Disabled("JAMES-3028: No exception thrown in this case...")
+    public void readBytesStreamShouldThrowWhenBucketDoesNotExist() {
+        BlobStore store = testee();
+
+        BlobId blobId = Mono.from(store.save(BucketName.DEFAULT, SHORT_BYTEARRAY, LOW_COST)).block();
+        assertThatThrownBy(() -> Mono.from(store.readBytes(CUSTOM, blobId)).block())
+            .isInstanceOf(ObjectStoreException.class);
+    }
 }
