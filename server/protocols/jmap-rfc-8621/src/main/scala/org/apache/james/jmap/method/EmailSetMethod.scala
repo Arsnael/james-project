@@ -24,7 +24,7 @@ import javax.inject.Inject
 import org.apache.james.jmap.http.SessionSupplier
 import org.apache.james.jmap.json.{EmailSetSerializer, ResponseSerializer}
 import org.apache.james.jmap.mail.EmailSet.UnparsedMessageId
-import org.apache.james.jmap.mail.{DestroyIds, EmailSet, EmailSetRequest, EmailSetResponse, EmailSetUpdate}
+import org.apache.james.jmap.mail.{DestroyIds, EmailSet, EmailSetRequest, EmailSetResponse, EmailSetUpdate, MailboxIds, ValidatedEmailSetUpdate}
 import org.apache.james.jmap.model.CapabilityIdentifier.CapabilityIdentifier
 import org.apache.james.jmap.model.DefaultCapabilities.{CORE_CAPABILITY, MAIL_CAPABILITY}
 import org.apache.james.jmap.model.Invocation.{Arguments, MethodName}
@@ -83,7 +83,7 @@ case class DestroySuccess(messageId: MessageId) extends DestroyResult
 case class DestroyFailure(unparsedMessageId: UnparsedMessageId, e: Throwable) extends DestroyResult {
   def asMessageSetError: SetError = e match {
     case e: IllegalArgumentException => SetError.invalidArguments(SetErrorDescription(s"$unparsedMessageId is not a messageId: ${e.getMessage}"))
-    case e: MessageNotFoundExeception => SetError.notFound(SetErrorDescription(s"Cannot find message with messageId: ${e.messageId.serialize()}"))
+    case e: MessageNotFoundExeception => SetError.notFound(SetErrorDescription(s"Cannot find message with messageId: ${e.messageId.serialize}"))
     case _ => SetError.serverFail(SetErrorDescription(e.getMessage))
   }
 }
@@ -97,6 +97,7 @@ trait UpdateResult
 case class UpdateSuccess(messageId: MessageId) extends UpdateResult
 case class UpdateFailure(unparsedMessageId: UnparsedMessageId, e: Throwable) extends UpdateResult {
   def asMessageSetError: SetError = e match {
+    case e: MessageNotFoundExeception => SetError.serverFail(SetErrorDescription(s"Cannot find message with messageId: ${e.messageId.serialize}"))
     case _ => SetError.serverFail(SetErrorDescription(e.getMessage))
   }
 }
@@ -137,6 +138,7 @@ case class UpdateResults(results: Seq[UpdateResult]) {
             accountId = request.accountId,
             newState = State.INSTANCE,
             updated = updateResults.updated,
+            notUpdated = updateResults.notUpdated,
             destroyed = destroyResults.destroyed,
             notDestroyed = destroyResults.notDestroyed))),
           methodCallId = invocation.invocation.methodCallId),
@@ -187,7 +189,7 @@ case class UpdateResults(results: Seq[UpdateResult]) {
         .collectMultimap(metaData => metaData.getComposedMessageId.getMessageId)
         .flatMap(metaData => {
           SFlux.fromIterable(validUpdates)
-            .flatMap[UpdateResult]({
+            .concatMap[UpdateResult]({
               case (messageId, updatePatch) =>
                 doUpdate(messageId, updatePatch, metaData.get(messageId).toList.flatten, session)
             })
@@ -199,17 +201,22 @@ case class UpdateResults(results: Seq[UpdateResult]) {
   }
 
   private def doUpdate(messageId: MessageId, update: EmailSetUpdate, storedMetaData: List[ComposedMessageIdWithMetaData], session: MailboxSession): SMono[UpdateResult] = {
-    val mailboxIds: List[MailboxId] = storedMetaData.map(metaData => metaData.getComposedMessageId.getMailboxId)
-    resetFlags(messageId, update, mailboxIds, session)
-      .onErrorResume(e => SMono.just[UpdateResult](UpdateFailure(EmailSet.asUnparsed(messageId), e)))
-      .switchIfEmpty(SMono.just[UpdateResult](UpdateSuccess(messageId)))
+    val mailboxIds: MailboxIds = MailboxIds(storedMetaData.map(metaData => metaData.getComposedMessageId.getMailboxId))
+
+    if (mailboxIds.value.isEmpty) {
+      SMono.just[UpdateResult](UpdateFailure(EmailSet.asUnparsed(messageId), MessageNotFoundExeception(messageId)))
+    } else {
+      update.validate.fold(
+        e => SMono.just[UpdateResult](UpdateFailure(EmailSet.asUnparsed(messageId), e)),
+        validUpdate => resetFlags(messageId, validUpdate, mailboxIds, session))
+    }
   }
 
-  private def resetFlags(messageId: MessageId, update: EmailSetUpdate, mailboxIds: List[MailboxId], session: MailboxSession) = {
+  private def resetFlags(messageId: MessageId, update: ValidatedEmailSetUpdate, mailboxIds: MailboxIds, session: MailboxSession) = {
     SMono.justOrEmpty(update.keywords)
       .map(key => key.asFlags)
       .flatMap(flags => SMono.fromCallable(() =>
-        messageIdManager.setFlags(flags, FlagsUpdateMode.REPLACE, messageId, ImmutableList.copyOf(mailboxIds.asJavaCollection), session))
+        messageIdManager.setFlags(flags, FlagsUpdateMode.REPLACE, messageId, ImmutableList.copyOf(mailboxIds.value.asJavaCollection), session))
         .subscribeOn(Schedulers.elastic())
         .`then`(SMono.just[UpdateResult](UpdateSuccess(messageId))))
   }

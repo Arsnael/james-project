@@ -23,11 +23,12 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection.NonEmpty
 import org.apache.james.jmap.mail.EmailSet.UnparsedMessageId
 import org.apache.james.jmap.method.WithAccountId
+import org.apache.james.jmap.model.KeywordsFactory.STRICT_KEYWORDS_FACTORY
 import org.apache.james.jmap.model.State.State
 import org.apache.james.jmap.model.{AccountId, Keywords, SetError}
 import org.apache.james.mailbox.model.MessageId
 
-import scala.util.Try
+import scala.util.{Failure, Right, Success, Try}
 
 object EmailSet {
   type UnparsedMessageIdConstraint = NonEmpty
@@ -51,8 +52,16 @@ case class EmailSetRequest(accountId: AccountId,
 case class EmailSetResponse(accountId: AccountId,
                             newState: State,
                             updated: Option[Map[MessageId, Unit]],
+                            notUpdated: Option[Map[UnparsedMessageId, SetError]],
                             destroyed: Option[DestroyIds],
                             notDestroyed: Option[Map[UnparsedMessageId, SetError]])
 
-case class EmailSetUpdate(keywords: Option[Keywords])
+case class EmailSetUpdate(keywords: Option[Keywords]) {
+  def validate: Either[IllegalArgumentException, ValidatedEmailSetUpdate] = STRICT_KEYWORDS_FACTORY.fromSet(keywords.get.getKeywords) match {
+    case Success(keywords: Keywords) => Right(ValidatedEmailSetUpdate(Some(keywords)))
+    case Failure(throwable: IllegalArgumentException) => Left(throwable)
+  }
+}
+
+case class ValidatedEmailSetUpdate(keywords: Option[Keywords])
 

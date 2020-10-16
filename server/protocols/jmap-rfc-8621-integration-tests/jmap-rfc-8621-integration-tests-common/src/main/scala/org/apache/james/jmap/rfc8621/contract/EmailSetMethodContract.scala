@@ -19,25 +19,32 @@
 package org.apache.james.jmap.rfc8621.contract
 
 import java.nio.charset.StandardCharsets
+import java.util
+import java.util.List
 
 import io.netty.handler.codec.http.HttpHeaderNames.ACCEPT
 import io.restassured.RestAssured.{`given`, requestSpecification}
 import io.restassured.http.ContentType.JSON
 import javax.mail.Flags
+import javax.mail.Flags.Flag
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
 import org.apache.http.HttpStatus.SC_OK
 import org.apache.james.GuiceJamesServer
-import org.apache.james.jmap.draft.JmapGuiceProbe
+import org.apache.james.jmap.draft.{JmapGuiceProbe, MessageIdProbe}
 import org.apache.james.jmap.http.UserCredential
 import org.apache.james.jmap.rfc8621.contract.Fixture.{ACCEPT_RFC8621_VERSION_HEADER, ACCOUNT_ID, ANDRE, ANDRE_PASSWORD, BOB, BOB_PASSWORD, DOMAIN, authScheme, baseRequestSpecBuilder}
+import org.apache.james.mailbox.FlagsBuilder
 import org.apache.james.mailbox.MessageManager.AppendCommand
 import org.apache.james.mailbox.model.MailboxACL.{NO_RIGHTS, Right}
-import org.apache.james.mailbox.model.{MailboxACL, MailboxId, MailboxPath, MessageId}
+import org.apache.james.mailbox.model.{MailboxACL, MailboxId, MailboxPath, MessageId, MessageResult}
 import org.apache.james.mime4j.dom.Message
 import org.apache.james.modules.{ACLProbeImpl, MailboxProbeImpl}
 import org.apache.james.utils.DataProbeImpl
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.{BeforeEach, Test}
 
+import scala.::
 import scala.jdk.CollectionConverters._
 
 trait EmailSetMethodContract {
@@ -57,7 +64,7 @@ trait EmailSetMethodContract {
   def randomMessageId: MessageId
 
   @Test
-  def shouldAddKeywords(server: GuiceJamesServer): Unit = {
+  def shouldResetKeywords(server: GuiceJamesServer): Unit = {
     val message: Message = Fixture.createTestMessage
 
     val flags: Flags = new Flags(Flags.Flag.ANSWERED)
@@ -117,7 +124,7 @@ trait EmailSetMethodContract {
   }
 
   @Test
-  def shouldNotAddKeywordWhenFalseValue(server: GuiceJamesServer): Unit = {
+  def shouldNotResetKeywordWhenFalseValue(server: GuiceJamesServer): Unit = {
     val message: Message = Fixture.createTestMessage
 
     val flags: Flags = new Flags(Flags.Flag.ANSWERED)
@@ -143,14 +150,7 @@ trait EmailSetMethodContract {
          |          }
          |        }
          |      }
-         |    }, "c1"],
-         |    ["Email/get",
-         |     {
-         |       "accountId": "$ACCOUNT_ID",
-         |       "ids": ["${messageId.serialize}"],
-         |       "properties": ["keywords"]
-         |     },
-         |     "c2"]]
+         |    }, "c1"]]
          |}""".stripMargin
 
     val response = `given`
@@ -166,19 +166,16 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .inPath("methodResponses[1][1].list[0]")
-      .isEqualTo(String.format(
-        """{
-          |   "id":"%s",
-          |   "keywords": {
-          |     "$Answered": true
-          |   }
-          |}
-      """.stripMargin, messageId.serialize))
+      .inPath("methodResponses[0][1]")
+      .isEqualTo(
+        """|{
+          |   "type":"invalidArguments",
+          |   "description": "{\"errors\":[{\"path\":\"obj.update.keywords\",\"messages\":[\"keyword value can only be true\"]}]}"
+          |}""".stripMargin)
   }
 
   @Test
-  def shouldNotAddKeywordWhenInvalidKeyword(server: GuiceJamesServer): Unit = {
+  def shouldNotResetKeywordWhenInvalidKeyword(server: GuiceJamesServer): Unit = {
     val message: Message = Fixture.createTestMessage
 
     val flags: Flags = new Flags(Flags.Flag.ANSWERED)
@@ -203,14 +200,7 @@ trait EmailSetMethodContract {
          |          }
          |        }
          |      }
-         |    }, "c1"],
-         |    ["Email/get",
-         |     {
-         |       "accountId": "$ACCOUNT_ID",
-         |       "ids": ["${messageId.serialize}"],
-         |       "properties": ["keywords"]
-         |     },
-         |     "c2"]]
+         |    }, "c1"]]
          |}""".stripMargin
 
     val response = `given`
@@ -226,19 +216,16 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .inPath("methodResponses[1][1].list[0]")
-      .isEqualTo(String.format(
-        """{
-          |   "id":"%s",
-          |   "keywords": {
-          |     "$Answered": true
-          |   }
-          |}
-      """.stripMargin, messageId.serialize))
+      .inPath("methodResponses[0][1]")
+      .isEqualTo(
+        """|{
+          |   "type":"invalidArguments",
+          |   "description": "{\"errors\":[{\"path\":\"obj.update.keywords\",\"messages\":[\"FlagName must not be null or empty, must have length form 1-255,must not contain characters with hex from '\\\\u0000' to '\\\\u00019' or {'(' ')' '{' ']' '%' '*' '\\\"' '\\\\'} \"]}]}"
+          |}""".stripMargin)
   }
 
   @Test
-  def shouldNotAddKeywordWhenMessageIdNonExisted(server: GuiceJamesServer): Unit = {
+  def shouldNotResetKeywordWhenItNonExposed(server: GuiceJamesServer): Unit = {
     val message: Message = Fixture.createTestMessage
 
     val flags: Flags = new Flags(Flags.Flag.ANSWERED)
@@ -250,8 +237,7 @@ trait EmailSetMethodContract {
       .build(message))
       .getMessageId
 
-    val request =
-      s"""{
+    val request = String.format(s"""{
          |  "using": ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
          |  "methodCalls": [
          |    ["Email/set", {
@@ -260,19 +246,12 @@ trait EmailSetMethodContract {
          |        "${messageId.serialize}":{
          |          "keywords": {
          |             "music": true,
-         |             "movie": false
+         |             "%s": true
          |          }
          |        }
          |      }
-         |    }, "c1"],
-         |    ["Email/get",
-         |     {
-         |       "accountId": "$ACCOUNT_ID",
-         |       "ids": ["${messageId.serialize}"],
-         |       "properties": ["keywords"]
-         |     },
-         |     "c2"]]
-         |}""".stripMargin
+         |    }, "c1"]]
+         |}""".stripMargin, "$Recent")
 
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
@@ -287,15 +266,53 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .inPath("methodResponses[1][1].list[0]")
-      .isEqualTo(String.format(
-        """{
-          |   "id":"%s",
-          |   "keywords": {
-          |     "$Answered": true
-          |   }
-          |}
-      """.stripMargin, messageId.serialize))
+      .inPath("methodResponses[0][1].notUpdated")
+      .isEqualTo(s"""{"${messageId.serialize}":{"type":"serverFail","description":"Does not allow to update 'Deleted' or 'Recent' flag"}}""")
+  }
+
+  @Test
+  def test1(server: GuiceJamesServer): Unit = {
+    val message: Message = Fixture.createTestMessage
+    val bobPath = MailboxPath.inbox(BOB)
+    server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobPath)
+    val messageId: MessageId = server.getProbe(classOf[MailboxProbeImpl]).appendMessage(BOB.asString(), bobPath, AppendCommand.builder()
+      .isRecent(true)
+      .build(message))
+      .getMessageId
+
+    val request = String.format(s"""{
+         |  "using": ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
+         |  "methodCalls": [
+         |    ["Email/set", {
+         |      "accountId": "$ACCOUNT_ID",
+         |      "update": {
+         |        "${messageId.serialize}":{
+         |          "keywords": {
+         |             "music": true
+         |          }
+         |        }
+         |      }
+         |    }, "c1"]]
+         |}""".stripMargin, "$Recent")
+
+    val response = `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(request)
+    .when
+      .post
+    .`then`
+      .statusCode(SC_OK)
+      .contentType(JSON)
+      .extract
+      .body
+      .asString
+
+    val messages: util.List[MessageResult] = server.getProbe(classOf[MessageIdProbe]).getMessages(messageId, BOB)
+    val expectedFlags: Flags  = FlagsBuilder.builder.add(new Flags("music")).isRecent(true).build
+
+    assertThat(messages)
+      .extracting(_ => _.getFlags)
+      .containsExactly(expectedFlags)
   }
 
   @Test
@@ -367,11 +384,12 @@ trait EmailSetMethodContract {
 
     val bobPath = MailboxPath.inbox(BOB)
     server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobPath)
-    val messageId: MessageId = server.getProbe(classOf[MailboxProbeImpl]).appendMessage(BOB.asString(), bobPath, AppendCommand.builder()
+    server.getProbe(classOf[MailboxProbeImpl]).appendMessage(BOB.asString(), bobPath, AppendCommand.builder()
       .withFlags(flags)
       .build(message))
       .getMessageId
 
+    val invalidMessageId: String = "999"
     val request =
       s"""{
          |  "using": ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
@@ -379,21 +397,13 @@ trait EmailSetMethodContract {
          |    ["Email/set", {
          |      "accountId": "$ACCOUNT_ID",
          |      "update": {
-         |        "${messageId.serialize}1":{
+         |        "$invalidMessageId":{
          |          "keywords": {
-         |             "music": true,
-         |             "movie": false
+         |             "music": true
          |          }
          |        }
          |      }
-         |    }, "c1"],
-         |    ["Email/get",
-         |     {
-         |       "accountId": "$ACCOUNT_ID",
-         |       "ids": ["${messageId.serialize}"],
-         |       "properties": ["keywords"]
-         |     },
-         |     "c2"]]
+         |    }, "c1"]]
          |}""".stripMargin
 
     val response = `given`
@@ -409,53 +419,43 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .inPath("methodResponses[1][1].list[0]")
-      .isEqualTo(String.format(
-        """{
-          |   "id":"%s",
-          |   "keywords": {
-          |     "$Answered": true
-          |   }
-          |}
-      """.stripMargin, messageId.serialize))
+     .inPath("methodResponses[0][1].notUpdated")
+     .isEqualTo(s"""{
+        | "$invalidMessageId": {
+        |     "type":"serverFail",
+        |     "description":"For input string: \"$invalidMessageId\""
+        | }
+        |}""".stripMargin)
   }
 
   @Test
-  def shouldNotAddKeywordWhenItNonExposed(server: GuiceJamesServer): Unit = {
+  def shouldNotAddKeywordWhenMessageIdNonExisted(server: GuiceJamesServer): Unit = {
     val message: Message = Fixture.createTestMessage
 
     val flags: Flags = new Flags(Flags.Flag.ANSWERED)
 
     val bobPath = MailboxPath.inbox(BOB)
     server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobPath)
-    val messageId: MessageId = server.getProbe(classOf[MailboxProbeImpl]).appendMessage(BOB.asString(), bobPath, AppendCommand.builder()
+    server.getProbe(classOf[MailboxProbeImpl]).appendMessage(BOB.asString(), bobPath, AppendCommand.builder()
       .withFlags(flags)
       .build(message))
       .getMessageId
 
-    val request =
-      String.format(s"""{
+    val nonExistedMessageId: String = "999"
+    val request = s"""{
          |  "using": ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
          |  "methodCalls": [
          |    ["Email/set", {
          |      "accountId": "$ACCOUNT_ID",
          |      "update": {
-         |        "${messageId.serialize}":{
+         |        "$nonExistedMessageId":{
          |          "keywords": {
-         |             "%s": true,
-         |             "%s": true
+         |             "music": true
          |          }
          |        }
          |      }
-         |    }, "c1"],
-         |    ["Email/get",
-         |     {
-         |       "accountId": "$ACCOUNT_ID",
-         |       "ids": ["${messageId.serialize}"],
-         |       "properties": ["keywords"]
-         |     },
-         |     "c2"]]
-         |}""".stripMargin, "$Recent", "$Deleted")
+         |    }, "c1"]]
+         |}""".stripMargin
 
     val response = `given`
       .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
@@ -470,13 +470,13 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .inPath("methodResponses[1][1].list[0]")
-      .isEqualTo(String.format(
-        """{
-          |   "id":"%s",
-          |   "keywords": {}
-          |}
-      """.stripMargin, messageId.serialize))
+      .inPath("methodResponses[0][1].notUpdated")
+      .isEqualTo(s"""{
+        | "$nonExistedMessageId": {
+        |     "type":"serverFail",
+        |     "description":"Cannot find message with messageId: $nonExistedMessageId"
+        | }
+        |}""".stripMargin)
   }
 
   @Test
@@ -515,14 +515,7 @@ trait EmailSetMethodContract {
          |        }
          |      }
          |    },
-         |    "c1"],
-         |    ["Email/get",
-         |     {
-         |       "accountId": "$ACCOUNT_ID",
-         |       "ids": ["${messageId.serialize}"],
-         |       "properties": ["keywords"]
-         |     },
-         |     "c2"]]
+         |    "c1"]]
          |}""".stripMargin
 
     val response = `given`
@@ -538,13 +531,8 @@ trait EmailSetMethodContract {
       .asString
 
     assertThatJson(response)
-      .inPath("methodResponses[1][1].list[0]")
-      .isEqualTo(String.format(
-        """{
-          |   "id":"%s",
-          |   "keywords": {}
-          |}
-      """.stripMargin, messageId.serialize))
+      .inPath("methodResponses[0][1].notUpdated")
+      .isEqualTo(s"""{"${messageId.serialize}":{\"type\":"serverFail\",\"description\":\"#private:andre@domain.tld:andrecustom can not be found\"}}""")
   }
 
   @Test
@@ -605,20 +593,20 @@ trait EmailSetMethodContract {
       .body
       .asString
 
-    assertThatJson(response)
-      .inPath("methodResponses[1][1]")
-      .isEqualTo(
-        s"""{
-          |   "accountId":"$ACCOUNT_ID",
-          |   "state":"000001",
-          |   "list":[],
-          |   "notFound":["1"]
-          |}
-      """.stripMargin)
+    SoftAssertions.assertSoftly(_ => {
+      assertThatJson(response)
+        .inPath("methodResponses[0][1].notUpdated")
+        .isEqualTo(
+          s"""{\"${messageId.serialize}\":{\"type\":\"serverFail\",\"description\":\"Cannot find message with messageId: ${messageId.serialize}\"}}""")
+
+      assertThatJson(response)
+        .inPath("methodResponses[1][1]")
+        .isEqualTo(s"""{"accountId":"$ACCOUNT_ID","state":"000001","list":[],"notFound":["1"]}""")
+    })
   }
 
   @Test
-  def shouldAddInDelegatedMailboxesWhenHadAtLeastWriteRight(server: GuiceJamesServer): Unit = {
+  def shouldResetFlagsInDelegatedMailboxesWhenHadAtLeastWriteRight(server: GuiceJamesServer): Unit = {
     val andreMailbox: String = "andrecustom"
     val andrePath = MailboxPath.forUser(ANDRE, andreMailbox)
     server.getProbe(classOf[MailboxProbeImpl]).createMailbox(andrePath)
