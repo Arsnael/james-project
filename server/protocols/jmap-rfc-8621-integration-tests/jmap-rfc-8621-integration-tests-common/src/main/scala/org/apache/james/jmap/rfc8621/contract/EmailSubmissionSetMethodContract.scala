@@ -30,7 +30,7 @@ import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
 import org.apache.http.HttpStatus.SC_OK
 import org.apache.james.GuiceJamesServer
 import org.apache.james.jmap.http.UserCredential
-import org.apache.james.jmap.rfc8621.contract.Fixture.{ACCEPT_RFC8621_VERSION_HEADER, ACCOUNT_ID, ANDRE, ANDRE_PASSWORD, BOB, BOB_PASSWORD, DOMAIN, authScheme, baseRequestSpecBuilder}
+import org.apache.james.jmap.rfc8621.contract.Fixture.{ACCEPT_RFC8621_VERSION_HEADER, ACCOUNT_ID, ANDRE, ANDRE_PASSWORD, BOB, BOB_PASSWORD, DOMAIN, andreAccountId, authScheme, baseRequestSpecBuilder}
 import org.apache.james.mailbox.DefaultMailboxes
 import org.apache.james.mailbox.MessageManager.AppendCommand
 import org.apache.james.mailbox.model.MailboxACL.Right
@@ -43,7 +43,6 @@ import org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS
 import org.junit.jupiter.api.{BeforeEach, Test}
 
 trait EmailSubmissionSetMethodContract {
-  private def andreAccountId: String = "1e8584548eca20f26faf6becc1704a0f352839f12c208a47fbd486d60f491f7c"
   private lazy val slowPacedPollInterval = ONE_HUNDRED_MILLISECONDS
   private lazy val calmlyAwait = Awaitility.`with`
     .pollInterval(slowPacedPollInterval)
@@ -312,7 +311,7 @@ trait EmailSubmissionSetMethodContract {
           .setBody(requestReadMailAndre)
           .build, new ResponseSpecBuilder().build)
         .post
-        .`then`
+      .`then`
         .statusCode(SC_OK)
         .contentType(JSON)
         .extract
@@ -721,9 +720,9 @@ trait EmailSubmissionSetMethodContract {
       val response = `given`
         .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
         .body(requestReadMail)
-        .when
+      .when
         .post
-        .`then`
+      .`then`
         .statusCode(SC_OK)
         .contentType(JSON)
         .extract
