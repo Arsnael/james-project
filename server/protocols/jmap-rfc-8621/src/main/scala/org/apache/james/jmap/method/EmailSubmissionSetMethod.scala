@@ -112,14 +112,12 @@ class EmailSubmissionSetMethod @Inject()(serializer: EmailSubmissionSetSerialize
       .toMap
   }
 
-  def init(): Unit = {
+  def init: Unit =
     queue = mailQueueFactory.createQueue(SPOOL)
-  }
 
-  @PreDestroy def dispose(): Unit = {
+  @PreDestroy def dispose: Unit =
     Try(queue.close())
       .recover(e => LOGGER.debug("error closing queue", e))
-  }
 
   override def doProcess(capabilities: Set[CapabilityIdentifier], invocation: InvocationWithContext, mailboxSession: MailboxSession, request: EmailSubmissionSetRequest): SMono[InvocationWithContext] = {
     for {
@@ -138,21 +136,18 @@ class EmailSubmissionSetMethod @Inject()(serializer: EmailSubmissionSetSerialize
   }
 
   override def getRequest(mailboxSession: MailboxSession, invocation: Invocation): SMono[EmailSubmissionSetRequest] =
-    asEmailSubmissionSetRequest(invocation.arguments)
-
-  private def asEmailSubmissionSetRequest(arguments: Arguments): SMono[EmailSubmissionSetRequest] =
-    serializer.deserializeEmailSubmissionSetRequest(arguments.value) match {
+    serializer.deserializeEmailSubmissionSetRequest(invocation.arguments.value) match {
       case JsSuccess(emailSubmissionSetRequest, _) => SMono.just(emailSubmissionSetRequest)
       case errors: JsError => SMono.raiseError(new IllegalArgumentException(ResponseSerializer.serialize(errors).toString))
     }
 
   private def create(request: EmailSubmissionSetRequest,
                      session: MailboxSession,
-                     processingContext: ProcessingContext): SMono[(CreationResults, ProcessingContext)] = {
+                     processingContext: ProcessingContext): SMono[(CreationResults, ProcessingContext)] =
     SFlux.fromIterable(request.create
       .getOrElse(Map.empty)
       .view)
-      .foldLeft((CreationResults(Nil), processingContext)){
+      .foldLeft((CreationResults(Nil), processingContext)) {
         (acc : (CreationResults, ProcessingContext), elem: (EmailSubmissionCreationId, JsObject)) => {
           val (emailSubmissionCreationId, jsObject) = elem
           val (creationResult, updatedProcessingContext) = createSubmission(session, emailSubmissionCreationId, jsObject, acc._2)
@@ -160,12 +155,11 @@ class EmailSubmissionSetMethod @Inject()(serializer: EmailSubmissionSetSerialize
         }
       }
       .subscribeOn(Schedulers.elastic())
-  }
 
   private def createSubmission(mailboxSession: MailboxSession,
                             emailSubmissionCreationId: EmailSubmissionCreationId,
                             jsObject: JsObject,
-                            processingContext: ProcessingContext): (CreationResult, ProcessingContext) = {
+                            processingContext: ProcessingContext): (CreationResult, ProcessingContext) =
     parseCreate(jsObject)
       .flatMap(emailSubmissionCreationRequest => sendEmail(mailboxSession, emailSubmissionCreationRequest))
       .flatMap(creationResponse => recordCreationIdInProcessingContext(emailSubmissionCreationId, processingContext, creationResponse.id)
@@ -174,7 +168,6 @@ class EmailSubmissionSetMethod @Inject()(serializer: EmailSubmissionSetSerialize
         creationResponseWithUpdatedContext => {
           (CreationSuccess(emailSubmissionCreationId, creationResponseWithUpdatedContext._1), creationResponseWithUpdatedContext._2)
         })
-  }
 
   private def parseCreate(jsObject: JsObject): Either[EmailSubmissionCreationParseException, EmailSubmissionCreationRequest] =
     EmailSubmissionCreationRequest.validateProperties(jsObject)
@@ -245,12 +238,11 @@ class EmailSubmissionSetMethod @Inject()(serializer: EmailSubmissionSetSerialize
 
   private def recordCreationIdInProcessingContext(emailSubmissionCreationId: EmailSubmissionCreationId,
                                                   processingContext: ProcessingContext,
-                                                  emailSubmissionId: EmailSubmissionId) = {
+                                                  emailSubmissionId: EmailSubmissionId): Either[IllegalArgumentException, ProcessingContext] =
     for {
       creationId <- Id.validate(emailSubmissionCreationId)
       serverAssignedId <- Id.validate(emailSubmissionId.value)
     } yield {
       processingContext.recordCreatedId(ClientId(creationId), ServerId(serverAssignedId))
     }
-  }
 }
