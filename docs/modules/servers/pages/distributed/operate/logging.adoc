@@ -325,7 +325,7 @@ Here is a sample conf/logback.xml configuration file for achieving this:
 </configuration>
 ....
 
-Regarding FluentBit on Kubernetes, you need to install it as a DeamonSet. Some official template exist 
+Regarding FluentBit on Kubernetes, you need to install it as a DaemonSet. Some official template exist 
 with FluentBit outputting logs to ElasticSearch. For more information on how to install it,
 with your cluster, you can look at this https://docs.fluentbit.io/manual/installation/kubernetes[documentation].
 
