@@ -322,10 +322,6 @@ Here is a sample conf/logback.xml configuration file for achieving this:
                 <appender-ref ref="CONSOLE" />
         </root>
 
-        <logger name="es-error-logger" level="DEBUG" additivity="false">
-            <appender-ref ref="CONSOLE" />
-        </logger>
-
 </configuration>
 ....
 
