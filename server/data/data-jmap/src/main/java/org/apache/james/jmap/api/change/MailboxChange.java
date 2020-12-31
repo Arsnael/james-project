@@ -52,27 +52,27 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class MailboxChange {
-    @FunctionalInterface
-    public interface RequiredAccountId {
-        RequiredState accountId(AccountId accountId);
-    }
-
-    @FunctionalInterface
-    public interface RequiredState {
-        RequiredDate state(State state);
-    }
-
-    @FunctionalInterface
-    public interface RequiredDate {
-        RequiredIsCountChange date(ZonedDateTime date);
-    }
-
-    @FunctionalInterface
-    public interface RequiredIsCountChange {
-        Builder isCountChange(boolean isCountChange);
-    }
-
     public static class Builder {
+        @FunctionalInterface
+        public interface RequiredAccountId {
+            RequiredState accountId(AccountId accountId);
+        }
+
+        @FunctionalInterface
+        public interface RequiredState {
+            RequiredDate state(State state);
+        }
+
+        @FunctionalInterface
+        public interface RequiredDate {
+            RequiredIsCountChange date(ZonedDateTime date);
+        }
+
+        @FunctionalInterface
+        public interface RequiredIsCountChange {
+            Builder isCountChange(boolean isCountChange);
+        }
+
         private final AccountId accountId;
         private final State state;
         private final ZonedDateTime date;
@@ -125,7 +125,7 @@ public class MailboxChange {
         }
     }
 
-    public static RequiredAccountId builder() {
+    public static Builder.RequiredAccountId builder() {
         return accountId -> state -> date -> isCountChange -> new Builder(accountId, state, date, isCountChange);
     }
 
