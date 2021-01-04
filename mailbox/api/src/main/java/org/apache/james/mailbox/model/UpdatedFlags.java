@@ -91,6 +91,9 @@ public class UpdatedFlags {
     }
 
     private final MessageUid uid;
+    /**
+     * The usage of Optional here is for backward compatibility (to be able to still dequeue older events)
+     */
     private final Optional<MessageId> messageId;
     private final Flags oldFlags;
     private final Flags newFlags;
