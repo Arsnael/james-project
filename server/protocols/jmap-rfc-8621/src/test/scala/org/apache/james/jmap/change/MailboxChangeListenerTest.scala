@@ -258,8 +258,6 @@ class MailboxChangeListenerTest {
           .build)
         .block()
 
-      mailboxManager.applyRightsCommand(path, MailboxACL.command().forUser(ALICE).rights(MailboxACL.Right.Read).asAddition(), mailboxSession)
-
       val appendResult: AppendResult = mailboxManager
         .getMailbox(inboxId, mailboxSession)
         .appendMessage(AppendCommand.builder().build("header: value\r\n\r\nbody"), mailboxSession)
