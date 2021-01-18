@@ -128,7 +128,7 @@ public class EmailChange implements JmapChange {
             this.stateFactory = stateFactory;
         }
 
-        public List<JmapChange> fromAdded(Added messageAdded, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromAdded(Added messageAdded, ZonedDateTime now, List<AccountId> sharees) {
             EmailChange ownerChange = EmailChange.builder()
                 .accountId(AccountId.fromUsername(messageAdded.getUsername()))
                 .state(stateFactory.generate())
@@ -138,8 +138,8 @@ public class EmailChange implements JmapChange {
                 .build();
 
             Stream<EmailChange> shareeChanges = sharees.stream()
-                .map(name -> EmailChange.builder()
-                    .accountId(AccountId.fromString(name))
+                .map(shareeId -> EmailChange.builder()
+                    .accountId(shareeId)
                     .state(stateFactory.generate())
                     .date(now)
                     .isDelegated(true)
@@ -150,7 +150,7 @@ public class EmailChange implements JmapChange {
                 .collect(Guavate.toImmutableList());
         }
 
-        public List<JmapChange> fromFlagsUpdated(MailboxListener.FlagsUpdated messageFlagUpdated, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromFlagsUpdated(MailboxListener.FlagsUpdated messageFlagUpdated, ZonedDateTime now, List<AccountId> sharees) {
             EmailChange ownerChange = EmailChange.builder()
                 .accountId(AccountId.fromUsername(messageFlagUpdated.getUsername()))
                 .state(stateFactory.generate())
@@ -160,8 +160,8 @@ public class EmailChange implements JmapChange {
                 .build();
 
             Stream<EmailChange> shareeChanges = sharees.stream()
-                .map(name -> EmailChange.builder()
-                    .accountId(AccountId.fromString(name))
+                .map(shareeId -> EmailChange.builder()
+                    .accountId(shareeId)
                     .state(stateFactory.generate())
                     .date(now)
                     .isDelegated(true)
@@ -172,7 +172,7 @@ public class EmailChange implements JmapChange {
                 .collect(Guavate.toImmutableList());
         }
 
-        public List<JmapChange> fromExpunged(MailboxListener.Expunged expunged, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromExpunged(MailboxListener.Expunged expunged, ZonedDateTime now, List<AccountId> sharees) {
             EmailChange ownerChange = EmailChange.builder()
                 .accountId(AccountId.fromUsername(expunged.getUsername()))
                 .state(stateFactory.generate())
@@ -182,8 +182,8 @@ public class EmailChange implements JmapChange {
                 .build();
 
             Stream<EmailChange> shareeChanges = sharees.stream()
-                .map(name -> EmailChange.builder()
-                    .accountId(AccountId.fromString(name))
+                .map(shareeId -> EmailChange.builder()
+                    .accountId(shareeId)
                     .state(stateFactory.generate())
                     .date(now)
                     .isDelegated(true)

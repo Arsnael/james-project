@@ -140,7 +140,7 @@ public class MailboxChange implements JmapChange {
                 .build());
         }
 
-        public List<JmapChange> fromMailboxRenamed(MailboxRenamed mailboxRenamed, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromMailboxRenamed(MailboxRenamed mailboxRenamed, ZonedDateTime now, List<AccountId> sharees) {
             MailboxChange ownerChange = MailboxChange.builder()
                 .accountId(AccountId.fromUsername(mailboxRenamed.getUsername()))
                 .state(stateFactory.generate())
@@ -150,8 +150,8 @@ public class MailboxChange implements JmapChange {
                 .build();
 
             Stream<MailboxChange> shareeChanges = sharees.stream()
-                .map(name -> MailboxChange.builder()
-                    .accountId(AccountId.fromString(name))
+                .map(shareeId -> MailboxChange.builder()
+                    .accountId(shareeId)
                     .state(stateFactory.generate())
                     .date(now)
                     .isCountChange(false)
@@ -163,7 +163,7 @@ public class MailboxChange implements JmapChange {
                 .collect(Guavate.toImmutableList());
         }
 
-        public List<JmapChange> fromMailboxACLUpdated(MailboxACLUpdated mailboxACLUpdated, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromMailboxACLUpdated(MailboxACLUpdated mailboxACLUpdated, ZonedDateTime now, List<AccountId> sharees) {
             MailboxChange ownerChange = MailboxChange.builder()
                 .accountId(AccountId.fromUsername(mailboxACLUpdated.getUsername()))
                 .state(stateFactory.generate())
@@ -173,8 +173,8 @@ public class MailboxChange implements JmapChange {
                 .build();
 
             Stream<MailboxChange> shareeChanges = sharees.stream()
-                .map(name -> MailboxChange.builder()
-                    .accountId(AccountId.fromString(name))
+                .map(shareeId -> MailboxChange.builder()
+                    .accountId(shareeId)
                     .state(stateFactory.generate())
                     .date(now)
                     .isCountChange(false)
@@ -214,7 +214,7 @@ public class MailboxChange implements JmapChange {
                 .collect(Guavate.toImmutableList());
         }
 
-        public List<JmapChange> fromAdded(Added messageAdded, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromAdded(Added messageAdded, ZonedDateTime now, List<AccountId> sharees) {
             MailboxChange ownerChange = MailboxChange.builder()
                 .accountId(AccountId.fromUsername(messageAdded.getUsername()))
                 .state(stateFactory.generate())
@@ -224,8 +224,8 @@ public class MailboxChange implements JmapChange {
                 .build();
 
             Stream<MailboxChange> shareeChanges = sharees.stream()
-                .map(name -> MailboxChange.builder()
-                    .accountId(AccountId.fromString(name))
+                .map(shareeId -> MailboxChange.builder()
+                    .accountId(shareeId)
                     .state(stateFactory.generate())
                     .date(now)
                     .isCountChange(true)
@@ -237,7 +237,7 @@ public class MailboxChange implements JmapChange {
                 .collect(Guavate.toImmutableList());
         }
 
-        public List<JmapChange> fromFlagsUpdated(FlagsUpdated messageFlagUpdated, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromFlagsUpdated(FlagsUpdated messageFlagUpdated, ZonedDateTime now, List<AccountId> sharees) {
             boolean isSeenChanged = messageFlagUpdated.getUpdatedFlags()
                 .stream()
                 .anyMatch(flags -> flags.isChanged(Flags.Flag.SEEN));
@@ -251,8 +251,8 @@ public class MailboxChange implements JmapChange {
                     .build();
 
                 Stream<MailboxChange> shareeChanges = sharees.stream()
-                    .map(name -> MailboxChange.builder()
-                        .accountId(AccountId.fromString(name))
+                    .map(shareeId -> MailboxChange.builder()
+                        .accountId(shareeId)
                         .state(stateFactory.generate())
                         .date(now)
                         .isCountChange(true)
@@ -266,7 +266,7 @@ public class MailboxChange implements JmapChange {
             return ImmutableList.of();
         }
 
-        public List<JmapChange> fromExpunged(Expunged expunged, ZonedDateTime now, List<String> sharees) {
+        public List<JmapChange> fromExpunged(Expunged expunged, ZonedDateTime now, List<AccountId> sharees) {
             MailboxChange ownerChange = MailboxChange.builder()
                 .accountId(AccountId.fromUsername(expunged.getUsername()))
                 .state(stateFactory.generate())
@@ -276,8 +276,8 @@ public class MailboxChange implements JmapChange {
                 .build();
 
             Stream<MailboxChange> shareeChanges = sharees.stream()
-                .map(name -> MailboxChange.builder()
-                    .accountId(AccountId.fromString(name))
+                .map(shareeId -> MailboxChange.builder()
+                    .accountId(shareeId)
                     .state(stateFactory.generate())
                     .date(now)
                     .isCountChange(true)
