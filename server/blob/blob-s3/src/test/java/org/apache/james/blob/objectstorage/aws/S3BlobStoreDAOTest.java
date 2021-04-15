@@ -18,14 +18,14 @@
  ****************************************************************/
 package org.apache.james.blob.objectstorage.aws;
 
+import java.net.URI;
+
 import org.apache.james.blob.api.BlobStoreDAO;
 import org.apache.james.blob.api.BlobStoreDAOContract;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(DockerAwsS3Extension.class)
 public class S3BlobStoreDAOTest implements BlobStoreDAOContract {
     private static S3BlobStoreDAO testee;
 
@@ -47,7 +47,7 @@ public class S3BlobStoreDAOTest implements BlobStoreDAOContract {
 
     @AfterEach
     void tearDown() {
-        testee.deleteAllBuckets().block();
+        // testee.deleteAllBuckets().block();
     }
 
     @AfterAll

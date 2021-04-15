@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -336,7 +337,7 @@ public interface ReadSaveBlobStoreDAOContract {
             )
             .threadCount(10)
             .operationCount(20)
-            .runSuccessfullyWithin(Duration.ofMinutes(2));
+            .runSuccessfullyWithin(Duration.ofMinutes(10));
     }
 
     @ParameterizedTest(name = "[{index}] {0}")
@@ -348,9 +349,39 @@ public interface ReadSaveBlobStoreDAOContract {
                 (threadNumber, step) -> testee().save(TEST_BUCKET_NAME, TEST_BLOB_ID, ByteSource.wrap(bytes)),
                 (threadNumber, step) -> checkConcurrentSaveOperation(bytes)
             )
-            .threadCount(10)
-            .operationCount(20)
+            .threadCount(2)
+            .operationCount(2)
             .runSuccessfullyWithin(Duration.ofMinutes(2));
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("blobs")
+    default void testIsolation(String description, byte[] bytes) throws ExecutionException, InterruptedException {
+        Mono.from(testee().save(TEST_BUCKET_NAME, TEST_BLOB_ID, bytes)).block();
+        ConcurrentTestRunner.builder()
+            .operation((threadNumber, step) -> {
+                if (threadNumber == 1) {
+                    testee().save(TEST_BUCKET_NAME, TEST_BLOB_ID, ByteSource.wrap(bytes));
+                } else {
+                    checkConcurrentSaveOperation(bytes);
+                }
+            })
+            .threadCount(2)
+            .operationCount(4)
+            .runSuccessfullyWithin(Duration.ofMinutes(10));
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("blobs")
+    default void parrallel(String description, byte[] bytes) throws ExecutionException, InterruptedException {
+        Mono.from(testee().save(TEST_BUCKET_NAME, TEST_BLOB_ID, bytes)).block();
+        ConcurrentTestRunner.builder()
+            .operation(
+                (threadNumber, step) -> testee().save(TEST_BUCKET_NAME, new TestBlobId(UUID.randomUUID().toString()), ByteSource.wrap(bytes))
+            )
+            .threadCount(10)
+            .operationCount(2)
+            .runSuccessfullyWithin(Duration.ofMinutes(10));
     }
 
     default Mono<Void> checkConcurrentSaveOperation(byte[] expected) {

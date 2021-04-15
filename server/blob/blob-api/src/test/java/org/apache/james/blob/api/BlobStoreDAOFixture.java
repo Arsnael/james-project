@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import com.google.common.base.Strings;
 
 public interface BlobStoreDAOFixture {
-    BucketName TEST_BUCKET_NAME = BucketName.of("my-test-bucket");
+    BucketName TEST_BUCKET_NAME = BucketName.of("james-upn");
     BucketName CUSTOM_BUCKET_NAME = BucketName.of("custom");
     BlobId TEST_BLOB_ID = new TestBlobId("test-blob-id");
     BlobId OTHER_TEST_BLOB_ID = new TestBlobId("other-test-blob-id");
