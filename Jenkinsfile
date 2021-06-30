@@ -93,7 +93,11 @@ pipeline {
         stage('Stable Tests') {
             steps {
                 echo 'Running tests'
+                sh 'cd server/protocols/jmap-draft'
                 sh 'mvn -B -e -fae test ${MVN_SHOW_TIMESTAMPS} -P ci-test'
+                sh 'cd ../../../mailet/standard'
+                sh 'mvn -B -e -fae test ${MVN_SHOW_TIMESTAMPS} -P ci-test'
+                sh 'cd ../..'
             }
             post {
                 always {
