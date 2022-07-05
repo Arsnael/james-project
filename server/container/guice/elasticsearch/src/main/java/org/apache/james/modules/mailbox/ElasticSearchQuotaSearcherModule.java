@@ -28,9 +28,9 @@ import javax.inject.Inject;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.james.backends.es.v7.ElasticSearchConfiguration;
-import org.apache.james.backends.es.v7.ElasticSearchIndexer;
-import org.apache.james.backends.es.v7.ReactorElasticSearchClient;
+import org.apache.james.backends.opensearch.ElasticSearchConfiguration;
+import org.apache.james.backends.opensearch.ElasticSearchIndexer;
+import org.apache.james.backends.opensearch.ReactorElasticSearchClient;
 import org.apache.james.events.EventListener;
 import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.mailbox.quota.QuotaRootResolver;

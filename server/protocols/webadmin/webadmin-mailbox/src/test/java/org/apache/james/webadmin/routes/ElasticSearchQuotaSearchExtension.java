@@ -23,11 +23,11 @@ import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
-import org.apache.james.backends.es.v7.DockerElasticSearch;
-import org.apache.james.backends.es.v7.DockerElasticSearchSingleton;
-import org.apache.james.backends.es.v7.ElasticSearchConfiguration;
-import org.apache.james.backends.es.v7.ElasticSearchIndexer;
-import org.apache.james.backends.es.v7.ReactorElasticSearchClient;
+import org.apache.james.backends.opensearch.DockerElasticSearch;
+import org.apache.james.backends.opensearch.DockerElasticSearchSingleton;
+import org.apache.james.backends.opensearch.ElasticSearchConfiguration;
+import org.apache.james.backends.opensearch.ElasticSearchIndexer;
+import org.apache.james.backends.opensearch.ReactorElasticSearchClient;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.lib.DomainListConfiguration;
 import org.apache.james.domainlist.memory.MemoryDomainList;
