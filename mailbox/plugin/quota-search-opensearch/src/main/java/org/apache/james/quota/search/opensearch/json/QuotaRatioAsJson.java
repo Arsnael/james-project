@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.quota.search.elasticsearch.v7.json;
+package org.apache.james.quota.search.opensearch.json;
 
 import java.util.Objects;
 import java.util.Optional;

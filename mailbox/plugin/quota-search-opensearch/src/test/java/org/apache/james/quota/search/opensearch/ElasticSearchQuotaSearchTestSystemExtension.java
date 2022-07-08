@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch;
 
 import static org.mockito.Mockito.mock;
 
@@ -33,8 +33,8 @@ import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.store.quota.QuotaComponents;
 import org.apache.james.quota.search.QuotaSearchTestSystem;
-import org.apache.james.quota.search.elasticsearch.v7.events.ElasticSearchQuotaMailboxListener;
-import org.apache.james.quota.search.elasticsearch.v7.json.QuotaRatioToElasticSearchJson;
+import org.apache.james.quota.search.opensearch.events.ElasticSearchQuotaMailboxListener;
+import org.apache.james.quota.search.opensearch.json.QuotaRatioToElasticSearchJson;
 import org.apache.james.user.memory.MemoryUsersRepository;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;

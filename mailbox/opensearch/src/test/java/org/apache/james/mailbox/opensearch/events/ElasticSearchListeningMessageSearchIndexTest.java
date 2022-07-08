@@ -208,7 +208,7 @@ class ElasticSearchListeningMessageSearchIndexTest {
 
     @Test
     void deserializeElasticSearchListeningMessageSearchIndexGroup() throws Exception {
-        assertThat(Group.deserialize("org.apache.james.mailbox.elasticsearch.v7.events.ElasticSearchListeningMessageSearchIndex$ElasticSearchListeningMessageSearchIndexGroup"))
+        assertThat(Group.deserialize("org.apache.james.mailbox.opensearch.events.ElasticSearchListeningMessageSearchIndex$ElasticSearchListeningMessageSearchIndexGroup"))
             .isEqualTo(new ElasticSearchListeningMessageSearchIndex.ElasticSearchListeningMessageSearchIndexGroup());
     }
     

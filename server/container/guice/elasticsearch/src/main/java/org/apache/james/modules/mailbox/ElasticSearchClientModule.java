@@ -27,7 +27,7 @@ import org.apache.james.backends.opensearch.IndexName;
 import org.apache.james.backends.opensearch.ReactorElasticSearchClient;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.mailbox.opensearch.ElasticSearchMailboxConfiguration;
-import org.apache.james.quota.search.elasticsearch.v7.ElasticSearchQuotaConfiguration;
+import org.apache.james.quota.search.opensearch.ElasticSearchQuotaConfiguration;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;

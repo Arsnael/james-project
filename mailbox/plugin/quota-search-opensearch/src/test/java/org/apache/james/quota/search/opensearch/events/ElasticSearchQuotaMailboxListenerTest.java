@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7.events;
+package org.apache.james.quota.search.opensearch.events;
 
 import static org.apache.james.quota.search.QuotaSearchFixture.TestConstants.BOB_USERNAME;
 import static org.apache.james.quota.search.QuotaSearchFixture.TestConstants.NOW;
@@ -40,10 +40,10 @@ import org.apache.james.mailbox.quota.QuotaFixture.Sizes;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.event.EventFactory;
 import org.apache.james.mailbox.store.quota.DefaultUserQuotaRootResolver;
-import org.apache.james.quota.search.elasticsearch.v7.QuotaRatioElasticSearchConstants;
-import org.apache.james.quota.search.elasticsearch.v7.QuotaSearchIndexCreationUtil;
-import org.apache.james.quota.search.elasticsearch.v7.UserRoutingKeyFactory;
-import org.apache.james.quota.search.elasticsearch.v7.json.QuotaRatioToElasticSearchJson;
+import org.apache.james.quota.search.opensearch.QuotaRatioElasticSearchConstants;
+import org.apache.james.quota.search.opensearch.QuotaSearchIndexCreationUtil;
+import org.apache.james.quota.search.opensearch.UserRoutingKeyFactory;
+import org.apache.james.quota.search.opensearch.json.QuotaRatioToElasticSearchJson;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.awaitility.core.ConditionFactory;
@@ -94,7 +94,7 @@ class ElasticSearchQuotaMailboxListenerTest {
 
     @Test
     void deserializeElasticSearchQuotaMailboxListenerGroup() throws Exception {
-        assertThat(Group.deserialize("org.apache.james.quota.search.elasticsearch.v7.events.ElasticSearchQuotaMailboxListener$ElasticSearchQuotaMailboxListenerGroup"))
+        assertThat(Group.deserialize("org.apache.james.quota.search.opensearch.events.ElasticSearchQuotaMailboxListener$ElasticSearchQuotaMailboxListenerGroup"))
             .isEqualTo(new ElasticSearchQuotaMailboxListener.ElasticSearchQuotaMailboxListenerGroup());
     }
 

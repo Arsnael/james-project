@@ -17,14 +17,12 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch.json;
 
-import org.apache.james.backends.opensearch.RoutingKey;
-import org.apache.james.core.Username;
+public interface JsonMessageConstants {
 
-public class UserRoutingKeyFactory implements RoutingKey.Factory<Username> {
-    @Override
-    public RoutingKey from(Username user) {
-        return RoutingKey.fromString(user.asString());
-    }
+    String USER = "user";
+    String DOMAIN = "domain";
+    String QUOTA_RATIO = "quotaRatio";
+
 }

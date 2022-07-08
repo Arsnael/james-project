@@ -17,9 +17,9 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch;
 
-import static org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants.USER;
+import static org.apache.james.quota.search.opensearch.json.JsonMessageConstants.USER;
 
 import java.util.List;
 

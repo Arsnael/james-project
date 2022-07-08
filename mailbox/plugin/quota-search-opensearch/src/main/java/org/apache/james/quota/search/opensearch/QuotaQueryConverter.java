@@ -17,10 +17,8 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch;
 
-import static org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants.DOMAIN;
-import static org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants.QUOTA_RATIO;
 import static org.opensearch.index.query.QueryBuilders.matchAllQuery;
 import static org.opensearch.index.query.QueryBuilders.rangeQuery;
 import static org.opensearch.index.query.QueryBuilders.termQuery;
@@ -35,6 +33,7 @@ import org.apache.james.quota.search.QuotaClause.HasDomain;
 import org.apache.james.quota.search.QuotaClause.LessThan;
 import org.apache.james.quota.search.QuotaClause.MoreThan;
 import org.apache.james.quota.search.QuotaQuery;
+import org.apache.james.quota.search.opensearch.json.JsonMessageConstants;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.index.query.QueryBuilder;
 import org.opensearch.index.query.RangeQueryBuilder;
@@ -83,17 +82,17 @@ class QuotaQueryConverter {
 
     private TermQueryBuilder convertHasDomain(QuotaClause clause) {
         HasDomain hasDomain = (HasDomain) clause;
-        return termQuery(DOMAIN, hasDomain.getDomain().asString());
+        return termQuery(JsonMessageConstants.DOMAIN, hasDomain.getDomain().asString());
     }
 
     private RangeQueryBuilder convertMoreThan(QuotaClause clause) {
         MoreThan moreThan = (MoreThan) clause;
-        return rangeQuery(QUOTA_RATIO).gte(moreThan.getQuotaBoundary().getRatio());
+        return rangeQuery(JsonMessageConstants.QUOTA_RATIO).gte(moreThan.getQuotaBoundary().getRatio());
     }
 
     private RangeQueryBuilder convertLessThan(QuotaClause clause) {
         LessThan lessThan = (LessThan) clause;
-        return rangeQuery(QUOTA_RATIO).lte(lessThan.getQuotaBoundary().getRatio());
+        return rangeQuery(JsonMessageConstants.QUOTA_RATIO).lte(lessThan.getQuotaBoundary().getRatio());
     }
 
     private QueryBuilder singleClauseAsESQuery(QuotaClause clause) {

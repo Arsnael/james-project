@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch;
 
-import static org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants.QUOTA_RATIO;
+import static org.apache.james.quota.search.opensearch.json.JsonMessageConstants.QUOTA_RATIO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.opensearch.index.query.QueryBuilders.matchAllQuery;
 import static org.opensearch.index.query.QueryBuilders.rangeQuery;
@@ -27,7 +27,7 @@ import static org.opensearch.index.query.QueryBuilders.termQuery;
 import org.apache.james.core.Domain;
 import org.apache.james.quota.search.QuotaBoundary;
 import org.apache.james.quota.search.QuotaQuery;
-import org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants;
+import org.apache.james.quota.search.opensearch.json.JsonMessageConstants;
 import org.opensearch.index.query.QueryBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

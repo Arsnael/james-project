@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7.json;
+package org.apache.james.quota.search.opensearch.json;
 
 import javax.inject.Inject;
 

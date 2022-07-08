@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch;
 
 import static org.apache.james.core.CoreFixture.Domains.SIMPSON_COM;
 import static org.assertj.core.api.Assertions.assertThat;

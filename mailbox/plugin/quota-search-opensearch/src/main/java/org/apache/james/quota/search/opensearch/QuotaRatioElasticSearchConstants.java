@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch;
 
 import org.apache.james.backends.opensearch.IndexName;
 import org.apache.james.backends.opensearch.ReadAliasName;

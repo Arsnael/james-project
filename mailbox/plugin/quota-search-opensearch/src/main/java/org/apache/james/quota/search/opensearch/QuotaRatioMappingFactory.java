@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.quota.search.elasticsearch.v7;
+package org.apache.james.quota.search.opensearch;
 
 import static org.apache.james.backends.opensearch.IndexCreationFactory.DOUBLE;
 import static org.apache.james.backends.opensearch.IndexCreationFactory.KEYWORD;
@@ -25,13 +25,11 @@ import static org.apache.james.backends.opensearch.IndexCreationFactory.PROPERTI
 import static org.apache.james.backends.opensearch.IndexCreationFactory.REQUIRED;
 import static org.apache.james.backends.opensearch.IndexCreationFactory.ROUTING;
 import static org.apache.james.backends.opensearch.IndexCreationFactory.TYPE;
-import static org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants.DOMAIN;
-import static org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants.QUOTA_RATIO;
-import static org.apache.james.quota.search.elasticsearch.v7.json.JsonMessageConstants.USER;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 import java.io.IOException;
 
+import org.apache.james.quota.search.opensearch.json.JsonMessageConstants;
 import org.opensearch.common.xcontent.XContentBuilder;
 
 class QuotaRatioMappingFactory {
@@ -46,15 +44,15 @@ class QuotaRatioMappingFactory {
 
                     .startObject(PROPERTIES)
 
-                        .startObject(USER)
+                        .startObject(JsonMessageConstants.USER)
                             .field(TYPE, KEYWORD)
                         .endObject()
 
-                        .startObject(DOMAIN)
+                        .startObject(JsonMessageConstants.DOMAIN)
                             .field(TYPE, KEYWORD)
                         .endObject()
 
-                        .startObject(QUOTA_RATIO)
+                        .startObject(JsonMessageConstants.QUOTA_RATIO)
                             .field(TYPE, DOUBLE)
                         .endObject()
                     .endObject()

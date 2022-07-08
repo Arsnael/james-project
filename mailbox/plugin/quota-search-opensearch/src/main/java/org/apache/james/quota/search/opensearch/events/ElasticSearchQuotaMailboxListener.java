@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.quota.search.elasticsearch.v7.events;
+package org.apache.james.quota.search.opensearch.events;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -30,8 +30,8 @@ import org.apache.james.events.EventListener;
 import org.apache.james.events.Group;
 import org.apache.james.mailbox.events.MailboxEvents.QuotaUsageUpdatedEvent;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
-import org.apache.james.quota.search.elasticsearch.v7.QuotaRatioElasticSearchConstants;
-import org.apache.james.quota.search.elasticsearch.v7.json.QuotaRatioToElasticSearchJson;
+import org.apache.james.quota.search.opensearch.QuotaRatioElasticSearchConstants;
+import org.apache.james.quota.search.opensearch.json.QuotaRatioToElasticSearchJson;
 import org.reactivestreams.Publisher;
 
 import reactor.core.publisher.Mono;
