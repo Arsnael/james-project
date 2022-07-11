@@ -61,7 +61,7 @@ public class ElasticSearchStartUpCheck implements StartUpCheck {
             }
 
             String esVersionCompatibilityWarn = String.format(
-                "ES version(%s) is not compatible with the recommendation(%s)",
+                "OpenSearch version(%s) is not compatible with the recommendation(%s)",
                 esVersion.toString(),
                 RECOMMENDED_ES_VERSION.toString());
             LOGGER.warn(esVersionCompatibilityWarn);
