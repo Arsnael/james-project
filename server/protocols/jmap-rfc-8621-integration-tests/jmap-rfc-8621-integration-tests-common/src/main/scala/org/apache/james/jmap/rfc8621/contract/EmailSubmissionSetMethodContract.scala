@@ -1911,4 +1911,61 @@ trait EmailSubmissionSetMethodContract {
                    |  }
                    |}""".stripMargin)
   }
+
+  @Test
+  def emailSubmissionSetCanBeChainedAfterMailboxSetAndEmailSet(server: GuiceJamesServer): Unit = {
+    server.getProbe(classOf[MailboxProbeImpl]).createMailbox(MailboxPath.inbox(BOB))
+    val bobSentPath = MailboxPath.forUser(BOB, DefaultMailboxes.SENT)
+    val sentId = server.getProbe(classOf[MailboxProbeImpl]).createMailbox(bobSentPath)
+
+    val requestBob =
+      s"""{
+         |  "using": ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"],
+         |  "methodCalls": [
+         |  ["Mailbox/set",
+         |    {
+         |      "accountId": "29883977c13473ae7cb7678ef767cbfbaffc8a44a6e463d971d23a65c1dc4af6",
+         |      "create": {
+         |        "C42": {
+         |          "name": "Outbox"
+         |        }
+         |      }
+         |    }, "c0"],
+         |    ["Email/set", {
+         |      "accountId": "$ACCOUNT_ID",
+         |      "create": {
+         |        "e1526":{
+         |          "mailboxIds": {"#C42": true},
+         |          "to": [{"email": "${BOB.asString}"}],
+         |          "from": [{"email": "${BOB.asString}"}]
+         |        }
+         |      }
+         |    }, "c1"],
+         |     ["EmailSubmission/set", {
+         |       "accountId": "$ACCOUNT_ID",
+         |       "create": {
+         |         "k1490": {
+         |           "emailId": "#e1526",
+         |           "envelope": {
+         |             "mailFrom": {"email": "${BOB.asString}"},
+         |             "rcptTo": [{"email": "${BOB.asString}"}]
+         |           }
+         |         }
+         |       },
+         |       "onSuccessUpdateEmail": {
+         |         "#k1490": {
+         |           "mailboxIds": {"$sentId": true}
+         |         }
+         |       }
+         |     }, "c2"]]
+         |}""".stripMargin
+
+    `given`
+      .header(ACCEPT.toString, ACCEPT_RFC8621_VERSION_HEADER)
+      .body(requestBob)
+    .when
+      .post.prettyPeek()
+    .`then`
+      .statusCode(SC_OK)
+  }
 }
