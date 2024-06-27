@@ -1,0 +1,9 @@
+= James Postgresql Mail Server
+:navtitle: Postgresql James Application
+
+[TODO]
+
+In this section of the documentation, we will introduce you to:
+
+* xref:postgresql/run/index.adoc[Run the Postgresql Server]
+
