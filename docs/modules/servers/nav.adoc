@@ -84,4 +84,7 @@
 **** xref:distributed/benchmark/db-benchmark.adoc[]
 **** xref:distributed/benchmark/james-benchmark.adoc[]
 ** xref:postgresql/index.adoc[]
+*** xref:postgresql/run/index.adoc[Run]
+**** xref:postgresql/run/run-java.adoc[Run with Java]
+**** xref:postgresql/run/run-docker.adoc[Run with Docker]
 ** xref:test.adoc[]
