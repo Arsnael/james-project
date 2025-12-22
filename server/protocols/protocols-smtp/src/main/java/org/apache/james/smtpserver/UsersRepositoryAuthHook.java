@@ -18,8 +18,6 @@
  ****************************************************************/
 package org.apache.james.smtpserver;
 
-import java.util.Optional;
-
 import javax.inject.Inject;
 
 import org.apache.james.core.Username;

@@ -50,8 +50,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import reactor.core.publisher.Mono;
-
 /**
  * Processor which handles the AUTHENTICATE command. Only authtype of PLAIN is supported ATM.
  */
